@@ -10,6 +10,7 @@
 #endif
 
 #include "uCosmos.h"
+#include "log.h"
 
 // Basic commands
 void		reset_cmd(int argc, char * argv[]);

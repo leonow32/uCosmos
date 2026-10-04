@@ -188,15 +188,15 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		static int counter = 0;
 
 		if(run_mode == os_run) {
-			printf("%s %d\n", __func__, counter++);
+			LOGI("%s %d", __func__, counter++);
 		}
 		
 		else if(run_mode == os_constructor) {
-			printf("%s constructor\n", __func__);
+			LOGI("%s constructor", __func__);
 		}
 		
 		else if(run_mode == os_destructor) {
-			printf("%s destructor\n", __func__);
+			LOGI("%s destructor", __func__);
 		}
 		
 		#if OS_USE_TASK_IDENTIFY
@@ -210,15 +210,15 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		static int counter = 0;
 
 		if(run_mode == os_run) {
-			printf("%s %d\n", __func__, counter++);
+			LOGD("%s %d", __func__, counter++);
 		}
 		
 		else if(run_mode == os_constructor) {
-			printf("%s constructor\n", __func__);
+			LOGD("%s constructor", __func__);
 		}
 		
 		else if(run_mode == os_destructor) {
-			printf("%s destructor\n", __func__);
+			LOGD("%s destructor", __func__);
 		}
 		
 		#if OS_USE_TASK_IDENTIFY
