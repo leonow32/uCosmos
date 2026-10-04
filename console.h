@@ -4,7 +4,7 @@
 
 #include <time.h>
 #include <string.h>
-#include "console_config.h"
+#include "uCosmos_config.h"
 #include "ascii.h"
 #include "uCosmos.h"
 

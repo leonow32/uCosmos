@@ -3,7 +3,7 @@
 static const char *TAG = "console";
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "console.h"
-#include "console_commands.h"
+#include "../commands.h"
 
 namespace console {
 
