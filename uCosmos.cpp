@@ -214,52 +214,58 @@ os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char 
 	return res;
 }
 
-// Execute task destructor and then remove it from the array
-os_t task_close(void (*task_ptr)(run_mode_t)) {
+// Usuwanie tasku bez wywołania destruktora - uważać jeśli task wykorzystuje dynamiczną alokację pamięci
+os_t task_clear(uint8_t slot_number) {
 	os_t res = os_ok;
-
-	// #if OS_DEBUG_MESSAGES_SHOW
-	// 	printf(FORMAT_RESET "Cls(");
-		
-	// 	#if OS_USE_TASK_IDENTIFY
-	// 		task_ptr(os_id);
-	// 	#endif
-		
-	// 	printf(")  \t= ");
-	// #endif
-
-	// void (*ptr)(run_mode_t);
-	// const char * name;
 	
-	uint8_t slot_number;										// Szukanie tasku
-	if(task_find(task_ptr, &slot_number)) {
-			
-		// #if OS_DEBUG_MESSAGES_SHOW
-		// 	printf("NotFound\n");
-		// #endif
-			
-		res = os_not_found;
+	if(slot_number >= OS_TASK_MAXCOUNT) {						// Kontrola poprawności danych
+		res = os_slot_number_over_range;
 		// goto end;
-		return res;
 	}
 	
-	void (*ptr)(run_mode_t) = task_table[slot_number].task_ptr;				// Backup pointer to the task
-	// const char * name       = task_table[slot_number].name;					// Backup name
 	task_table[slot_number].task_ptr	=	nullptr;
 	task_table[slot_number].counter		=	0;
 	task_table[slot_number].period		=	0;
 	task_table[slot_number].flag		=	false;
-	task_table[slot_number].name		=	nullptr;(slot_number);
-	ptr(os_destructor);														// Execute task destructor
-	
-	// #if OS_DEBUG_MESSAGES_SHOW
-	// 	printf("OK\n");
-	// #endif
-	
+	task_table[slot_number].name		=	nullptr;
+
 	// end:
 	// if(res == os_ok) 	LOGD("add(%s, %u)", name, period_ms);
 	// else				LOGE("add(%s, %u) -> %s", name, period_ms, debug_res(res));
 	return res;
+}
+
+// Execute task destructor and then remove it from the array
+os_t task_close(void (*task_ptr)(run_mode_t)) {
+	#if OS_DEBUG_MESSAGES_SHOW
+		printf(FORMAT_RESET "Cls(");
+		
+		#if OS_USE_TASK_IDENTIFY
+			task_ptr(os_id);
+		#endif
+		
+		printf(")  \t= ");
+	#endif
+	
+	uint8_t slot_number;										// Szukanie tasku
+	if(task_find(task_ptr, &slot_number)) {
+			
+		#if OS_DEBUG_MESSAGES_SHOW
+			printf("NotFound\n");
+		#endif
+			
+		return os_not_found;
+	}
+	
+	void (*ptr)(run_mode_t) = task_table[slot_number].task_ptr;				// Backup pointer to the task
+	task_clear(slot_number);												// clear task from the array
+	ptr(os_destructor);														// Execute task destructor
+	
+	#if OS_DEBUG_MESSAGES_SHOW
+		printf("OK\n");
+	#endif
+	
+	return os_ok;
 }
 
 // Zmiana czasów
