@@ -42,13 +42,15 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tFlag\tPer[ms]\tId\n" FORMAT_RESET);
 	
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%u\t%08lX\t%02X\t%lu\t", i, uint32_t(task_table[i].task_ptr), task_table[i].flag, uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS);
+		printf("%u\t%08lX\t%02X\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), task_table[i].flag, uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_table[i].name);
 		
-		#if OS_USE_TASK_IDENTIFY
-			if(task_table[i].task_ptr != NULL) task_table[i].task_ptr(os_id);
-		#endif
+		// #if OS_USE_TASK_IDENTIFY
+		// 	if(task_table[i].task_ptr != nullptr) task_table[i].task_ptr(os_id);
+		// #endif
 
-		printf("\n");
+		// if(task_table[i].task_ptr != nullptr) printf(TEXT_GREEN "%s" FORMAT_RESET, task_table[i].name);
+
+		// printf("\n");
 	}
 	
 	#if ESP_PLATFORM
@@ -198,12 +200,6 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		else if(run_mode == os_destructor) {
 			LOGI("%s destructor", __func__);
 		}
-		
-		#if OS_USE_TASK_IDENTIFY
-		else if(run_mode == os_id) {
-			printf(__func__);
-		}
-		#endif
 	}
 
 	void demo2_task(run_mode_t run_mode) {
@@ -220,12 +216,6 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		else if(run_mode == os_destructor) {
 			LOGD("%s destructor", __func__);
 		}
-		
-		#if OS_USE_TASK_IDENTIFY
-		else if(run_mode == os_id) {
-			printf(__func__);
-		}
-		#endif
 	}
 
 	void demo1_add_cmd(int argc, char * argv[]) {

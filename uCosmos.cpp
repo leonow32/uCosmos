@@ -108,9 +108,7 @@ static void os_print_reset_source() {
 // ========================================
 
 void os_init(void) {
-	#if ESP_PLATFORM
-		ESP_LOGI(TAG, "init");
-	#endif
+	LOGI("init");
 
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		task_clear(i);
@@ -165,7 +163,7 @@ void task_scheduler(void) {
 // Dodawanie tasku do tablicy tasków
 // - task_ptr  - wskaźnik do tasku
 // - period_ms - czas z jaką częstotliwością task ma być wykonywany
-os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) { 
+os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name) { 
 	#if OS_DEBUG_MESSAGES_SHOW
 		printf(FORMAT_RESET "Add(");
 		
@@ -204,6 +202,7 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	task_table[slot_number].task_ptr	=	task_ptr;			// Wpisywanie nowego procesu
 	task_table[slot_number].counter		=	(period_ms / OS_TICK_PERIOD_MS)-1;
 	task_table[slot_number].period		=	period_ms / OS_TICK_PERIOD_MS;
+	task_table[slot_number].name		=	name;
 	
 	#if OS_DEBUG_MESSAGES_SHOW
 		printf("OK\n");
@@ -223,6 +222,7 @@ os_t task_clear(uint8_t slot_number) {
 	task_table[slot_number].counter		=	0;
 	task_table[slot_number].period		=	0;
 	task_table[slot_number].flag		=	false;
+	task_table[slot_number].name		=	nullptr;
 	return os_ok;
 }
 

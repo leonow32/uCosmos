@@ -22,7 +22,6 @@
 // Debugowanie
 #define OS_DEBUG_MESSAGES_SHOW			1			// Komunikaty u tworzeniu i zamykaniu tasków
 #define OS_DEBUG_MESSAGES_TIMESTAMP		1			// W komunikatach o błędach będzie podana data i godzina
-#define OS_USE_TASK_IDENTIFY			1			// Identyfikacja tasków poprzez wysołanie z argumentem identify 
 #define OS_USE_TASK_MONITOR				1			// Wyświetlanie na UART tablicy tasków
 #define OS_USE_TASK_COMMANDS			1			// Polecenia do zarządzania taskami
 #define OS_USE_DEMO_TASKS				1			// Demonstracyjne taski

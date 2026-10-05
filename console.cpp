@@ -14,7 +14,7 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 #endif
 
 void init(void) {
-	// ESP_LOGI(TAG, "init");
+	LOGI("init");
 	task_add(console_task, 20);
 }
 
@@ -223,30 +223,8 @@ void console_task(run_mode_t run_mode) {
 					prompt_show();
 					break;
 			}
-			
-			// if(console_res == con_recv_cmd) {										// Jeżeli zakończono odbieranie polecenia
-				
-			// }
-
-			// else if(console_res == con_buffer_full) {								
-			// 	printf("%c", BEL);						
-			// }
-			
-			// else if(console_res == con_input_cancelled) {							
-			// 	prompt_show();
-			// }
-
-			// else if(console_res == con_recv_begin) {								
-			// 	prompt_show();
-			// }
 		}
 	}
-	
-	#if OS_USE_TASK_IDENTIFY
-	else if(run_mode == os_id) {
-		printf(__func__);
-	}
-	#endif
 }
 
 // ========================================
