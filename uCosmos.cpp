@@ -2,6 +2,9 @@
 #if COMPONENT_UCOSMOS
 static const char *TAG = "uCosmos";
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#include <stdio.h>
+#include <time.h>
+#include "log.h"
 #include "uCosmos.h"
 
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
@@ -42,29 +45,42 @@ static void os_splash_screen(void) {
 	#endif
 }
 
-static void os_print_reset_source() {
+static const char * os_print_reset_source() {
 	#if ESP_PLATFORM
 		switch(esp_reset_reason()) {
-			case ESP_RST_UNKNOWN:   	printf("UNKNOWN");			break;
-			case ESP_RST_POWERON:   	printf("POWERON");			break;
-			case ESP_RST_EXT:       	printf("EXT");				break;
-			case ESP_RST_SW:        	printf("SW");				break;
-			case ESP_RST_PANIC:     	printf("PANIC");			break;
-			case ESP_RST_INT_WDT:   	printf("INT_WDT");			break;
-			case ESP_RST_TASK_WDT:  	printf("TASK_WDT");			break;
-			case ESP_RST_WDT:       	printf("WDT");				break;
-			case ESP_RST_DEEPSLEEP: 	printf("DEEPSLEEP");		break;
-			case ESP_RST_BROWNOUT:  	printf("BROWNOUT");			break;
-			case ESP_RST_SDIO:      	printf("SDIO");				break;
-			case ESP_RST_USB:       	printf("USB");				break;
-			case ESP_RST_JTAG:      	printf("JTAG");				break;
-			case ESP_RST_EFUSE:     	printf("EFUSE");			break;
-			case ESP_RST_PWR_GLITCH:	printf("PWR_GLITCH");		break;
-			case ESP_RST_CPU_LOCKUP:	printf("CPU_LOCKUP");		break;
+			case ESP_RST_UNKNOWN:   		return "UNKNOWN";
+			case ESP_RST_POWERON:   		return "POWERON";
+			case ESP_RST_EXT:       		return "EXT";
+			case ESP_RST_SW:        		return "SW";
+			case ESP_RST_PANIC:     		return "PANIC";
+			case ESP_RST_INT_WDT:   		return "INT_WDT";
+			case ESP_RST_TASK_WDT:  		return "TASK_WDT";
+			case ESP_RST_WDT:       		return "WDT";
+			case ESP_RST_DEEPSLEEP: 		return "DEEPSLEEP";
+			case ESP_RST_BROWNOUT:  		return "BROWNOUT";
+			case ESP_RST_SDIO:      		return "SDIO";
+			case ESP_RST_USB:       		return "USB";
+			case ESP_RST_JTAG:      		return "JTAG";
+			case ESP_RST_EFUSE:     		return "EFUSE";
+			case ESP_RST_PWR_GLITCH:		return "PWR_GLITCH";
+			case ESP_RST_CPU_LOCKUP:		return "CPU_LOCKUP";
 		}
 	#elif PICO_RP2040 || PICO_RP2350
-		// #warning "not ready"
+		return "UNKNOWN";
 	#endif
+}
+
+static const char * debug_res(os_t result) {
+	switch(result) {
+		case os_ok:							return("ok");
+		case os_no_free_slot:				return("no free slot");
+		case os_not_found:					return("not found");
+		case os_task_already_created:		return("already created");
+		case os_slot_number_over_range:		return("slot over range");
+		case os_task_period_under_range:	return("period under range");
+	}
+
+	return "?";
 }
 
 // ========================================
@@ -111,7 +127,11 @@ void os_init(void) {
 	LOGI("init");
 
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		task_clear(i);
+		task_table[i].task_ptr	=	nullptr;
+		task_table[i].counter	=	0;
+		task_table[i].period	=	0;
+		task_table[i].flag		=	false;
+		task_table[i].name		=	nullptr;
 	}
 
 	#if OS_SHOW_SPLASH_SCREEN_AT_START
@@ -119,9 +139,7 @@ void os_init(void) {
 	#endif
 
 	#if OS_SHOW_RESET_SOURCE_AT_START
-		printf(TEXT_CYAN_BRIGHT "reset source: " TEXT_CYAN);
-		os_print_reset_source();
-		printf(FORMAT_RESET "\n");
+		printf(TEXT_CYAN_BRIGHT "reset source: " TEXT_CYAN "%s" FORMAT_RESET "\n\n", os_print_reset_source());
 	#endif
 
 	#if ESP_PLATFORM
@@ -163,40 +181,24 @@ void task_scheduler(void) {
 // Dodawanie tasku do tablicy tasków
 // - task_ptr  - wskaźnik do tasku
 // - period_ms - czas z jaką częstotliwością task ma być wykonywany
-os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name) { 
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf(FORMAT_RESET "Add(");
-		
-		#if OS_USE_TASK_IDENTIFY
-			task_ptr(os_id);
-		#endif
-		
-		printf(", %u)\t= ", period_ms);
-	#endif
+os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name) {
+	os_t res = os_ok;
 
 	if(period_ms < OS_TICK_PERIOD_MS) {
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf("period under range\n");
-		#endif
-	
-		return os_task_period_under_range;
+		res = os_task_period_under_range;
+		goto end;
 	}
 	
-	if(task_find(task_ptr) != os_not_found) {					// Szukanie czy task już istnieje
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf("alread created\n");
-		#endif
-	
-		return os_task_already_created;
+	if(task_is_running(task_ptr)) {								// Szukanie czy task już istnieje
+
+		res = os_task_already_created;
+		goto end;
 	}
 	
 	uint8_t slot_number;										// Szukanie pierwszego wolnego slotu
 	if(task_find_free_slot(&slot_number) == os_no_free_slot) {
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf("no free slot\n");
-		#endif
-		
-		return os_no_free_slot;
+		res = os_no_free_slot;
+		goto end;
 	}
 	
 	task_table[slot_number].task_ptr	=	task_ptr;			// Wpisywanie nowego procesu
@@ -204,59 +206,60 @@ os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char 
 	task_table[slot_number].period		=	period_ms / OS_TICK_PERIOD_MS;
 	task_table[slot_number].name		=	name;
 	
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf("OK\n");
-	#endif
-	
 	task_ptr(os_constructor);									// Wywołanie inicjalizacyjne (konstruktor tasku)
-	return os_ok;
-}
 
-// Usuwanie tasku bez wywołania destruktora - uważać jeśli task wykorzystuje dynamiczną alokację pamięci
-os_t task_clear(uint8_t slot_number) {
-	if(slot_number >= OS_TASK_MAXCOUNT) {						// Kontrola poprawności danych
-		return os_slot_number_over_range;
-	}
-	
-	task_table[slot_number].task_ptr	=	nullptr;
-	task_table[slot_number].counter		=	0;
-	task_table[slot_number].period		=	0;
-	task_table[slot_number].flag		=	false;
-	task_table[slot_number].name		=	nullptr;
-	return os_ok;
+	end:
+	if(res == os_ok) 	LOGD("add(%s, %u)", name, period_ms);
+	else				LOGE("add(%s, %u) -> %s", name, period_ms, debug_res(res));
+	return res;
 }
 
 // Execute task destructor and then remove it from the array
 os_t task_close(void (*task_ptr)(run_mode_t)) {
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf(FORMAT_RESET "Cls(");
+	os_t res = os_ok;
+
+	// #if OS_DEBUG_MESSAGES_SHOW
+	// 	printf(FORMAT_RESET "Cls(");
 		
-		#if OS_USE_TASK_IDENTIFY
-			task_ptr(os_id);
-		#endif
+	// 	#if OS_USE_TASK_IDENTIFY
+	// 		task_ptr(os_id);
+	// 	#endif
 		
-		printf(")  \t= ");
-	#endif
+	// 	printf(")  \t= ");
+	// #endif
+
+	// void (*ptr)(run_mode_t);
+	// const char * name;
 	
 	uint8_t slot_number;										// Szukanie tasku
 	if(task_find(task_ptr, &slot_number)) {
 			
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf("NotFound\n");
-		#endif
+		// #if OS_DEBUG_MESSAGES_SHOW
+		// 	printf("NotFound\n");
+		// #endif
 			
-		return os_not_found;
+		res = os_not_found;
+		// goto end;
+		return res;
 	}
 	
 	void (*ptr)(run_mode_t) = task_table[slot_number].task_ptr;				// Backup pointer to the task
-	task_clear(slot_number);												// clear task from the array
+	// const char * name       = task_table[slot_number].name;					// Backup name
+	task_table[slot_number].task_ptr	=	nullptr;
+	task_table[slot_number].counter		=	0;
+	task_table[slot_number].period		=	0;
+	task_table[slot_number].flag		=	false;
+	task_table[slot_number].name		=	nullptr;(slot_number);
 	ptr(os_destructor);														// Execute task destructor
 	
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf("OK\n");
-	#endif
+	// #if OS_DEBUG_MESSAGES_SHOW
+	// 	printf("OK\n");
+	// #endif
 	
-	return os_ok;
+	// end:
+	// if(res == os_ok) 	LOGD("add(%s, %u)", name, period_ms);
+	// else				LOGE("add(%s, %u) -> %s", name, period_ms, debug_res(res));
+	return res;
 }
 
 // Zmiana czasów

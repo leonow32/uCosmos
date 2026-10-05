@@ -1,5 +1,8 @@
 #include "../config.h"
 #if COMPONENT_CONSOLE
+#include <stdio.h>
+#include <time.h>
+#include "console.h"
 #include "console_demo.h"
 
 #if CONSOLE_USE_DEMO_COMMANDS

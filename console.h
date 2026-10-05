@@ -3,9 +3,6 @@
 #if COMPONENT_CONSOLE
 
 #include <time.h>
-#include <string.h>
-#include "uCosmos_config.h"
-#include "ascii.h"
 #include "uCosmos.h"
 
 #if ESP_PLATFORM

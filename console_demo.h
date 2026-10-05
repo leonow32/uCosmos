@@ -1,8 +1,6 @@
 #ifndef CONSOLE_DEMO_H_
 #define CONSOLE_DEMO_H_
 
-#include	"../uCosmos/console.h"
-
 // ========================================
 // Console Commands
 // ========================================

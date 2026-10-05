@@ -1,8 +1,7 @@
 #ifndef UCOSMOS_H
 #define UCOSMOS_H
 
-#include <stdio.h>
-#include <time.h>
+#include "uCosmos_config.h"
 
 #if ESP_PLATFORM
 	#include "esp_log.h"
@@ -12,9 +11,6 @@
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
 #endif
-
-#include "uCosmos_config.h"
-#include "log.h"
 
 // Task exection mode
 enum run_mode_t {
@@ -26,7 +22,6 @@ enum run_mode_t {
 // Return value for task managemen functions
 enum os_t {
 	os_ok = 0,
-	os_error,
 	os_no_free_slot,
 	os_not_found,
 	os_task_already_created,
@@ -49,12 +44,10 @@ void    os_init(void);
 void    task_scheduler(void);
 #define task_add(task_ptr, period_ms) task_add_name(task_ptr, period_ms, #task_ptr)
 os_t    task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name);
-os_t    task_clear(uint8_t slot_number);
 os_t    task_close(void (*task_ptr)(run_mode_t));
 os_t    task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 os_t    task_find_free_slot(uint8_t * slot_number);
 os_t    task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr);
 bool    task_is_running(void (*task_ptr)(run_mode_t));
-
 
 #endif

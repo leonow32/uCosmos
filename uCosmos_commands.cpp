@@ -1,9 +1,10 @@
 #include "../config.h"
 #if COMPONENT_UCOSMOS
 
+#include "console.h"
+#include "log.h"
 #include "uCosmos.h"
 #include "uCosmos_commands.h"
-#include "../uCosmos/console.h"
 
 using namespace console;
 
@@ -37,31 +38,21 @@ void memory_status_cmd(int argc, char * argv[]) {
 // Print taks table
 #if OS_USE_TASK_MONITOR
 void task_monitor_cmd(int argc, char * argv[]) {
-	
-	// Print header
-	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tFlag\tPer[ms]\tId\n" FORMAT_RESET);
+	printf("No\tPtr\t\tFlag\tPer[ms]\tName\n");
 	
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		printf("%u\t%08lX\t%02X\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), task_table[i].flag, uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_table[i].name);
-		
-		// #if OS_USE_TASK_IDENTIFY
-		// 	if(task_table[i].task_ptr != nullptr) task_table[i].task_ptr(os_id);
-		// #endif
-
-		// if(task_table[i].task_ptr != nullptr) printf(TEXT_GREEN "%s" FORMAT_RESET, task_table[i].name);
-
-		// printf("\n");
 	}
 	
 	#if ESP_PLATFORM
 		uint32_t ClockFreq;
 		esp_clk_tree_src_get_freq_hz(SOC_MOD_CLK_CPU, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &ClockFreq);
-		printf(TEXT_WHITE_BRIGHT "F_CPU:\t\t%lu MHz\n" FORMAT_RESET, ClockFreq / 1000000);
+		printf("F_CPU:\t\t%lu MHz\n", ClockFreq / 1000000);
 	#elif PICO_RP2040 || PICO_RP2350
 		
 	#endif
 	
-	printf(TEXT_WHITE_BRIGHT "TickTime:\t" FORMAT_RESET "%u ms\n", OS_TICK_PERIOD_MS);
+	printf("TickTime:\t%u ms\n", OS_TICK_PERIOD_MS);
 }
 #endif
 

@@ -9,9 +9,6 @@
 	#include "pico/stdlib.h"
 #endif
 
-#include "uCosmos.h"
-#include "log.h"
-
 // Basic commands
 void		reset_cmd(int argc, char * argv[]);
 void		memory_status_cmd(int argc, char * argv[]);

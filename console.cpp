@@ -2,6 +2,8 @@
 #if COMPONENT_CONSOLE
 static const char *TAG = "console";
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#include <string.h>
+#include "log.h"
 #include "console.h"
 #include "../commands.h"
 
@@ -20,17 +22,6 @@ void init(void) {
 
 static void prompt_show(void) {
 	printf("\n" TEXT_YELLOW_BRIGHT FORMAT_BOLD "/> %s", buffer);
-}
-
-// Porównuje badany string do wzorcowego aż do:
-// - napotkania NULL w obu stringach
-// - pierwszego różnego znaku w obu stringach
-// Tak skonstrukowana funkcja zajmuje mniej miejsca niż strcmp() z biblioteki string.h
-static inline bool _strcmp(const char *string1, const char *string2) {
-	while(1) {
-		if((*string1 == 0) && (*string2 == 0)) return true;						// Doszliśmy do końca obu stringów, czyli są sobie równe
-		if(*string1++ != *string2++) return false;								// Przy pierwszej napotkanej różnicy zwróć fałsz
-	}
 }
 
 // Pobieranie jednego znaku z bufora wejściowego i kopiowanie do bufora konsoli lub wykonywanie akcji
@@ -153,7 +144,7 @@ static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[
 	for(uint8_t i=0; i<(sizeof(console::command_list)/sizeof(console::command_struct)); i++) {
 		const char * cmd_name = (const char *)(command_list[i].name);
 		
-		if(_strcmp(what_to_find, cmd_name)) {
+		if(strcmp(what_to_find, cmd_name) == 0) {
 			void (*cmd_ptr)(int argc, char * argv[]);							// Pusty wskaźnik do polecenia
 			cmd_ptr = command_list[i].ptr;										// Odczytanie wskaźnika do polecenia z pamięci flash i rzutowanie go na właściwy typ
 			return cmd_ptr;
