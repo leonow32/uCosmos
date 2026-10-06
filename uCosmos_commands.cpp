@@ -38,10 +38,10 @@ void memory_status_cmd(int argc, char * argv[]) {
 // Print taks table
 #if OS_USE_TASK_MONITOR
 void task_monitor_cmd(int argc, char * argv[]) {
-	printf("No\tPtr\t\tFlag\tPer[ms]\tName\n");
+	printf("No\tPtr\t\tPer[ms]\tName\n");
 	
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%u\t%08lX\t%02X\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), task_table[i].flag, uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_table[i].name);
+		printf("%u\t%08lX\t%02X\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));
 	}
 	
 	#if ESP_PLATFORM
@@ -191,6 +191,10 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		else if(run_mode == os_destructor) {
 			LOGI("%s destructor", __func__);
 		}
+
+		else if(run_mode == os_id) {
+			task_name = __func__;
+		}
 	}
 
 	void demo2_task(run_mode_t run_mode) {
@@ -206,6 +210,10 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		else if(run_mode == os_destructor) {
 			LOGD("%s destructor", __func__);
+		}
+
+		else if(run_mode == os_id) {
+			task_name = __func__;
 		}
 	}
 

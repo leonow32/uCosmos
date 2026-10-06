@@ -17,6 +17,7 @@ enum run_mode_t {
 	os_run = 0,
 	os_constructor,
 	os_destructor,
+	os_id,
 };
 
 // Return value for task managemen functions
@@ -34,20 +35,19 @@ struct task_control_t {
 	void (*task_ptr)(run_mode_t);
 	uint16_t counter;
 	uint16_t period;
-	bool flag;								// If the task is set to be executed or has to be executed continuously
-	const char * name;
+	bool flag;
 };
 
 // Task management
 extern volatile task_control_t task_table[OS_TASK_MAXCOUNT];
+extern const char * task_name;
+
 void    os_init(void);
 void    task_scheduler(void);
-#define task_add(task_ptr, period_ms) task_add_name(task_ptr, period_ms, #task_ptr)
-os_t    task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name);
+os_t    task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 os_t    task_close(void (*task_ptr)(run_mode_t));
 os_t    task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms);
-os_t    task_find_free_slot(uint8_t * slot_number);
-os_t    task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr);
 bool    task_is_running(void (*task_ptr)(run_mode_t));
+const char * task_get_name(void (*task_ptr)(run_mode_t));
 
 #endif

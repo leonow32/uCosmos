@@ -3,11 +3,11 @@
 static const char *TAG = "uCosmos";
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <stdio.h>
-#include <time.h>
 #include "log.h"
 #include "uCosmos.h"
 
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
+const char * task_name = nullptr;
 
 static void os_splash_screen(void) {
 	#if ESP_PLATFORM
@@ -68,6 +68,8 @@ static const char * os_print_reset_source() {
 	#elif PICO_RP2040 || PICO_RP2350
 		return "UNKNOWN";
 	#endif
+
+	return "?";
 }
 
 static const char * debug_res(os_t result) {
@@ -81,6 +83,45 @@ static const char * debug_res(os_t result) {
 	}
 
 	return "?";
+}
+
+static void debug_print(const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms, os_t result) {
+	printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+}
+
+static void slot_erase(uint8_t slot_number) {
+	task_table[slot_number].task_ptr = nullptr;
+	task_table[slot_number].counter  = 0;
+	task_table[slot_number].period   = 0;
+	task_table[slot_number].flag     = false;
+}
+
+// Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik. Jeśli brak wolnych slotów to zwraca os_no_free_slot.
+static os_t task_find_free_slot(uint8_t * slot_number) {
+	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
+		if(task_table[i].task_ptr == nullptr) {			// Szukanie pierwszego wolnego slotu, w którym wskaźnik do tasku jest nullptr
+			*slot_number = i;
+			return os_ok;
+		}
+	}
+	
+	return os_no_free_slot;								// Jeżeli brak wolnych slotów
+}
+
+// Szukanie slotu, w któym znajduje się funkcja o podanym wskaźniku task_ptr
+// - task_ptr - wskaźnik do szukaniego tasku
+// - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
+static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
+	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+		if(task_table[i].task_ptr == task_ptr) {
+			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
+				*slot_number = i;
+			}
+			return os_ok;
+		}
+	}
+	
+	return os_not_found;
 }
 
 // ========================================
@@ -127,11 +168,7 @@ void os_init(void) {
 	LOGI("init");
 
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		task_table[i].task_ptr	=	nullptr;
-		task_table[i].counter	=	0;
-		task_table[i].period	=	0;
-		task_table[i].flag		=	false;
-		task_table[i].name		=	nullptr;
+		slot_erase(i);
 	}
 
 	#if OS_SHOW_SPLASH_SCREEN_AT_START
@@ -156,7 +193,7 @@ void os_init(void) {
 		ESP_ERROR_CHECK(esp_timer_start_periodic(handle, OS_TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
 		static struct repeating_timer timer = {};
-		add_repeating_timer_ms(-10, os_system_tick, nullptr, &timer);
+		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, os_system_tick, nullptr, &timer);
 	#endif
 }
 
@@ -179,9 +216,7 @@ void task_scheduler(void) {
 }
 
 // Dodawanie tasku do tablicy tasków
-// - task_ptr  - wskaźnik do tasku
-// - period_ms - czas z jaką częstotliwością task ma być wykonywany
-os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char * name) {
+os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	os_t res = os_ok;
 
 	if(period_ms < OS_TICK_PERIOD_MS) {
@@ -190,7 +225,6 @@ os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char 
 	}
 	
 	if(task_is_running(task_ptr)) {								// Szukanie czy task już istnieje
-
 		res = os_task_already_created;
 		goto end;
 	}
@@ -201,145 +235,74 @@ os_t task_add_name(void (*task_ptr)(run_mode_t), uint16_t period_ms, const char 
 		goto end;
 	}
 	
-	task_table[slot_number].task_ptr	=	task_ptr;			// Wpisywanie nowego procesu
-	task_table[slot_number].counter		=	(period_ms / OS_TICK_PERIOD_MS)-1;
-	task_table[slot_number].period		=	period_ms / OS_TICK_PERIOD_MS;
-	task_table[slot_number].name		=	name;
+	task_table[slot_number].task_ptr = task_ptr;				// Wpisywanie nowego procesu
+	task_table[slot_number].counter  = (period_ms / OS_TICK_PERIOD_MS)-1;
+	task_table[slot_number].period   = period_ms / OS_TICK_PERIOD_MS;
 	
 	task_ptr(os_constructor);									// Wywołanie inicjalizacyjne (konstruktor tasku)
 
 	end:
-	if(res == os_ok) 	LOGD("add(%s, %u)", name, period_ms);
-	else				LOGE("add(%s, %u) -> %s", name, period_ms, debug_res(res));
-	return res;
-}
-
-// Usuwanie tasku bez wywołania destruktora - uważać jeśli task wykorzystuje dynamiczną alokację pamięci
-os_t task_clear(uint8_t slot_number) {
-	os_t res = os_ok;
-	
-	if(slot_number >= OS_TASK_MAXCOUNT) {						// Kontrola poprawności danych
-		res = os_slot_number_over_range;
-		// goto end;
-	}
-	
-	task_table[slot_number].task_ptr	=	nullptr;
-	task_table[slot_number].counter		=	0;
-	task_table[slot_number].period		=	0;
-	task_table[slot_number].flag		=	false;
-	task_table[slot_number].name		=	nullptr;
-
-	// end:
-	// if(res == os_ok) 	LOGD("add(%s, %u)", name, period_ms);
-	// else				LOGE("add(%s, %u) -> %s", name, period_ms, debug_res(res));
+	debug_print(__func__, task_ptr, period_ms, res);
 	return res;
 }
 
 // Execute task destructor and then remove it from the array
 os_t task_close(void (*task_ptr)(run_mode_t)) {
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf(FORMAT_RESET "Cls(");
-		
-		#if OS_USE_TASK_IDENTIFY
-			task_ptr(os_id);
-		#endif
-		
-		printf(")  \t= ");
-	#endif
+	os_t res = os_ok;
 	
 	uint8_t slot_number;										// Szukanie tasku
 	if(task_find(task_ptr, &slot_number)) {
-			
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf("NotFound\n");
-		#endif
-			
-		return os_not_found;
+		res = os_not_found;
+		goto end;
 	}
 	
-	void (*ptr)(run_mode_t) = task_table[slot_number].task_ptr;				// Backup pointer to the task
-	task_clear(slot_number);												// clear task from the array
-	ptr(os_destructor);														// Execute task destructor
+	task_ptr(os_destructor);														// Execute task destructor
+	slot_erase(slot_number);													// clear task from the array
 	
-	#if OS_DEBUG_MESSAGES_SHOW
-		printf("OK\n");
-	#endif
-	
-	return os_ok;
+	end:
+	debug_print(__func__, task_ptr, 0, res);
+	return res;
 }
 
 // Zmiana czasów
 // - task_ptr  - wskaźnik do procesu, który ma być zmieniony
 // - period_ms - nowy okres
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
-	uint8_t slot_number;
-	if(task_find(task_ptr, &slot_number) == os_ok) {
+	os_t res = os_ok;
 
-		if(period_ms < OS_TICK_PERIOD_MS) {
-			#if OS_DEBUG_MESSAGES_SHOW
-				printf("period under range\n");
-			#endif
-		
-			return os_task_period_under_range;
-		}
-		
-		// Zmiana timingu - wszystkie operacje przy wyłączonych przerwaniach
-		task_table[slot_number].counter	=	(period_ms / OS_TICK_PERIOD_MS)-1;
-		task_table[slot_number].period	=	period_ms / OS_TICK_PERIOD_MS;
-		task_table[slot_number].flag	=	0;
-	
-		#if OS_DEBUG_MESSAGES_SHOW
-			printf(FORMAT_RESET "PCh(");
-		
-			#if OS_USE_TASK_IDENTIFY
-				task_table[slot_number].task_ptr(os_id);
-			#endif
-		
-			printf(",%u)\n", period_ms * OS_TICK_PERIOD_MS);
-		#endif
-	
-		return os_ok;
+	uint8_t slot_number;										// Szukanie tasku
+	if(task_find(task_ptr, &slot_number)) {
+		res = os_not_found;
+		goto end;
 	}
-	else {
-		return os_not_found;
+
+	if(period_ms < OS_TICK_PERIOD_MS) {
+		res = os_task_period_under_range;
+		goto end;
 	}
+
+	task_table[slot_number].counter	= (period_ms / OS_TICK_PERIOD_MS)-1;
+	task_table[slot_number].period	= period_ms / OS_TICK_PERIOD_MS;
+	task_table[slot_number].flag	= 0;
+
+	end:
+	debug_print(__func__, task_ptr, period_ms, res);
+	return res;
 }
 
-// Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik
-// Jeśli brak wolnych slotów to zwraca os_no_free_slot
-os_t task_find_free_slot(uint8_t * slot_number) {
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
-		if(task_table[i].task_ptr == nullptr) {			// Szukanie pierwszego wolnego slotu, w którym wskaźnik do tasku jest nullptr
-			*slot_number = i;
-			return os_ok;
-		}
-	}
-	
-	return os_no_free_slot;								// Jeżeli brak wolnych slotów
-}
-
-// Szukanie slotu, w któym znajduje się funkcja o podanym wskaźniku task_ptr
-// - task_ptr - wskaźnik do szukaniego tasku
-// - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
-// Funkcja zwraca jedną z trzech wartości:
-// - os_ok - znaleziono jedno wystąpienia tasku
-// - os_error - nie znaleziono
-os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number) {
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		if(task_table[i].task_ptr == task_ptr) {
-			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
-				*slot_number = i;
-			}
-			return os_ok;
-		}
-	}
-	
-	return os_not_found;
-}
-
-// Sprawdzanie czy task jest dodany do tablicy tasków (nie czy akcualnie jest w trakcie wykonywania)
+// Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
 	return task_find(task_ptr) == os_ok;
+}
+
+const char * task_get_name(void (*task_ptr)(run_mode_t)) {
+	if(task_ptr) {
+		task_ptr(os_id);
+		return task_name;
+	}
+	else {
+		return nullptr;
+	}
 }
 
 #endif

@@ -216,6 +216,10 @@ void console_task(run_mode_t run_mode) {
 			}
 		}
 	}
+
+	else if(run_mode == os_id) {
+		task_name = __func__;
+	}
 }
 
 // ========================================
