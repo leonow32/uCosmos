@@ -7,10 +7,6 @@
 #define OS_SHOW_SPLASH_SCREEN_AT_START	1			// Czy pokazywać logo systemu na starcie
 #define OS_SHOW_RESET_SOURCE_AT_START	1			// Czy pokazywać źródło resetu na starcie
 
-// Debugowanie tasków
-#define OS_DEBUG_MESSAGES_SHOW			1			// Komunikaty u tworzeniu i zamykaniu tasków
-#define OS_DEBUG_MESSAGES_TIMESTAMP		1			// W komunikatach o błędach będzie podana data i godzina
-
 // Konfiguracja konsoli
 #define CONSOLE_COMMAND_LENGTH			250
 #define CONSOLE_MAX_ARGUMENTS			11
@@ -18,12 +14,12 @@
 #define CONSOLE_USE_CTRL_Z				1
 
 // Dostępne polecenia
-#define CONSOLE_USE_COMMAND_ALL			1
-#define CONSOLE_USE_DEMO_COMMANDS		1
-#define OS_USE_TIME_COMMAND				1			// Dodaje polecenie "time" do pokazywania czasu
-#define OS_USE_TASK_MONITOR				1			// Wyświetlanie na UART tablicy tasków
-#define OS_USE_TASK_COMMANDS			1			// Polecenia do zarządzania taskami
-#define OS_USE_DEMO_TASKS				1			// Demonstracyjne taski
+#define USE_CMD_ALL						1			// Polecenie "?" do wyświetlania na konsoli wszystkich dostępnych komend
+#define USE_CMD_TIME					1			// Polecenie "time" do pokazywania czasu
+#define USE_CMD_TASK_MONITOR			1			// Polecenie "`" do wyświetlania tablicy tasków
+#define USE_CMD_TASK_COMMANDS			1			// Polecenia do ręcznego zarządzania taskami
+#define USE_CMD_PARSE_DEMO				1			// Demonstracje parserów argumentów
+#define USE_CMD_TASK_DEMO				1			// Demonstracyjne taski
 
 #define OS_CONFIG_DONE
 

@@ -5,11 +5,7 @@
 #include <time.h>
 #include "uCosmos.h"
 
-#if ESP_PLATFORM
-	#include "esp_log.h"
-#elif PICO_RP2040 || PICO_RP2350
-	#include "pico/stdlib.h"
-#endif
+#include "log.h"
 
 namespace console {
 
@@ -69,7 +65,7 @@ parse_res	parse_time(const char * arg, time_t * output);
 void		print_ok(void);
 
 // Demo commands
-#if CONSOLE_USE_COMMAND_ALL
+#if USE_CMD_ALL
 	void	all_commands_cmd(int argc, char * argv[]);
 #endif
 

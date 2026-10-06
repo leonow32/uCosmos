@@ -2,23 +2,18 @@
 #ifndef UCOSMOS_COMMANDS_H_
 #define UCOSMOS_COMMANDS_H_
 
-#if ESP_PLATFORM
-	#include "esp_clk_tree.h"
-#elif PICO_RP2040 || PICO_RP2350
-	#include <stdio.h>	
-	#include "pico/stdlib.h"
-#endif
+#include "log.h"
 
 // Basic commands
 void		reset_cmd(int argc, char * argv[]);
 void		memory_status_cmd(int argc, char * argv[]);
 
-#if OS_USE_TASK_MONITOR
+#if USE_CMD_TASK_MONITOR
 	void	task_monitor_cmd(int argc, char * argv[]);
 #endif
 
 // Task control commands
-#if OS_USE_TASK_COMMANDS
+#if USE_CMD_TASK_COMMANDS
 	void	task_add_cmd(int argc, char * argv[]);
 	void	task_close_cmd(int argc, char * argv[]);
 	void	task_period_change_cmd(int argc, char * argv[]);
@@ -26,16 +21,32 @@ void		memory_status_cmd(int argc, char * argv[]);
 #endif
 
 // System time
-#if OS_USE_TIME_COMMAND
+#if USE_CMD_TIME
 	void	time_print_cmd(int argc, char * argv[]);
 #endif
 
 // Demonstration tasks
-#if OS_USE_DEMO_TASKS
+#if USE_CMD_TASK_DEMO
 	void demo1_add_cmd(int argc, char * argv[]);
 	void demo2_add_cmd(int argc, char * argv[]);
 	void demo1_cls_cmd(int argc, char * argv[]);
 	void demo2_cls_cmd(int argc, char * argv[]);
+#endif
+
+#if USE_CMD_PARSE_DEMO
+	void args_cmd(int argc, char * argv[]);
+	void echo_cmd(int argc, char * argv[]);
+	void hex8_cmd(int argc, char * argv[]);
+	void hex16_cmd(int argc, char * argv[]);
+	void hex32_cmd(int argc, char * argv[]);
+	void dec8_cmd(int argc, char * argv[]);
+	void dec16_cmd(int argc, char * argv[]);
+	void dec16s_cmd(int argc, char * argv[]);
+	void dec32_cmd(int argc, char * argv[]);
+	void dec32s_cmd(int argc, char * argv[]);
+	void hexstr_cmd(int argc, char * argv[]);
+	void ascstr_cmd(int argc, char * argv[]);
+	void ascchr_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */

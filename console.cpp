@@ -5,7 +5,7 @@ static const char *TAG = "console";
 #include <string.h>
 #include "log.h"
 #include "console.h"
-#include "../commands.h"
+#include "../command_list.h"
 
 namespace console {
 
@@ -783,7 +783,7 @@ void print_ok(void) {
 // Commands
 // ========================================
 
-#if CONSOLE_USE_COMMAND_ALL
+#if USE_CMD_ALL
 	void all_commands_cmd(int argc, char * argv[]) {
 		printf(TEXT_WHITE_BRIGHT "Num\tPointer\t\tName\n" FORMAT_RESET);
 		

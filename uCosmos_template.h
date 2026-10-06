@@ -15,11 +15,9 @@ void template_task(run_mode_t run_mode) {
 		
 	}
 	
-	#if OS_USE_TASK_IDENTIFY
 	else if(run_mode == os_id) {
-		printf(__func__);
+		task_name = __func__;
 	}
-	#endif
 }
 
 #endif /* UCOSMOS_TEMPLATE_H_ */
