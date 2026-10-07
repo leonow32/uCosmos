@@ -9,20 +9,20 @@ void		reset_cmd(int argc, char * argv[]);
 void		memory_status_cmd(int argc, char * argv[]);
 
 #if USE_CMD_TASK_MONITOR
-	void	task_monitor_cmd(int argc, char * argv[]);
+	void task_monitor_cmd(int argc, char * argv[]);
 #endif
 
 // Task control commands
 #if USE_CMD_TASK_COMMANDS
-	void	task_add_cmd(int argc, char * argv[]);
-	void	task_close_cmd(int argc, char * argv[]);
-	void	task_period_change_cmd(int argc, char * argv[]);
-	void 	task_exe_cmd(int argc, char * argv[]);
+	void task_add_cmd(int argc, char * argv[]);
+	void task_close_cmd(int argc, char * argv[]);
+	void task_period_change_cmd(int argc, char * argv[]);
+	void task_exe_cmd(int argc, char * argv[]);
 #endif
 
 // System time
 #if USE_CMD_TIME
-	void	time_print_cmd(int argc, char * argv[]);
+	void time_print_cmd(int argc, char * argv[]);
 #endif
 
 // Demonstration tasks

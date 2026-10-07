@@ -5,9 +5,6 @@
 
 #include "uCosmos.h"
 #include "commands.h"
-// #include "../command_list.h"
-
-using namespace console;
 
 // ========================================
 // Basic commands
@@ -42,7 +39,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	printf("No\tPtr\t\tPer[ms]\tName\n");
 	
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%u\t%08lX\t%02X\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));
+		printf("%u\t%08lX\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));
 	}
 	
 	#if ESP_PLATFORM

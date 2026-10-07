@@ -7,15 +7,13 @@ static const char *TAG = "console";
 #include "console.h"
 #include "../command_list.h"
 
-namespace console {
-
 size_t	received_cnt;							// Number of characters in receive buffer
 char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed command
 #if CONSOLE_USE_CTRL_Z
 	char buffer2[CONSOLE_COMMAND_LENGTH];		// Buffer for last processed command, recalled with CTRL-Z
 #endif
 
-void init(void) {
+void console_init(void) {
 	LOGI("init");
 	task_add(console_task, 20);
 }
@@ -141,10 +139,8 @@ static inline console_res split_args(uint8_t * argc, char * argv[]) {
 // Argumentem przyjmowanym przez Console_FindCommand() jest wskaźnik do stringu EnteredName zawierającego polecenie wpisane przez użytkownika
 // Jeżeli Console_FindCommand nie znajdzie funkcji odpowiadającej poleceniu to zwraca wskaźnik NULL
 static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[]) {
-	for(uint8_t i=0; i<(sizeof(console::command_list)/sizeof(console::command_struct)); i++) {
-		const char * cmd_name = (const char *)(command_list[i].name);
-		
-		if(strcmp(what_to_find, cmd_name) == 0) {
+	for(uint8_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
+		if(strcmp(what_to_find, command_list[i].name) == 0) {
 			void (*cmd_ptr)(int argc, char * argv[]);							// Pusty wskaźnik do polecenia
 			cmd_ptr = command_list[i].ptr;										// Odczytanie wskaźnika do polecenia z pamięci flash i rzutowanie go na właściwy typ
 			return cmd_ptr;
@@ -795,6 +791,4 @@ void print_ok(void) {
 		}
 	}
 #endif
-
-}
 #endif

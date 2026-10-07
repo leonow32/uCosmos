@@ -7,8 +7,6 @@
 
 #include "log.h"
 
-namespace console {
-
 // Result type for command interpreter
 enum console_res {
 	con_ok = 0,					// Zwracane przez wszystkie funkcje, jeżeli zakończyły się prawidłowo
@@ -43,7 +41,7 @@ struct command_struct {
 extern const command_struct	command_list[];
 
 // Command line interpreter
-void		init(void);
+void		console_init(void);
 void		console_task(run_mode_t run_mode);
 
 // arg parsers
@@ -68,8 +66,6 @@ void		print_ok(void);
 #if USE_CMD_ALL
 	void	all_commands_cmd(int argc, char * argv[]);
 #endif
-
-}
 
 #endif
 #endif /* CONSOLE_H_ */
