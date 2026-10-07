@@ -293,6 +293,30 @@ void hex32_cmd(int argc, char * argv[]) {
 	printf("%lu\n", value);
 }
 
+void new_hex8_cmd(int argc, char * argv[]) {
+	uint8_t value;
+	if(new_parse_hex(argv[1], &value)) return;
+	printf("%u\n", value);
+}
+
+void new_hex16_cmd(int argc, char * argv[]) {
+	uint16_t value;
+	if(new_parse_hex(argv[1], &value)) return;
+	printf("%u\n", value);
+}
+
+void new_hex32_cmd(int argc, char * argv[]) {
+	uint32_t value;
+	if(new_parse_hex(argv[1], &value)) return;
+	printf("%lu\n", value);
+}
+
+void new_hex64_cmd(int argc, char * argv[]) {
+	uint64_t value;
+	if(new_parse_hex(argv[1], &value)) return;
+	printf("%llu\n", value);
+}
+
 void dec8_cmd(int argc, char * argv[]) {
 	uint8_t value = 0;
 	if(parse_dec8(argv[1], &value, 100)) return;

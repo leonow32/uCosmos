@@ -47,6 +47,11 @@ void		memory_status_cmd(int argc, char * argv[]);
 	void hexstr_cmd(int argc, char * argv[]);
 	void ascstr_cmd(int argc, char * argv[]);
 	void ascchr_cmd(int argc, char * argv[]);
+
+	void new_hex8_cmd(int argc, char * argv[]);
+	void new_hex16_cmd(int argc, char * argv[]);
+	void new_hex32_cmd(int argc, char * argv[]);
+	void new_hex64_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */

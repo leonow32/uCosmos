@@ -29,6 +29,7 @@ enum parse_res {
 	parse_error,
 	parse_expected_hex,
 	parse_expected_dec,
+	parse_nullptr,				// No result pointer was given
 };
 
 // Struct used to build table of commands and pointers to specified functions
@@ -59,6 +60,8 @@ parse_res	parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len
 parse_res	parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
 parse_res	parse_ascii_char(const char * arg, uint8_t * output);
 parse_res	parse_time(const char * arg, time_t * output);
+
+template<typename T> parse_res new_parse_hex(const char * arg, T * output);
 
 void		print_ok(void);
 

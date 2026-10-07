@@ -3,6 +3,11 @@
 static const char *TAG = "console";
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <string.h>
+#include <limits>
+// #include <iostream>
+// #include <string>
+// #include <cstdlib>
+// #include <cstdint>
 #include "log.h"
 #include "console.h"
 #include "../command_list.h"
@@ -100,7 +105,7 @@ static inline console_res split_args(uint8_t * argc, char * argv[]) {
 			case ' ':															// Spacja = nowy argument jeśli to nie jest "string objęty cudzysłowiem"
 				if(string_mode == false) {
 					new_arg = true;
-					*char_ptr = 0;												// zamiana spacji na NULL
+					*char_ptr = 0;												// zamiana spacji na nullptr
 				}
 				break;
 			
@@ -137,7 +142,7 @@ static inline console_res split_args(uint8_t * argc, char * argv[]) {
 // Nazwa polecenia jest przechowywana w argumencie zerowym argv[0]
 // Funkcja zwraca wskaźnik do funkcji typu void pobierającej argumenty int argc, char * argv[]
 // Argumentem przyjmowanym przez Console_FindCommand() jest wskaźnik do stringu EnteredName zawierającego polecenie wpisane przez użytkownika
-// Jeżeli Console_FindCommand nie znajdzie funkcji odpowiadającej poleceniu to zwraca wskaźnik NULL
+// Jeżeli Console_FindCommand nie znajdzie funkcji odpowiadającej poleceniu to zwraca wskaźnik nullptr
 static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[]) {
 	for(uint8_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
 		if(strcmp(what_to_find, command_list[i].name) == 0) {
@@ -146,7 +151,7 @@ static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[
 			return cmd_ptr;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 // System task to periodicaly execute interpreter routine
@@ -224,12 +229,11 @@ void console_task(run_mode_t run_mode) {
 
 void debug(const parse_res res, const char * arg) {
 	if(res == parse_ok) {
-		print_ok();
 		return;
 	}
 	
-	if(arg != NULL) {
-		printf(TEXT_RED "Error in agument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", (const char *)arg);
+	if(arg != nullptr) {
+		printf(TEXT_RED "Error in agument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", arg);
 	}
 	
 	printf(TEXT_RED);
@@ -237,12 +241,13 @@ void debug(const parse_res res, const char * arg) {
 	switch(res) {
 		case parse_unknown_command:						printf("Unknown command");				break;
 		case parse_no_input:							printf("No input");						break;
-		case parse_overflow:							printf("Overflow");						break;
 		case parse_missing_argument:					printf("Missing arg");					break;
+		case parse_overflow:							printf("Overflow");						break;
 		case parse_underflow:							printf("Underflow");					break;
 		case parse_error:								printf("Parse error");					break;
 		case parse_expected_hex:						printf("Expected Hex");					break;
 		case parse_expected_dec:						printf("Expected Dec");					break;
+		case parse_nullptr:								printf("Null ptr err");					break;
 		default:										printf("Unknown");						break;
 	}
 
@@ -307,7 +312,7 @@ static parse_res parse_hex_num(const char * arg, void * output, uint8_t chars) {
 	parse_res res;
 	const char * arg_copy = arg;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -331,9 +336,7 @@ static parse_res parse_hex_num(const char * arg, void * output, uint8_t chars) {
 	} while(--chars);
 	
 	end:
-	if(res) {												// Wyświetlenie informacji o ewentualnym błędzie
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -393,7 +396,7 @@ parse_res parse_dec8(const char * arg, uint8_t * output, const uint8_t max) {
 	uint8_t temp2;
 	parse_res res = parse_ok;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -422,9 +425,7 @@ parse_res parse_dec8(const char * arg, uint8_t * output, const uint8_t max) {
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -438,7 +439,7 @@ parse_res parse_dec16(const char * arg, uint16_t * output, const uint16_t max) {
 	uint16_t temp2;
 	parse_res res = parse_ok;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -467,9 +468,7 @@ parse_res parse_dec16(const char * arg, uint16_t * output, const uint16_t max) {
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -483,7 +482,7 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 	parse_res res = parse_ok;
 	bool negative = false;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -519,9 +518,7 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -535,7 +532,7 @@ parse_res parse_dec32(const char * arg, uint32_t * output, const uint32_t max) {
 	uint32_t temp2;
 	parse_res res = parse_ok;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -564,9 +561,7 @@ parse_res parse_dec32(const char * arg, uint32_t * output, const uint32_t max) {
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -580,7 +575,7 @@ parse_res parse_dec32s(const char * arg, int32_t * output) {
 	parse_res res = parse_ok;
 	bool negative = false;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -616,9 +611,7 @@ parse_res parse_dec32s(const char * arg, int32_t * output) {
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -665,9 +658,7 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len
 	}
 
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+	debug(res, arg_copy);
 	return res;
 }
 
@@ -678,7 +669,7 @@ parse_res parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_l
 	*out_len = 0;
 	parse_res res = parse_ok;
 	
-	if(arg == NULL) {
+	if(arg == nullptr) {
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -716,7 +707,7 @@ parse_res parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_l
 parse_res parse_ascii_char(const char * arg, uint8_t * output) {
 	parse_res res = parse_ok;
 	
-	if(arg == NULL) {										// Kontrola czy podano argument
+	if(arg == nullptr) {										// Kontrola czy podano argument
 		res = parse_missing_argument;
 	}
 	else {
@@ -724,9 +715,7 @@ parse_res parse_ascii_char(const char * arg, uint8_t * output) {
 		*output = *arg;
 	}
 	
-	if(res) {												// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-		debug(res, arg);
-	}
+	debug(res, arg);
 	return res;
 }
 
@@ -735,7 +724,7 @@ parse_res parse_time(const char * arg, time_t * output) {
 	parse_res res = parse_ok;
 	tm new_time = {};
 	
-	if(arg == NULL) {										// Sanity check
+	if(arg == nullptr) {										// Sanity check
 		res = parse_missing_argument;
 		goto end;
 	}
@@ -774,6 +763,84 @@ parse_res parse_time(const char * arg, time_t * output) {
 void print_ok(void) {
 	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
 }
+
+// ========================================
+// New argument parsers
+// ========================================
+
+// Converts a single character of a decimal or hexadecimal value to uint8_t.
+// Set hex_mode = false for decimal numbers, true for hexadecimal.
+parse_res new_parse_numeric_char(const char chr, uint8_t * output, bool hex_mode) {
+	if(chr >= '0' && chr <= '9') {
+		*output = chr - '0';
+		return parse_ok;
+	}
+	else if(hex_mode) {
+		if(chr >= 'A' && chr <= 'F') {
+			*output = chr - 'A' + 10;
+			return parse_ok;
+		}
+		else if(chr >= 'a' && chr <= 'f') {
+			*output = chr - 'a' + 10;
+			return parse_ok; 
+		}
+		else {
+			return parse_expected_hex;
+		}
+	}
+	else {
+		return parse_expected_dec;
+	}
+}
+
+// max_char_count - maximum count of characters of the arg value
+template<typename T> parse_res new_parse_hex(const char * arg, T * output) {
+	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
+
+	parse_res res = parse_ok;
+	const char * arg_copy = arg;
+	
+	if(arg == nullptr) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(arg[0] == NUL) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(output == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	*output = 0;
+
+	while(*arg) {
+		uint8_t char_value = 0;
+		res = new_parse_numeric_char(*arg++, &char_value, true);
+		if(res) {
+			goto end;
+		}
+
+		if(*output > (std::numeric_limits<T>::max() - char_value) / 16) {
+			res = parse_overflow;
+			goto end;
+		}
+
+		*output = *output * 16 + char_value;
+	} 
+
+	end:
+	debug(res, arg_copy);
+	return res;
+}
+
+template parse_res new_parse_hex<uint8_t>(const char *, uint8_t *);
+template parse_res new_parse_hex<uint16_t>(const char *, uint16_t *);
+template parse_res new_parse_hex<uint32_t>(const char *, uint32_t *);
+template parse_res new_parse_hex<uint64_t>(const char *, uint64_t *);
 
 // ========================================
 // Commands
