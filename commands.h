@@ -41,10 +41,10 @@ void		memory_status_cmd(int argc, char * argv[]);
 	// void hex8_cmd(int argc, char * argv[]);
 	// void hex16_cmd(int argc, char * argv[]);
 	// void hex32_cmd(int argc, char * argv[]);
-	void dec8_cmd(int argc, char * argv[]);
-	void dec16_cmd(int argc, char * argv[]);
+	// void dec8_cmd(int argc, char * argv[]);
+	// void dec16_cmd(int argc, char * argv[]);
 	void dec16s_cmd(int argc, char * argv[]);
-	void dec32_cmd(int argc, char * argv[]);
+	// void dec32_cmd(int argc, char * argv[]);
 	void dec32s_cmd(int argc, char * argv[]);
 	void hexstr_cmd(int argc, char * argv[]);
 	void ascstr_cmd(int argc, char * argv[]);
@@ -54,6 +54,11 @@ void		memory_status_cmd(int argc, char * argv[]);
 	void new_hex16_cmd(int argc, char * argv[]);
 	void new_hex32_cmd(int argc, char * argv[]);
 	void new_hex64_cmd(int argc, char * argv[]);
+	void new_dec8_cmd(int argc, char * argv[]);
+	void new_dec16_cmd(int argc, char * argv[]);
+	void new_dec32_cmd(int argc, char * argv[]);
+	void new_dec64_cmd(int argc, char * argv[]);
+	void new_numeric_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */

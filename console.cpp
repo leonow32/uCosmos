@@ -4,7 +4,7 @@
 // #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <string.h>
 #include <limits>
-// #include <iostream>
+#include <iostream>
 // #include <string>
 // #include <cstdlib>
 // #include <cstdint>
@@ -257,9 +257,11 @@ void debug(const parse_res res, const char * arg) {
 		case parse_overflow:							printf("Overflow");						break;
 		case parse_underflow:							printf("Underflow");					break;
 		case parse_error:								printf("Parse error");					break;
-		case parse_expected_hex:						printf("Expected Hex");					break;
-		case parse_expected_dec:						printf("Expected Dec");					break;
+		case parse_expected_bin:						printf("Expected bin");					break;
+		case parse_expected_dec:						printf("Expected dec");					break;
+		case parse_expected_hex:						printf("Expected hex");					break;
 		case parse_nullptr:								printf("Null ptr err");					break;
+		case parse_wrong_base:							printf("Wrong base");					break;
 		default:										printf("Unknown");						break;
 	}
 
@@ -355,7 +357,7 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 // Parsowanie liczby HEX 8-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_hex(const char * arg, uint8_t * output) {
+// parse_res new_parse_num(const char * arg, uint8_t * output) {
 // 	*output = 0;
 // 	return parse_hex_num(arg, output, 2);
 // }
@@ -363,7 +365,7 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 // // Parsowanie liczby HEX 16-bitowej
 // // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_hex(const char * arg, uint16_t * output) {
+// parse_res new_parse_num(const char * arg, uint16_t * output) {
 // 	*output = 0;
 // 	return parse_hex_num(arg, output, 4);
 // }
@@ -379,7 +381,7 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 // // Parsowanie liczby HEX 32-bitowej
 // // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_hex(const char * arg, uint32_t * output) {
+// parse_res new_parse_num(const char * arg, uint32_t * output) {
 // 	*output = 0;
 // 	return parse_hex_num(arg, output, 8);
 // }
@@ -401,88 +403,88 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // Parsowanie liczby dziesiętnej 8-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_dec8(const char * arg, uint8_t * output, const uint8_t max) {
-	const char * arg_copy = arg;
-	char digit; 	
-	uint8_t temp = 0;
-	uint8_t temp2;
-	parse_res res = parse_ok;
+// parse_res parse_dec8(const char * arg, uint8_t * output, const uint8_t max) {
+// 	const char * arg_copy = arg;
+// 	char digit; 	
+// 	uint8_t temp = 0;
+// 	uint8_t temp2;
+// 	parse_res res = parse_ok;
 	
-	if(arg == nullptr) {										// Kontrola czy podano argument
-		res = parse_missing_argument;
-		goto end;
-	}
+// 	if(arg == nullptr) {										// Kontrola czy podano argument
+// 		res = parse_missing_argument;
+// 		goto end;
+// 	}
 	
-	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-		res = parse_dec_char(arg++, &digit);
-		if(res) {
-			goto end;
-		}
+// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
+// 		res = parse_dec_char(arg++, &digit);
+// 		if(res) {
+// 			goto end;
+// 		}
 		
-		temp2 = temp * 10 + digit;
-		if(temp <= temp2) {
-			temp = temp2;
-		}
-		else {
-			res = parse_overflow;
-			goto end;
-		}
-	}
+// 		temp2 = temp * 10 + digit;
+// 		if(temp <= temp2) {
+// 			temp = temp2;
+// 		}
+// 		else {
+// 			res = parse_overflow;
+// 			goto end;
+// 		}
+// 	}
 	
-	if(temp <= max) {										// Zwracanie wyniku
-		*output = temp;
-	}
-	else {
-		res = parse_overflow;
-	}
+// 	if(temp <= max) {										// Zwracanie wyniku
+// 		*output = temp;
+// 	}
+// 	else {
+// 		res = parse_overflow;
+// 	}
 	
-	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	debug(res, arg_copy);
-	return res;
-}
+// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
+// 	debug(res, arg_copy);
+// 	return res;
+// }
 
 // Parsowanie liczby dziesiętnej 16-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_dec16(const char * arg, uint16_t * output, const uint16_t max) {
-	const char * arg_copy = arg;
-	char digit; 	
-	uint16_t temp = 0;
-	uint16_t temp2;
-	parse_res res = parse_ok;
+// parse_res parse_dec16(const char * arg, uint16_t * output, const uint16_t max) {
+// 	const char * arg_copy = arg;
+// 	char digit; 	
+// 	uint16_t temp = 0;
+// 	uint16_t temp2;
+// 	parse_res res = parse_ok;
 	
-	if(arg == nullptr) {										// Kontrola czy podano argument
-		res = parse_missing_argument;
-		goto end;
-	}
+// 	if(arg == nullptr) {										// Kontrola czy podano argument
+// 		res = parse_missing_argument;
+// 		goto end;
+// 	}
 	
-	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-		res = parse_dec_char(arg++, &digit);
-		if(res) {
-			goto end;
-		}
+// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
+// 		res = parse_dec_char(arg++, &digit);
+// 		if(res) {
+// 			goto end;
+// 		}
 		
-		temp2 = temp * 10 + digit;
-		if(temp <= temp2) {
-			temp = temp2;
-		}
-		else {
-			res = parse_overflow;
-			goto end;
-		}
-	}
+// 		temp2 = temp * 10 + digit;
+// 		if(temp <= temp2) {
+// 			temp = temp2;
+// 		}
+// 		else {
+// 			res = parse_overflow;
+// 			goto end;
+// 		}
+// 	}
 	
-	if(temp <= max) {										// Zwracanie wyniku
-		*output = temp;
-	}
-	else {
-		res = parse_overflow;
-	}
+// 	if(temp <= max) {										// Zwracanie wyniku
+// 		*output = temp;
+// 	}
+// 	else {
+// 		res = parse_overflow;
+// 	}
 	
-	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	debug(res, arg_copy);
-	return res;
-}
+// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
+// 	debug(res, arg_copy);
+// 	return res;
+// }
 
 // Parsowanie liczby dziesiętnej 16-bitowej ze znakiem
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
@@ -537,45 +539,45 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 // Parsowanie liczby dziesiętnej 32-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_dec32(const char * arg, uint32_t * output, const uint32_t max) {
-	const char * arg_copy = arg;
-	char digit; 	
-	uint32_t temp = 0;
-	uint32_t temp2;
-	parse_res res = parse_ok;
+// parse_res parse_dec32(const char * arg, uint32_t * output, const uint32_t max) {
+// 	const char * arg_copy = arg;
+// 	char digit; 	
+// 	uint32_t temp = 0;
+// 	uint32_t temp2;
+// 	parse_res res = parse_ok;
 	
-	if(arg == nullptr) {										// Kontrola czy podano argument
-		res = parse_missing_argument;
-		goto end;
-	}
+// 	if(arg == nullptr) {										// Kontrola czy podano argument
+// 		res = parse_missing_argument;
+// 		goto end;
+// 	}
 	
-	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-		res = parse_dec_char(arg++, &digit);
-		if(res) {
-			goto end;
-		}
+// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
+// 		res = parse_dec_char(arg++, &digit);
+// 		if(res) {
+// 			goto end;
+// 		}
 		
-		temp2 = temp * 10 + digit;
-		if(temp <= temp2) {
-			temp = temp2;
-		}
-		else {
-			res = parse_overflow;
-			goto end;
-		}
-	}
+// 		temp2 = temp * 10 + digit;
+// 		if(temp <= temp2) {
+// 			temp = temp2;
+// 		}
+// 		else {
+// 			res = parse_overflow;
+// 			goto end;
+// 		}
+// 	}
 	
-	if(temp <= max) {										// Zwracanie wyniku
-		*output = temp;
-	}
-	else {
-		res = parse_overflow;
-	}
+// 	if(temp <= max) {										// Zwracanie wyniku
+// 		*output = temp;
+// 	}
+// 	else {
+// 		res = parse_overflow;
+// 	}
 	
-	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	debug(res, arg_copy);
-	return res;
-}
+// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
+// 	debug(res, arg_copy);
+// 	return res;
+// }
 
 // Parsowanie liczby dziesiętnej 32-bitowej ze znakiem
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
@@ -782,31 +784,57 @@ void print_ok(void) {
 
 // Converts a single character of a decimal or hexadecimal value to uint8_t.
 // Set hex_mode = false for decimal numbers, true for hexadecimal.
-parse_res new_parse_numeric_char(const char chr, uint8_t * output, bool hex_mode) {
-	if(chr >= '0' && chr <= '9') {
-		*output = chr - '0';
-		return parse_ok;
-	}
-	else if(hex_mode) {
-		if(chr >= 'A' && chr <= 'F') {
-			*output = chr - 'A' + 10;
-			return parse_ok;
+// parse_res new_parse_numeric_char(const char chr, uint8_t * output, bool hex_mode) {
+// 	if(chr >= '0' && chr <= '9') {
+// 		*output = chr - '0';
+// 		return parse_ok;
+// 	}
+// 	else if(hex_mode) {
+// 		if(chr >= 'A' && chr <= 'F') {
+// 			*output = chr - 'A' + 10;
+// 			return parse_ok;
+// 		}
+// 		else if(chr >= 'a' && chr <= 'f') {
+// 			*output = chr - 'a' + 10;
+// 			return parse_ok; 
+// 		}
+// 		else {
+// 			return parse_expected_hex;
+// 		}
+// 	}
+// 	else {
+// 		return parse_expected_dec;
+// 	}
+// }
+
+static parse_res new_parse_numeric_char2(const char chr, uint8_t * output, uint8_t base) {
+	parse_res res = parse_ok;
+	uint8_t value = 0;
+	
+	if(chr >= '0' && chr <= '9')
+		value = chr - '0';
+	else if(chr >= 'A' && chr <= 'F')
+		value = chr - 'A' + 10;
+	else if(chr >= 'a' && chr <= 'f')
+		value = chr - 'a' + 10;
+	else
+		value = 0xFF;
+
+	if(value >= base) {
+		switch(base) {
+			case 2:		return parse_expected_bin;
+			case 10:	return parse_expected_dec;
+			case 16:	return parse_expected_hex;
+			default:	return parse_error;
 		}
-		else if(chr >= 'a' && chr <= 'f') {
-			*output = chr - 'a' + 10;
-			return parse_ok; 
-		}
-		else {
-			return parse_expected_hex;
-		}
 	}
-	else {
-		return parse_expected_dec;
-	}
+
+	*output = value;
+	return parse_ok;
 }
 
-template<typename T> parse_res new_parse_hex(const char * arg, T * output) {
-	// static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
+template<typename T> parse_res new_parse_num(const char * arg, T * output, uint8_t base) {
+	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
 
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
@@ -826,21 +854,26 @@ template<typename T> parse_res new_parse_hex(const char * arg, T * output) {
 		goto end;
 	}
 
+	if(base < 2 || base > 16) {
+		res = parse_wrong_base;
+		goto end;
+	}
+
 	*output = 0;
 
 	while(*arg) {
 		uint8_t char_value = 0;
-		res = new_parse_numeric_char(*arg++, &char_value, true);
+		res = new_parse_numeric_char2(*arg++, &char_value, base);
 		if(res) {
 			goto end;
 		}
 
-		if(*output > (std::numeric_limits<T>::max() - char_value) / 16) {
+		if(*output > (std::numeric_limits<T>::max() - char_value) / base) {
 			res = parse_overflow;
 			goto end;
 		}
 
-		*output = *output * 16 + char_value;
+		*output = *output * base + char_value;
 	} 
 
 	end:
@@ -848,10 +881,10 @@ template<typename T> parse_res new_parse_hex(const char * arg, T * output) {
 	return res;
 }
 
-template parse_res new_parse_hex<uint8_t>(const char *, uint8_t *);
-template parse_res new_parse_hex<uint16_t>(const char *, uint16_t *);
-template parse_res new_parse_hex<uint32_t>(const char *, uint32_t *);
-template parse_res new_parse_hex<uint64_t>(const char *, uint64_t *);
+template parse_res new_parse_num<uint8_t>(const char *, uint8_t *, uint8_t);
+template parse_res new_parse_num<uint16_t>(const char *, uint16_t *, uint8_t);
+template parse_res new_parse_num<uint32_t>(const char *, uint32_t *, uint8_t);
+template parse_res new_parse_num<uint64_t>(const char *, uint64_t *, uint8_t);
 
 // ========================================
 // Commands

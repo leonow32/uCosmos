@@ -1,10 +1,9 @@
 #include "../config.h"
 #if COMPONENT_UCOSMOS
 
-#include "console.h"
-
-#include "uCosmos.h"
 #include "commands.h"
+#include "console.h"
+#include "uCosmos.h"
 
 // ========================================
 // Basic commands
@@ -71,12 +70,12 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_hex(argv[1], &ptr)) return;
+		if(new_parse_num(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
 		uint16_t period;
-		if(parse_dec16(argv[2], &period)) return;
+		if(new_parse_num(argv[2], &period)) return;
 		
 		// Execute command
 		task_add(task_ptr, period);
@@ -93,7 +92,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_hex(argv[1], &ptr)) return;
+		if(new_parse_num(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -111,12 +110,12 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_hex(argv[1], &ptr)) return;
+		if(new_parse_num(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
 		uint16_t period;
-		if(parse_dec16(argv[2], &period)) return;
+		if(new_parse_num(argv[2], &period)) return;
 		
 		// Execute command
 		task_period_change(task_ptr, period);
@@ -133,7 +132,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_hex(argv[1], &ptr)) return;
+		if(new_parse_num(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -223,11 +222,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 			return;
 		}
 		
-		// Argument 1 - task pointer
 		uint16_t period;
-		if(parse_dec16(argv[1], &period)) return;
+		if(new_parse_num(argv[1], &period)) return;
 		
-		// Execute command
 		task_add(demo1_task, period);
 	}
 
@@ -239,11 +236,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 			return;
 		}
 		
-		// Argument 1 - task pointer
 		uint16_t period;
-		if(parse_dec16(argv[1], &period)) return;
+		if(new_parse_num(argv[1], &period)) return;
 		
-		// Execute command
 		task_add(demo2_task, period);
 	}
 
@@ -277,57 +272,95 @@ void echo_cmd(int argc, char * argv[]) {
 
 // void hex8_cmd(int argc, char * argv[]) {
 // 	uint8_t value;
-// 	if(new_parse_hex(argv[1], &value)) return;
+// 	if(new_parse_num(argv[1], &value)) return;
 // 	printf("%u\n", value);
 // }
 
 // void hex16_cmd(int argc, char * argv[]) {
 // 	uint16_t value;
-// 	if(new_parse_hex(argv[1], &value)) return;
+// 	if(new_parse_num(argv[1], &value)) return;
 // 	printf("%u\n", value);
 // }
 
 // void hex32_cmd(int argc, char * argv[]) {
 // 	uint32_t value;
-// 	if(new_parse_hex(argv[1], &value)) return;
+// 	if(new_parse_num(argv[1], &value)) return;
 // 	printf("%lu\n", value);
 // }
 
 void new_hex8_cmd(int argc, char * argv[]) {
 	uint8_t value;
-	if(new_parse_hex(argv[1], &value)) return;
+	if(new_parse_num(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
 void new_hex16_cmd(int argc, char * argv[]) {
 	uint16_t value;
-	if(new_parse_hex(argv[1], &value)) return;
+	if(new_parse_num(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
 void new_hex32_cmd(int argc, char * argv[]) {
 	uint32_t value;
-	if(new_parse_hex(argv[1], &value)) return;
+	if(new_parse_num(argv[1], &value, 16)) return;
 	printf("%lu\n", value);
 }
 
 void new_hex64_cmd(int argc, char * argv[]) {
 	uint64_t value;
-	if(new_parse_hex(argv[1], &value)) return;
+	if(new_parse_num(argv[1], &value, 16)) return;
 	printf("%llu\n", value);
 }
 
-void dec8_cmd(int argc, char * argv[]) {
-	uint8_t value = 0;
-	if(parse_dec8(argv[1], &value, 100)) return;
+void new_dec8_cmd(int argc, char * argv[]) {
+	uint8_t value;
+	if(new_parse_num(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
-void dec16_cmd(int argc, char * argv[]) {
-	uint16_t value = 0;
-	if(parse_dec16(argv[1], &value, 10000)) return;
+void new_dec16_cmd(int argc, char * argv[]) {
+	uint16_t value;
+	if(new_parse_num(argv[1], &value)) return;
 	printf("%u\n", value);
 }
+
+void new_dec32_cmd(int argc, char * argv[]) {
+	uint32_t value;
+	if(new_parse_num(argv[1], &value)) return;
+	printf("%lu\n", value);
+}
+
+void new_dec64_cmd(int argc, char * argv[]) {
+	uint64_t value;
+	if(new_parse_num(argv[1], &value)) return;
+	printf("%llu\n", value);
+}
+
+void new_numeric_cmd(int argc, char * argv[]) {
+	if(argc == 1) {
+		printf("base value\n");
+		return;
+	}
+
+	uint8_t base;
+	if(new_parse_num(argv[1], &base)) return;
+
+	uint64_t value;
+	if(new_parse_num(argv[2], &value, base)) return;
+	printf("%llu\n", value);
+}
+
+// void dec8_cmd(int argc, char * argv[]) {
+// 	uint8_t value = 0;
+// 	if(parse_dec8(argv[1], &value, 100)) return;
+// 	printf("%u\n", value);
+// }
+
+// void dec16_cmd(int argc, char * argv[]) {
+// 	uint16_t value = 0;
+// 	if(parse_dec16(argv[1], &value, 10000)) return;
+// 	printf("%u\n", value);
+// }
 
 void dec16s_cmd(int argc, char * argv[]) {
 	int16_t value = 0;
@@ -335,11 +368,11 @@ void dec16s_cmd(int argc, char * argv[]) {
 	printf("%d\n", value);
 }
 
-void dec32_cmd(int argc, char * argv[]) {
-	uint32_t value = 0;
-	if(parse_dec32(argv[1], &value, 1000000)) return;
-	printf("%lu\n", value);
-}
+// void dec32_cmd(int argc, char * argv[]) {
+// 	uint32_t value = 0;
+// 	if(parse_dec32(argv[1], &value, 1000000)) return;
+// 	printf("%lu\n", value);
+// }
 
 void dec32s_cmd(int argc, char * argv[]) {
 	int32_t value = 0;
