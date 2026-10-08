@@ -24,8 +24,8 @@ enum parse_res {
 	parse_unknown_command,		// Zwracane kiedy nie rozpozna polecenia
 	parse_no_input,
 	parse_missing_argument,
-	parse_overflow,
-	parse_underflow,
+	parse_over_range,
+	parse_under_range,
 	parse_error,
 	parse_expected_bin,
 	parse_expected_dec,

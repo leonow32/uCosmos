@@ -254,8 +254,8 @@ void debug(const parse_res res, const char * arg) {
 		case parse_unknown_command:						printf("Unknown command");				break;
 		case parse_no_input:							printf("No input");						break;
 		case parse_missing_argument:					printf("Missing arg");					break;
-		case parse_overflow:							printf("Overflow");						break;
-		case parse_underflow:							printf("Underflow");					break;
+		case parse_over_range:							printf("Over range");					break;
+		case parse_under_range:							printf("Under range");					break;
 		case parse_error:								printf("Parse error");					break;
 		case parse_expected_bin:						printf("Expected bin");					break;
 		case parse_expected_dec:						printf("Expected dec");					break;
@@ -334,7 +334,7 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 // 	arg = arg + chars;										// Przesunięcie wskaźnika na koniec ciągu znaków argumentu
 	
 // 	if(*arg != 0) {											// Sprawdzanie czy ostatni bajt argumentu to 0, jeżeli nie to znaczy, że przesłano więcej znaków niż jest potrzebne dla konkretnego typu zmiennej
-// 		res = parse_overflow;
+// 		res = parse_over_range;
 // 		goto end;
 // 	}
 	
@@ -426,7 +426,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // 			temp = temp2;
 // 		}
 // 		else {
-// 			res = parse_overflow;
+// 			res = parse_over_range;
 // 			goto end;
 // 		}
 // 	}
@@ -435,7 +435,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // 		*output = temp;
 // 	}
 // 	else {
-// 		res = parse_overflow;
+// 		res = parse_over_range;
 // 	}
 	
 // 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
@@ -469,7 +469,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // 			temp = temp2;
 // 		}
 // 		else {
-// 			res = parse_overflow;
+// 			res = parse_over_range;
 // 			goto end;
 // 		}
 // 	}
@@ -478,7 +478,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // 		*output = temp;
 // 	}
 // 	else {
-// 		res = parse_overflow;
+// 		res = parse_over_range;
 // 	}
 	
 // 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
@@ -515,11 +515,11 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 		temp = temp * 10 + digit;
 
 		if(negative == false && temp > INT16_MAX) {
-			res = parse_overflow;
+			res = parse_over_range;
 			goto end;
 		}
 		else if(negative == true && temp > INT16_MAX+1) {
-			res = parse_underflow;
+			res = parse_under_range;
 			goto end;
 		}
 	}
@@ -562,7 +562,7 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 // 			temp = temp2;
 // 		}
 // 		else {
-// 			res = parse_overflow;
+// 			res = parse_over_range;
 // 			goto end;
 // 		}
 // 	}
@@ -571,7 +571,7 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 // 		*output = temp;
 // 	}
 // 	else {
-// 		res = parse_overflow;
+// 		res = parse_over_range;
 // 	}
 	
 // 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
@@ -608,11 +608,11 @@ parse_res parse_dec32s(const char * arg, int32_t * output) {
 		temp = temp * 10 + digit;
 
 		if(negative == false && temp > INT32_MAX) {
-			res = parse_overflow;
+			res = parse_over_range;
 			goto end;
 		}
 		else if(negative == true && temp > INT32_MAX+1ul) {
-			res = parse_underflow;
+			res = parse_under_range;
 			goto end;
 		}
 	}
@@ -644,7 +644,7 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len
 	
 	while(*arg != 0) {										// przetwarzanie aż do napotkania znaku 0
 		if(*out_len == max_len) {							// Kontrola przepełnienia
-			res = parse_overflow;
+			res = parse_over_range;
 			goto end;
 		}
 		
@@ -668,7 +668,7 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len
 	}
 	
 	if(*out_len < min_len) {								// Kontrola długości
-		res = parse_underflow;
+		res = parse_under_range;
 	}
 
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
@@ -690,7 +690,7 @@ parse_res parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_l
 	
 	while(1) {												// przetwarzanie aż do napotkania znaku 0
 		if(*out_len == max_len) {							// Kontrola przepełnienia
-			res = parse_overflow;
+			res = parse_over_range;
 			goto end;
 		}
 		
@@ -707,7 +707,7 @@ parse_res parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_l
 	}
 	
 	if(*out_len < min_len) {								// Kontrola długości
-		res = parse_underflow;
+		res = parse_under_range;
 	}
 	
 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
@@ -869,7 +869,7 @@ template<typename T> parse_res new_parse_num(const char * arg, T * output, uint8
 		}
 
 		if(*output > (std::numeric_limits<T>::max() - char_value) / base) {
-			res = parse_overflow;
+			res = parse_over_range;
 			goto end;
 		}
 
