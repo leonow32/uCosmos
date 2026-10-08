@@ -1,7 +1,7 @@
 #include "../config.h"
 #if COMPONENT_CONSOLE
-static const char *TAG = "console";
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+// static const char *TAG = "console";
+// #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <string.h>
 #include <limits>
 // #include <iostream>
@@ -213,6 +213,10 @@ void console_task(run_mode_t run_mode) {
 				case con_input_cancelled:												// Wciśnięto ESCAPE
 				case con_recv_begin:													// Jeżeli to pierwszy znak polecenia to wyświetla prompt, który wcześniej był ukryty
 					prompt_show();
+					break;
+
+				default:
+					LOGW("Too many args");
 					break;
 			}
 		}

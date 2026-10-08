@@ -27,6 +27,8 @@ void		memory_status_cmd(int argc, char * argv[]);
 
 // Demonstration tasks
 #if USE_CMD_TASK_DEMO
+	void demo1_task(run_mode_t run_mode);
+	void demo2_task(run_mode_t run_mode);
 	void demo1_add_cmd(int argc, char * argv[]);
 	void demo2_add_cmd(int argc, char * argv[]);
 	void demo1_cls_cmd(int argc, char * argv[]);

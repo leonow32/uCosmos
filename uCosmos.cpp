@@ -1,7 +1,7 @@
 #include "../config.h"
 #if COMPONENT_UCOSMOS
-static const char *TAG = "uCosmos";
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+// static const char *TAG = "uCosmos";
+// #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <stdio.h>
 #include "log.h"
 #include "uCosmos.h"
@@ -86,7 +86,11 @@ static const char * debug_res(os_t result) {
 }
 
 static void debug_print(const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms, os_t result) {
-	printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+	#if ESP_PLATFORM
+		printf("%s%c (%ld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+	#elif PICO_RP2040 || PICO_RP2350
+		printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+	#endif
 }
 
 static void slot_erase(uint8_t slot_number) {
@@ -134,7 +138,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 		for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {						// Sprawdzenie wszystkich procesów
 			if(task_table[i].task_ptr != nullptr) {						// Jeżeli w badanym slocie jest wpisany jakiś task
 				if(task_table[i].counter == 0) {						// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
-					task_table[i].flag |= OS_PENDING_FLAG;
+					task_table[i].flag = true;
 					task_table[i].counter = task_table[i].period - 1;	// Ponowne wpisanie czasu do odmierzenia pomniejszonego o 1 (z tego powodu period_ms nie może być zainicjalizowany jako 0)
 				}
 				else {
