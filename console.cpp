@@ -288,101 +288,101 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 }
 
 // Parse single character 0..9 and A..F
-static parse_res parse_hex_char(const char * input_char, uint8_t * output_char, bool high_nibble) {
-	char temp = *input_char;
+// static parse_res parse_hex_char(const char * input_char, uint8_t * output_char, bool high_nibble) {
+// 	char temp = *input_char;
 	
-	// Interpretowanie zaku ASCII
-	if(temp >= '0' && temp <= '9') {
-		temp = temp - '0';
-	}
-	else if(temp >= 'A' && temp <= 'F') {
-		temp = temp - 55;
-	}
-	else if(temp >= 'a' && temp <= 'f') {
-		temp = temp - 87;
-	}
-	else {
-		return parse_expected_hex;
-	}
+// 	// Interpretowanie zaku ASCII
+// 	if(temp >= '0' && temp <= '9') {
+// 		temp = temp - '0';
+// 	}
+// 	else if(temp >= 'A' && temp <= 'F') {
+// 		temp = temp - 55;
+// 	}
+// 	else if(temp >= 'a' && temp <= 'f') {
+// 		temp = temp - 87;
+// 	}
+// 	else {
+// 		return parse_expected_hex;
+// 	}
 	
-	// Przesuwanie jeżeli to jest starszy nibble
-	if(high_nibble) {
-		temp <<= 4;
-		*output_char |= temp;
-	}
-	else {
-	// Zapisywanie wyniku
-		*output_char = temp;
-	}
+// 	// Przesuwanie jeżeli to jest starszy nibble
+// 	if(high_nibble) {
+// 		temp <<= 4;
+// 		*output_char |= temp;
+// 	}
+// 	else {
+// 	// Zapisywanie wyniku
+// 		*output_char = temp;
+// 	}
 	
-	return parse_ok; 
-}
+// 	return parse_ok; 
+// }
 
 // Przetwarzanie stringu od końca, a output od początku
 // Zmienna wskazywana przez *output musi być wyzerowana, inaczej będzie błąd losowo zainicjalizowanej pamięci
-static parse_res parse_hex_num(const char * arg, void * output, uint8_t chars) {
-	parse_res res;
-	const char * arg_copy = arg;
+// static parse_res parse_hex_num(const char * arg, void * output, uint8_t chars) {
+// 	parse_res res;
+// 	const char * arg_copy = arg;
 	
-	if(arg == nullptr) {										// Kontrola czy podano argument
-		res = parse_missing_argument;
-		goto end;
-	}
+// 	if(arg == nullptr) {										// Kontrola czy podano argument
+// 		res = parse_missing_argument;
+// 		goto end;
+// 	}
 	
-	arg = arg + chars;										// Przesunięcie wskaźnika na koniec ciągu znaków argumentu
+// 	arg = arg + chars;										// Przesunięcie wskaźnika na koniec ciągu znaków argumentu
 	
-	if(*arg != 0) {											// Sprawdzanie czy ostatni bajt argumentu to 0, jeżeli nie to znaczy, że przesłano więcej znaków niż jest potrzebne dla konkretnego typu zmiennej
-		res = parse_overflow;
-		goto end;
-	}
+// 	if(*arg != 0) {											// Sprawdzanie czy ostatni bajt argumentu to 0, jeżeli nie to znaczy, że przesłano więcej znaków niż jest potrzebne dla konkretnego typu zmiennej
+// 		res = parse_overflow;
+// 		goto end;
+// 	}
 	
-	do {													// Przetwarzanie wszystkich znaków ASCII od końca
-		uint8_t high_nibble = chars & 0x01;
-		res = parse_hex_char(--arg, (uint8_t*)output, high_nibble);
-		if(res) {
-			goto end;
-		}
-		if(high_nibble) {
-			output = (uint8_t *)output + 1;
-		}
-	} while(--chars);
+// 	do {													// Przetwarzanie wszystkich znaków ASCII od końca
+// 		uint8_t high_nibble = chars & 0x01;
+// 		res = parse_hex_char(--arg, (uint8_t*)output, high_nibble);
+// 		if(res) {
+// 			goto end;
+// 		}
+// 		if(high_nibble) {
+// 			output = (uint8_t *)output + 1;
+// 		}
+// 	} while(--chars);
 	
-	end:
-	debug(res, arg_copy);
-	return res;
-}
+// 	end:
+// 	debug(res, arg_copy);
+// 	return res;
+// }
 
 // Parsowanie liczby HEX 8-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_hex8(const char * arg, uint8_t * output) {
-	*output = 0;
-	return parse_hex_num(arg, output, 2);
-}
+// parse_res new_parse_hex(const char * arg, uint8_t * output) {
+// 	*output = 0;
+// 	return parse_hex_num(arg, output, 2);
+// }
 
-// Parsowanie liczby HEX 16-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_hex16(const char * arg, uint16_t * output) {
-	*output = 0;
-	return parse_hex_num(arg, output, 4);
-}
+// // Parsowanie liczby HEX 16-bitowej
+// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
+// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
+// parse_res new_parse_hex(const char * arg, uint16_t * output) {
+// 	*output = 0;
+// 	return parse_hex_num(arg, output, 4);
+// }
 
-// Parsowanie liczby HEX 24-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_hex24(const char * arg, uint32_t * output) {
-	*output = 0;
-	return parse_hex_num(arg, output, 6);
-}
+// // Parsowanie liczby HEX 24-bitowej
+// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
+// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
+// parse_res parse_hex24(const char * arg, uint32_t * output) {
+// 	*output = 0;
+// 	return parse_hex_num(arg, output, 6);
+// }
 
-// Parsowanie liczby HEX 32-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-parse_res parse_hex32(const char * arg, uint32_t * output) {
-	*output = 0;
-	return parse_hex_num(arg, output, 8);
-}
+// // Parsowanie liczby HEX 32-bitowej
+// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
+// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
+// parse_res new_parse_hex(const char * arg, uint32_t * output) {
+// 	*output = 0;
+// 	return parse_hex_num(arg, output, 8);
+// }
 
 // Parsowanie liczby dziesiętnej 8-bitowej
 // Funkcja przekształca znak ASCII HEX na wartość binarną

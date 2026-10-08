@@ -71,7 +71,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(parse_hex32(argv[1], &ptr)) return;
+		if(new_parse_hex(argv[1], &ptr)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
@@ -93,7 +93,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(parse_hex32(argv[1], &ptr)) return;
+		if(new_parse_hex(argv[1], &ptr)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -111,7 +111,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(parse_hex32(argv[1], &ptr)) return;
+		if(new_parse_hex(argv[1], &ptr)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
@@ -133,7 +133,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(parse_hex32(argv[1], &ptr)) return;
+		if(new_parse_hex(argv[1], &ptr)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -277,19 +277,19 @@ void echo_cmd(int argc, char * argv[]) {
 
 void hex8_cmd(int argc, char * argv[]) {
 	uint8_t value;
-	if(parse_hex8(argv[1], &value)) return;
+	if(new_parse_hex(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
 void hex16_cmd(int argc, char * argv[]) {
 	uint16_t value;
-	if(parse_hex16(argv[1], &value)) return;
+	if(new_parse_hex(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
 void hex32_cmd(int argc, char * argv[]) {
 	uint32_t value;
-	if(parse_hex32(argv[1], &value)) return;
+	if(new_parse_hex(argv[1], &value)) return;
 	printf("%lu\n", value);
 }
 

@@ -47,10 +47,10 @@ void		console_task(run_mode_t run_mode);
 
 // arg parsers
 void		debug(const parse_res result, const char * arg);
-parse_res	parse_hex8(const char * arg, uint8_t * output);
-parse_res	parse_hex16(const char * arg, uint16_t * output);
-parse_res	parse_hex24(const char * arg, uint32_t * output);
-parse_res	parse_hex32(const char * arg, uint32_t * output);
+// parse_res	new_parse_hex(const char * arg, uint8_t * output);
+// parse_res	new_parse_hex(const char * arg, uint16_t * output);
+// parse_res	parse_hex24(const char * arg, uint32_t * output);
+// parse_res	new_parse_hex(const char * arg, uint32_t * output);
 parse_res	parse_dec8(const char * arg, uint8_t * output, const uint8_t max = 255);
 parse_res	parse_dec16(const char * arg, uint16_t * output, const uint16_t max = 65535);
 parse_res	parse_dec16s(const char * arg, int16_t * output);
