@@ -215,8 +215,16 @@ void console_task(run_mode_t run_mode) {
 					prompt_show();
 					break;
 
-				default:
+				case con_too_many_args:					// TODO z jakiegoś powodu to jest potrzebne na ESP, a na PICO nie
 					LOGW("Too many args");
+					break;
+
+				case con_error_to_fix:					// TODO to musi być na ESP32
+					LOGW("Er to fix");
+					break;
+
+				case con_ok:					// TODO to musi być na ESP32
+					// LOGW("response ok");
 					break;
 			}
 		}
@@ -855,10 +863,11 @@ template parse_res new_parse_hex<uint64_t>(const char *, uint64_t *);
 		printf(TEXT_WHITE_BRIGHT "Num\tPointer\t\tName\n" FORMAT_RESET);
 		
 		for(uint16_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-			void (*cmd_ptr)(int argc, char * argv[]);						// Pusty wskaźnik do polecenia
-			cmd_ptr = command_list[i].ptr;									// Odczytanie wskaźnika do polecenia z pamięci flash i rzutowanie go na właściwy typ
-			const char * cmd_name = (const char *)(command_list[i].name);	// Nazwa polecenia	
-			printf("%u:\t%p\t%s\n", i, cmd_ptr, cmd_name);
+			#if ESP_PLATFORM
+				printf("%u:\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
+			#elif PICO_RP2040 || PICO_RP2350
+				printf("%u:\t%p\t%s\n", i, command_list[i].ptr, command_list[i].name);						// TODO sprawdzić czy to w ogóle jest potrzebne
+			#endif
 		}
 	}
 #endif

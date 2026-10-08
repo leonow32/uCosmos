@@ -308,7 +308,7 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 		return task_name;
 	}
 	else {
-		return nullptr;
+		return "";
 	}
 }
 

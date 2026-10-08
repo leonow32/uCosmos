@@ -15,7 +15,7 @@ void reset_cmd(int argc, char * argv[]) {
 	#if ESP_PLATFORM
 		esp_restart();
 	#elif PICO_RP2040 || PICO_RP2350
-		
+		// TODO
 	#endif
 }
 
@@ -47,7 +47,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		esp_clk_tree_src_get_freq_hz(SOC_MOD_CLK_CPU, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &ClockFreq);
 		printf("F_CPU:\t\t%lu MHz\n", ClockFreq / 1000000);
 	#elif PICO_RP2040 || PICO_RP2350
-		
+		// TODO
 	#endif
 	
 	printf("TickTime:\t%u ms\n", OS_TICK_PERIOD_MS);
