@@ -36,7 +36,7 @@ void memory_status_cmd(int argc, char * argv[]) {
 // Print taks table
 #if USE_CMD_TASK_MONITOR
 void task_monitor_cmd(int argc, char * argv[]) {
-	printf("No\tPtr\t\tPer[ms]\tName\n");
+	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tPer[ms]\tName\n" FORMAT_RESET);
 	
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		printf("%u\t%08lX\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));

@@ -862,11 +862,7 @@ template parse_res new_parse_hex<uint64_t>(const char *, uint64_t *);
 		printf(TEXT_WHITE_BRIGHT "Num\tPointer\t\tName\n" FORMAT_RESET);
 		
 		for(uint16_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-			#if ESP_PLATFORM
-				printf("%u:\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
-			#elif PICO_RP2040 || PICO_RP2350
-				printf("%u:\t%p\t%s\n", i, command_list[i].ptr, command_list[i].name);						// TODO sprawdzić czy to w ogóle jest potrzebne
-			#endif
+			printf("%u:\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
 		}
 	}
 #endif
