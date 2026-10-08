@@ -805,9 +805,8 @@ parse_res new_parse_numeric_char(const char chr, uint8_t * output, bool hex_mode
 	}
 }
 
-// max_char_count - maximum count of characters of the arg value
 template<typename T> parse_res new_parse_hex(const char * arg, T * output) {
-	// static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
+	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
 
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
