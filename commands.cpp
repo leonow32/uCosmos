@@ -352,13 +352,13 @@ void new_numeric_cmd(int argc, char * argv[]) {
 
 // void dec8_cmd(int argc, char * argv[]) {
 // 	uint8_t value = 0;
-// 	if(parse_dec8(argv[1], &value, 100)) return;
+// 	if(new_parse_num(argv[1], &value, 100)) return;
 // 	printf("%u\n", value);
 // }
 
 // void dec16_cmd(int argc, char * argv[]) {
 // 	uint16_t value = 0;
-// 	if(parse_dec16(argv[1], &value, 10000)) return;
+// 	if(new_parse_num(argv[1], &value, 10000)) return;
 // 	printf("%u\n", value);
 // }
 
@@ -370,7 +370,7 @@ void dec16s_cmd(int argc, char * argv[]) {
 
 // void dec32_cmd(int argc, char * argv[]) {
 // 	uint32_t value = 0;
-// 	if(parse_dec32(argv[1], &value, 1000000)) return;
+// 	if(new_parse_num(argv[1], &value, 1000000)) return;
 // 	printf("%lu\n", value);
 // }
 

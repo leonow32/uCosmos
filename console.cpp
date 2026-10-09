@@ -403,7 +403,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // Parsowanie liczby dziesiętnej 8-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_dec8(const char * arg, uint8_t * output, const uint8_t max) {
+// parse_res new_parse_num(const char * arg, uint8_t * output, const uint8_t max) {
 // 	const char * arg_copy = arg;
 // 	char digit; 	
 // 	uint8_t temp = 0;
@@ -446,7 +446,7 @@ static parse_res parse_dec_char(const char * input_char, char * output_char) {
 // Parsowanie liczby dziesiętnej 16-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_dec16(const char * arg, uint16_t * output, const uint16_t max) {
+// parse_res new_parse_num(const char * arg, uint16_t * output, const uint16_t max) {
 // 	const char * arg_copy = arg;
 // 	char digit; 	
 // 	uint16_t temp = 0;
@@ -539,7 +539,7 @@ parse_res parse_dec16s(const char * arg, int16_t * output) {
 // Parsowanie liczby dziesiętnej 32-bitowej
 // - arg	- Wskaźnik do argumentu, który ma być przetworzony
 // - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_dec32(const char * arg, uint32_t * output, const uint32_t max) {
+// parse_res new_parse_num(const char * arg, uint32_t * output, const uint32_t max) {
 // 	const char * arg_copy = arg;
 // 	char digit; 	
 // 	uint32_t temp = 0;
@@ -808,7 +808,7 @@ void print_ok(void) {
 // }
 
 static parse_res new_parse_numeric_char2(const char chr, uint8_t * output, uint8_t base) {
-	parse_res res = parse_ok;
+	// parse_res res = parse_ok;
 	uint8_t value = 0;
 	
 	if(chr >= '0' && chr <= '9')
