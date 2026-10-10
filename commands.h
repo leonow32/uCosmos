@@ -46,7 +46,7 @@ void		memory_status_cmd(int argc, char * argv[]);
 	// void dec16s_cmd(int argc, char * argv[]);
 	// void dec32_cmd(int argc, char * argv[]);
 	// void dec32s_cmd(int argc, char * argv[]);
-	void hexstr_cmd(int argc, char * argv[]);
+	// void hexstr_cmd(int argc, char * argv[]);
 	void ascstr_cmd(int argc, char * argv[]);
 	void ascchr_cmd(int argc, char * argv[]);
 
@@ -64,6 +64,8 @@ void		memory_status_cmd(int argc, char * argv[]);
 	void new_int16_cmd(int argc, char * argv[]);
 	void new_int32_cmd(int argc, char * argv[]);
 	void new_int64_cmd(int argc, char * argv[]);
+
+	void new_hexstr_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */

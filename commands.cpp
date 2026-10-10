@@ -374,6 +374,23 @@ void new_int64_cmd(int argc, char * argv[]) {
 	printf("%lld\n", value);
 }
 
+void new_hexstr_cmd(int argc, char * argv[]) {
+	uint8_t buffer[16];
+	size_t length;
+	if(new_parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
+	printf("length: %u\n", length);
+	printf("ASC: ");
+	for(uint8_t i=0; i<length; i++) {
+		printf("%c", buffer[i]);
+	}
+	printf("\nHEX: ");
+	for(uint8_t i=0; i<length; i++) {
+		printf("%02X ", buffer[i]);
+	}
+	printf("\n");
+}
+
+
 // void dec8_cmd(int argc, char * argv[]) {
 // 	uint8_t value = 0;
 // 	if(new_parse_uint(argv[1], &value, 100)) return;
@@ -404,21 +421,21 @@ void new_int64_cmd(int argc, char * argv[]) {
 // 	printf("%ld\n", value);
 // }
 
-void hexstr_cmd(int argc, char * argv[]) {
-	uint8_t buffer[64];
-	uint8_t length;
-	if(parse_hex_string(argv[1], buffer, &length)) return;
-	printf("length: %u\n", length);
-	printf("ASC: ");
-	for(uint8_t i=0; i<length; i++) {
-		printf("%c", buffer[i]);
-	}
-	printf("\nHEX: ");
-	for(uint8_t i=0; i<length; i++) {
-		printf("%02X ", buffer[i]);
-	}
-	printf("\n");
-}
+// void hexstr_cmd(int argc, char * argv[]) {
+// 	uint8_t buffer[64];
+// 	uint8_t length;
+// 	if(parse_hex_string(argv[1], buffer, &length)) return;
+// 	printf("length: %u\n", length);
+// 	printf("ASC: ");
+// 	for(uint8_t i=0; i<length; i++) {
+// 		printf("%c", buffer[i]);
+// 	}
+// 	printf("\nHEX: ");
+// 	for(uint8_t i=0; i<length; i++) {
+// 		printf("%02X ", buffer[i]);
+// 	}
+// 	printf("\n");
+// }
 
 void ascstr_cmd(int argc, char * argv[]) {
 	uint8_t buffer[16];

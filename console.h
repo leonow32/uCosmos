@@ -59,13 +59,14 @@ void		debug(const parse_res result, const char * arg);
 // parse_res	new_parse_uint(const char * arg, uint32_t * output, const uint32_t max = 4294967295UL);
 // parse_res	parse_dec32s(const char * arg, int32_t * output);
 
-parse_res	parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
+// parse_res	parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
 parse_res	parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
 parse_res	parse_ascii_char(const char * arg, uint8_t * output);
 parse_res	parse_time(const char * arg, time_t * output);
 
 template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint8_t base = 10);
 template<typename T> parse_res new_parse_int(const char * arg, T * output);
+parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len = 0);
 
 void		print_ok(void);
 

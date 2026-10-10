@@ -635,46 +635,46 @@ static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) 
 // - String		- wejście i wyjście
 // - max_len	- maksymalna dopuszczalna dłogość stringu po przetworzeniu, domyślnie 255 znaków
 // - min_len	- minimalna dopuszczalna długość stringu po przetworzeniu, domyśłnie 0 znaków
-parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len, const uint8_t min_len) {
-	const char * arg_copy = arg;
-	uint8_t nibble_h;
-	uint8_t nibble_l;
-	*out_len = 0;
-	parse_res res = parse_ok;
+// parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len, const uint8_t min_len) {
+// 	const char * arg_copy = arg;
+// 	uint8_t nibble_h;
+// 	uint8_t nibble_l;
+// 	*out_len = 0;
+// 	parse_res res = parse_ok;
 	
-	while(*arg != 0) {										// przetwarzanie aż do napotkania znaku 0
-		if(*out_len == max_len) {							// Kontrola przepełnienia
-			res = parse_over_range;
-			goto end;
-		}
+// 	while(*arg != 0) {										// przetwarzanie aż do napotkania znaku 0
+// 		if(*out_len == max_len) {							// Kontrola przepełnienia
+// 			res = parse_over_range;
+// 			goto end;
+// 		}
 		
-		if(*arg == ' ') {									// Pomijanie spacji
-			arg++;
-			continue;
-		}
+// 		if(*arg == ' ') {									// Pomijanie spacji
+// 			arg++;
+// 			continue;
+// 		}
 		
-		res = parse_hex_char(arg++, &nibble_h);				// Przetwarzanie starszego nibble
-		if(res) {
-			goto end;
-		}
+// 		res = parse_hex_char(arg++, &nibble_h);				// Przetwarzanie starszego nibble
+// 		if(res) {
+// 			goto end;
+// 		}
 		
-		res = parse_hex_char(arg++, &nibble_l);				// Przetwarzanie młodszego nibble
-		if(res) {
-			goto end;
-		}
+// 		res = parse_hex_char(arg++, &nibble_l);				// Przetwarzanie młodszego nibble
+// 		if(res) {
+// 			goto end;
+// 		}
 		
-		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
-		(*out_len)++;										// Licznie znaków w stringu wynikowym
-	}
+// 		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
+// 		(*out_len)++;										// Licznie znaków w stringu wynikowym
+// 	}
 	
-	if(*out_len < min_len) {								// Kontrola długości
-		res = parse_under_range;
-	}
+// 	if(*out_len < min_len) {								// Kontrola długości
+// 		res = parse_under_range;
+// 	}
 
-	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	debug(res, arg_copy);
-	return res;
-}
+// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
+// 	debug(res, arg_copy);
+// 	return res;
+// }
 
 // Parsowanie stringu ASCII
 // Zwraca ciąg znaków zakończonu znakiem NUL
@@ -946,6 +946,73 @@ template parse_res new_parse_int<int8_t>(const char *, int8_t *);
 template parse_res new_parse_int<int16_t>(const char *, int16_t *);
 template parse_res new_parse_int<int32_t>(const char *, int32_t *);
 template parse_res new_parse_int<int64_t>(const char *, int64_t *);
+
+parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
+	parse_res res = parse_ok;
+	const char * arg_copy = arg;
+	uint8_t nibble_h;
+	uint8_t nibble_l;
+
+	if(arg == nullptr) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(arg[0] == NUL) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(output == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	if(out_len == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	if(max_len < min_len) {
+		res = parse_error;
+		goto end;
+	}
+
+	*out_len = 0;
+
+	while(*arg != 0) {
+		if(*arg == ' ') {									// Pomijanie spacji
+			arg++;
+			continue;
+		}
+
+		if(*out_len >= max_len) {
+			res = parse_over_range;
+			goto end;
+		}
+
+		res = new_parse_numeric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
+		if(res) {
+			goto end;
+		}
+		
+		res = new_parse_numeric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
+		if(res) {
+			goto end;
+		}
+		
+		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
+		(*out_len)++;										// Licznie bajtów w tablicy wynikowej
+	}
+
+	if(*out_len < min_len) {								// Kontrola długości
+		res = parse_under_range;
+	}
+
+	end:
+	debug(res, arg_copy);
+	return res;
+}
 
 // ========================================
 // Commands
