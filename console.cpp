@@ -968,7 +968,7 @@ parse_res new_parse_ascii_char(const char * arg, char * output) {
 }
 
 parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
-	printf("max_len: %u\n", max_len);
+	printf("max_len: %zu\n", max_len);
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
 	
@@ -1000,20 +1000,38 @@ parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_l
 	*out_len = 0;
 	
 	while(1) {
-		if(*out_len >= max_len) {
-			*output = NUL;
-			res = parse_over_range;
-			goto end;
-		}
-
-		*output++ = *arg;
+		*output = *arg;
 		if(*arg++) {
 			(*out_len)++;
+			if(*out_len >= max_len) {
+				*output = NUL;
+				res = parse_over_range;
+				goto end;
+			}
+			output++;
 		}
 		else {
 			break;
 		}
 	}
+
+	// while(1) {
+	// 	if(*out_len >= max_len) {
+	// 		*output = NUL;
+	// 		res = parse_over_range;
+	// 		goto end;
+	// 	}
+
+	// 	*output = *arg;
+
+	// 	if(*arg++) {
+	// 		(*out_len)++;
+	// 		output++;
+	// 	}
+	// 	else {
+	// 		break;
+	// 	}
+	// }
 
 	if(*out_len < min_len) {								// Kontrola długości
 		res = parse_under_range;
