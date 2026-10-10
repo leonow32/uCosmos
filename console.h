@@ -66,6 +66,9 @@ parse_res	parse_time(const char * arg, time_t * output);
 
 template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint8_t base = 10);
 template<typename T> parse_res new_parse_int(const char * arg, T * output);
+
+parse_res new_parse_ascii_char(const char * arg, char * output);
+parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len = 0);
 parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len = 0);
 
 void		print_ok(void);

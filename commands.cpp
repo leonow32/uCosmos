@@ -1,6 +1,7 @@
 #include "../config.h"
 #if COMPONENT_UCOSMOS
 
+#include <string.h>
 #include "commands.h"
 #include "console.h"
 #include "uCosmos.h"
@@ -438,21 +439,31 @@ void new_hexstr_cmd(int argc, char * argv[]) {
 // }
 
 void ascstr_cmd(int argc, char * argv[]) {
-	uint8_t buffer[16];
-	uint8_t length;
-	if(parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 3)) return;
-	printf("length: %u\n", length);
+	char buffer[] = "0123456789";
+	printf("strlen: %u\n", strlen(buffer));
 	printf("ASC: %s\n", buffer);
 	printf("HEX: ");
-	for(uint8_t i=0; i<length; i++) {
+	for(uint8_t i=0; i<=strlen(buffer); i++) {
+		printf("%02X ", buffer[i]);
+	}
+	printf("\n");
+
+	size_t length;
+	//if(new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
+	new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0);
+	printf("length: %u\n", length);
+	printf("strlen: %u\n", strlen(buffer));
+	printf("ASC: %s\n", buffer);
+	printf("HEX: ");
+	for(uint8_t i=0; i<length+10; i++) {
 		printf("%02X ", buffer[i]);
 	}
 	printf("\n");
 }
 
 void ascchr_cmd(int argc, char * argv[]) {
-	uint8_t chr;
-	if(parse_ascii_char(argv[1], &chr)) return;
+	char chr;
+	if(new_parse_ascii_char(argv[1], &chr)) return;
 	printf("%c\n", chr);
 }
 

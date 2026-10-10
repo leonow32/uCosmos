@@ -947,6 +947,83 @@ template parse_res new_parse_int<int16_t>(const char *, int16_t *);
 template parse_res new_parse_int<int32_t>(const char *, int32_t *);
 template parse_res new_parse_int<int64_t>(const char *, int64_t *);
 
+parse_res new_parse_ascii_char(const char * arg, char * output) {
+	parse_res res = parse_ok;
+
+	if(arg == nullptr) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(output == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	*output = arg[0];
+	
+	end:
+	debug(res, arg);
+	return res;
+}
+
+parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
+	printf("max_len: %u\n", max_len);
+	parse_res res = parse_ok;
+	const char * arg_copy = arg;
+	
+	if(arg == nullptr) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(arg[0] == NUL) {
+		res = parse_missing_argument;
+		goto end;
+	}
+
+	if(output == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	if(out_len == nullptr) {
+		res = parse_nullptr;
+		goto end;
+	}
+
+	if(max_len < min_len) {
+		res = parse_error;
+		goto end;
+	}
+	
+	*out_len = 0;
+	
+	while(1) {
+		if(*out_len >= max_len) {
+			*output = NUL;
+			res = parse_over_range;
+			goto end;
+		}
+
+		*output++ = *arg;
+		if(*arg++) {
+			(*out_len)++;
+		}
+		else {
+			break;
+		}
+	}
+
+	if(*out_len < min_len) {								// Kontrola długości
+		res = parse_under_range;
+	}
+
+	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
+	debug(res, arg_copy);
+	return res;
+}
+
 parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
