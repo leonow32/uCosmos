@@ -271,24 +271,6 @@ void echo_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-// void hex8_cmd(int argc, char * argv[]) {
-// 	uint8_t value;
-// 	if(new_parse_uint(argv[1], &value)) return;
-// 	printf("%u\n", value);
-// }
-
-// void hex16_cmd(int argc, char * argv[]) {
-// 	uint16_t value;
-// 	if(new_parse_uint(argv[1], &value)) return;
-// 	printf("%u\n", value);
-// }
-
-// void hex32_cmd(int argc, char * argv[]) {
-// 	uint32_t value;
-// 	if(new_parse_uint(argv[1], &value)) return;
-// 	printf("%lu\n", value);
-// }
-
 void new_hex8_cmd(int argc, char * argv[]) {
 	uint8_t value;
 	if(new_parse_uint(argv[1], &value, 16)) return;
@@ -375,6 +357,26 @@ void new_int64_cmd(int argc, char * argv[]) {
 	printf("%lld\n", value);
 }
 
+void ascchr_cmd(int argc, char * argv[]) {
+	char chr;
+	if(new_parse_ascii_char(argv[1], &chr)) return;
+	printf("%c\n", chr);
+}
+
+void ascstr_cmd(int argc, char * argv[]) {
+	char buffer[16] = {0};
+	size_t length;
+	if(new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
+	printf("length: %u\n", length);
+	printf("strlen: %u\n", strlen(buffer));
+	printf("ASC: %s\n", buffer);
+	printf("HEX: ");
+	for(uint8_t i=0; i<length+10; i++) {
+		printf("%02X ", buffer[i]);
+	}
+	printf("\n");
+}
+
 void new_hexstr_cmd(int argc, char * argv[]) {
 	uint8_t buffer[16];
 	size_t length;
@@ -392,80 +394,10 @@ void new_hexstr_cmd(int argc, char * argv[]) {
 }
 
 
-// void dec8_cmd(int argc, char * argv[]) {
-// 	uint8_t value = 0;
-// 	if(new_parse_uint(argv[1], &value, 100)) return;
-// 	printf("%u\n", value);
-// }
 
-// void dec16_cmd(int argc, char * argv[]) {
-// 	uint16_t value = 0;
-// 	if(new_parse_uint(argv[1], &value, 10000)) return;
-// 	printf("%u\n", value);
-// }
 
-// void dec16s_cmd(int argc, char * argv[]) {
-// 	int16_t value = 0;
-// 	if(parse_dec16s(argv[1], &value)) return;
-// 	printf("%d\n", value);
-// }
 
-// void dec32_cmd(int argc, char * argv[]) {
-// 	uint32_t value = 0;
-// 	if(new_parse_uint(argv[1], &value, 1000000)) return;
-// 	printf("%lu\n", value);
-// }
 
-// void dec32s_cmd(int argc, char * argv[]) {
-// 	int32_t value = 0;
-// 	if(parse_dec32s(argv[1], &value)) return;
-// 	printf("%ld\n", value);
-// }
-
-// void hexstr_cmd(int argc, char * argv[]) {
-// 	uint8_t buffer[64];
-// 	uint8_t length;
-// 	if(parse_hex_string(argv[1], buffer, &length)) return;
-// 	printf("length: %u\n", length);
-// 	printf("ASC: ");
-// 	for(uint8_t i=0; i<length; i++) {
-// 		printf("%c", buffer[i]);
-// 	}
-// 	printf("\nHEX: ");
-// 	for(uint8_t i=0; i<length; i++) {
-// 		printf("%02X ", buffer[i]);
-// 	}
-// 	printf("\n");
-// }
-
-void ascstr_cmd(int argc, char * argv[]) {
-	char buffer[] = "0123456789";
-	printf("strlen: %u\n", strlen(buffer));
-	printf("ASC: %s\n", buffer);
-	printf("HEX: ");
-	for(uint8_t i=0; i<=strlen(buffer); i++) {
-		printf("%02X ", buffer[i]);
-	}
-	printf("\n");
-
-	size_t length;
-	//if(new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
-	new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0);
-	printf("length: %u\n", length);
-	printf("strlen: %u\n", strlen(buffer));
-	printf("ASC: %s\n", buffer);
-	printf("HEX: ");
-	for(uint8_t i=0; i<length+10; i++) {
-		printf("%02X ", buffer[i]);
-	}
-	printf("\n");
-}
-
-void ascchr_cmd(int argc, char * argv[]) {
-	char chr;
-	if(new_parse_ascii_char(argv[1], &chr)) return;
-	printf("%c\n", chr);
-}
 
 #endif
 #endif

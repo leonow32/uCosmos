@@ -239,7 +239,7 @@ void console_task(run_mode_t run_mode) {
 // Argument parsers
 // ========================================
 
-void debug(const parse_res res, const char * arg) {
+static void debug(const parse_res res, const char * arg) {
 	if(res == parse_ok) {
 		return;
 	}
@@ -268,544 +268,35 @@ void debug(const parse_res res, const char * arg) {
 	printf(FORMAT_RESET "\n");
 }
 
-// Funkcja przekształca znak ASCII HEX na wartość binarną
-// - input_char	 - Wskaźnik do badanego znaku
-// - output_char - Wskaźnik do zmiennej, w której ma być zapisany nibble
-static parse_res parse_hex_char(const char * input_char, uint8_t * output_char) {
-	if(*input_char >= '0' && *input_char <= '9') {
-		*output_char = *input_char - '0';
-		return parse_ok;
-	}
-	else if(*input_char >= 'A' && *input_char <= 'F') {
-		*output_char = *input_char - 55;
-		return parse_ok;
-	}
-	else if(*input_char >= 'a' && *input_char <= 'f') {
-		*output_char = *input_char - 87;
-		return parse_ok; 
-	}
-	else {
-		return parse_expected_hex;
-	}
-}
-
-// Parse single character 0..9 and A..F
-// static parse_res parse_hex_char(const char * input_char, uint8_t * output_char, bool high_nibble) {
-// 	char temp = *input_char;
-	
-// 	// Interpretowanie zaku ASCII
-// 	if(temp >= '0' && temp <= '9') {
-// 		temp = temp - '0';
-// 	}
-// 	else if(temp >= 'A' && temp <= 'F') {
-// 		temp = temp - 55;
-// 	}
-// 	else if(temp >= 'a' && temp <= 'f') {
-// 		temp = temp - 87;
-// 	}
-// 	else {
-// 		return parse_expected_hex;
-// 	}
-	
-// 	// Przesuwanie jeżeli to jest starszy nibble
-// 	if(high_nibble) {
-// 		temp <<= 4;
-// 		*output_char |= temp;
-// 	}
-// 	else {
-// 	// Zapisywanie wyniku
-// 		*output_char = temp;
-// 	}
-	
-// 	return parse_ok; 
-// }
-
-// Przetwarzanie stringu od końca, a output od początku
-// Zmienna wskazywana przez *output musi być wyzerowana, inaczej będzie błąd losowo zainicjalizowanej pamięci
-// static parse_res parse_hex_num(const char * arg, void * output, uint8_t chars) {
-// 	parse_res res;
-// 	const char * arg_copy = arg;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	arg = arg + chars;										// Przesunięcie wskaźnika na koniec ciągu znaków argumentu
-	
-// 	if(*arg != 0) {											// Sprawdzanie czy ostatni bajt argumentu to 0, jeżeli nie to znaczy, że przesłano więcej znaków niż jest potrzebne dla konkretnego typu zmiennej
-// 		res = parse_over_range;
-// 		goto end;
-// 	}
-	
-// 	do {													// Przetwarzanie wszystkich znaków ASCII od końca
-// 		uint8_t high_nibble = chars & 0x01;
-// 		res = parse_hex_char(--arg, (uint8_t*)output, high_nibble);
-// 		if(res) {
-// 			goto end;
-// 		}
-// 		if(high_nibble) {
-// 			output = (uint8_t *)output + 1;
-// 		}
-// 	} while(--chars);
-	
-// 	end:
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie liczby HEX 8-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint8_t * output) {
-// 	*output = 0;
-// 	return parse_hex_num(arg, output, 2);
-// }
-
-// // Parsowanie liczby HEX 16-bitowej
-// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint16_t * output) {
-// 	*output = 0;
-// 	return parse_hex_num(arg, output, 4);
-// }
-
-// // Parsowanie liczby HEX 24-bitowej
-// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_hex24(const char * arg, uint32_t * output) {
-// 	*output = 0;
-// 	return parse_hex_num(arg, output, 6);
-// }
-
-// // Parsowanie liczby HEX 32-bitowej
-// // - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// // - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint32_t * output) {
-// 	*output = 0;
-// 	return parse_hex_num(arg, output, 8);
-// }
-
-// Parsowanie liczby dziesiętnej 8-bitowej
-// Funkcja przekształca znak ASCII HEX na wartość binarną
-// - input_char	 - Wskaźnik do badanego znaku
-// - output_char - Wskaźnik do zmiennej, w której ma być zapisany nibble
-// static parse_res parse_dec_char(const char * input_char, char * output_char) {
-// 	if(*input_char >= '0' && *input_char <= '9') {
-// 		*output_char = *input_char - '0';
-// 		return parse_ok;
-// 	}
-// 	else {
-// 		return parse_expected_dec;
-// 	}
-// }
-
-// Parsowanie liczby dziesiętnej 8-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint8_t * output, const uint8_t max) {
-// 	const char * arg_copy = arg;
-// 	char digit; 	
-// 	uint8_t temp = 0;
-// 	uint8_t temp2;
-// 	parse_res res = parse_ok;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-// 		res = parse_dec_char(arg++, &digit);
-// 		if(res) {
-// 			goto end;
-// 		}
-		
-// 		temp2 = temp * 10 + digit;
-// 		if(temp <= temp2) {
-// 			temp = temp2;
-// 		}
-// 		else {
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-// 	}
-	
-// 	if(temp <= max) {										// Zwracanie wyniku
-// 		*output = temp;
-// 	}
-// 	else {
-// 		res = parse_over_range;
-// 	}
-	
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie liczby dziesiętnej 16-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint16_t * output, const uint16_t max) {
-// 	const char * arg_copy = arg;
-// 	char digit; 	
-// 	uint16_t temp = 0;
-// 	uint16_t temp2;
-// 	parse_res res = parse_ok;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-// 		res = parse_dec_char(arg++, &digit);
-// 		if(res) {
-// 			goto end;
-// 		}
-		
-// 		temp2 = temp * 10 + digit;
-// 		if(temp <= temp2) {
-// 			temp = temp2;
-// 		}
-// 		else {
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-// 	}
-	
-// 	if(temp <= max) {										// Zwracanie wyniku
-// 		*output = temp;
-// 	}
-// 	else {
-// 		res = parse_over_range;
-// 	}
-	
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie liczby dziesiętnej 16-bitowej ze znakiem
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output	- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_dec16s(const char * arg, int16_t * output) {
-// 	const char * arg_copy = arg;
-// 	char digit; 	
-// 	uint16_t temp = 0;
-// 	parse_res res = parse_ok;
-// 	bool negative = false;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	if(*arg == '-') {										// Czy znak minus na początku
-// 		arg++;
-// 		negative = true;
-// 	}
-	
-// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-// 		res = parse_dec_char(arg++, &digit);
-// 		if(res) {
-// 			goto end;
-// 		}
-
-// 		temp = temp * 10 + digit;
-
-// 		if(negative == false && temp > INT16_MAX) {
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-// 		else if(negative == true && temp > INT16_MAX+1) {
-// 			res = parse_under_range;
-// 			goto end;
-// 		}
-// 	}
-	
-// 	if(negative) {											// Zwracanie wyniku
-// 		*output = -int16_t(temp);
-// 	}
-// 	else {
-// 		*output = temp;
-// 	}
-	
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie liczby dziesiętnej 32-bitowej
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res new_parse_uint(const char * arg, uint32_t * output, const uint32_t max) {
-// 	const char * arg_copy = arg;
-// 	char digit; 	
-// 	uint32_t temp = 0;
-// 	uint32_t temp2;
-// 	parse_res res = parse_ok;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-// 		res = parse_dec_char(arg++, &digit);
-// 		if(res) {
-// 			goto end;
-// 		}
-		
-// 		temp2 = temp * 10 + digit;
-// 		if(temp <= temp2) {
-// 			temp = temp2;
-// 		}
-// 		else {
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-// 	}
-	
-// 	if(temp <= max) {										// Zwracanie wyniku
-// 		*output = temp;
-// 	}
-// 	else {
-// 		res = parse_over_range;
-// 	}
-	
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie liczby dziesiętnej 32-bitowej ze znakiem
-// - arg	- Wskaźnik do argumentu, który ma być przetworzony
-// - output		- Wskaźnik do zmiennej, w której będzie zwrócony wynik
-// parse_res parse_dec32s(const char * arg, int32_t * output) {
-// 	const char * arg_copy = arg;
-// 	char digit; 	
-// 	uint32_t temp = 0;
-// 	parse_res res = parse_ok;
-// 	bool negative = false;
-	
-// 	if(arg == nullptr) {										// Kontrola czy podano argument
-// 		res = parse_missing_argument;
-// 		goto end;
-// 	}
-	
-// 	if(*arg == '-') {										// Czy znak minus na początku
-// 		arg++;
-// 		negative = true;
-// 	}
-	
-// 	while(*arg != 0) {										// Przetwarzamy wszystkie znaki po kolei
-// 		res = parse_dec_char(arg++, &digit);
-// 		if(res) {
-// 			goto end;
-// 		}
-
-// 		temp = temp * 10 + digit;
-
-// 		if(negative == false && temp > INT32_MAX) {
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-// 		else if(negative == true && temp > INT32_MAX+1ul) {
-// 			res = parse_under_range;
-// 			goto end;
-// 		}
-// 	}
-	
-// 	if(negative) {											// Zwracanie wyniku
-// 		*output = -int32_t(temp);
-// 	}
-// 	else {
-// 		*output = temp;
-// 	}
-	
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Konwertowanie stringu znaków ASCII HEX na dane zapisane binarnie. W rezultacie wynikowy string jest 2x krótszy od
-// stringu wejściowego (jeśli były w nim spacje to dodatowo zostały wycięte). Wszystkie nadmiarowe znaki zostają zastąpione zerami,
-// aby można było wykorzystać miejsce w pamięci, które jest dotychczas zajmowane przez string wejściowy.
-// - String		- wejście i wyjście
-// - max_len	- maksymalna dopuszczalna dłogość stringu po przetworzeniu, domyślnie 255 znaków
-// - min_len	- minimalna dopuszczalna długość stringu po przetworzeniu, domyśłnie 0 znaków
-// parse_res parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len, const uint8_t min_len) {
-// 	const char * arg_copy = arg;
-// 	uint8_t nibble_h;
-// 	uint8_t nibble_l;
-// 	*out_len = 0;
-// 	parse_res res = parse_ok;
-	
-// 	while(*arg != 0) {										// przetwarzanie aż do napotkania znaku 0
-// 		if(*out_len == max_len) {							// Kontrola przepełnienia
-// 			res = parse_over_range;
-// 			goto end;
-// 		}
-		
-// 		if(*arg == ' ') {									// Pomijanie spacji
-// 			arg++;
-// 			continue;
-// 		}
-		
-// 		res = parse_hex_char(arg++, &nibble_h);				// Przetwarzanie starszego nibble
-// 		if(res) {
-// 			goto end;
-// 		}
-		
-// 		res = parse_hex_char(arg++, &nibble_l);				// Przetwarzanie młodszego nibble
-// 		if(res) {
-// 			goto end;
-// 		}
-		
-// 		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
-// 		(*out_len)++;										// Licznie znaków w stringu wynikowym
-// 	}
-	
-// 	if(*out_len < min_len) {								// Kontrola długości
-// 		res = parse_under_range;
-// 	}
-
-// 	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-// 	debug(res, arg_copy);
-// 	return res;
-// }
-
-// Parsowanie stringu ASCII
-// Zwraca ciąg znaków zakończonu znakiem NUL
-parse_res parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len, const uint8_t min_len) {
-	const char * arg_copy = arg;
-	*out_len = 0;
-	parse_res res = parse_ok;
-	
-	if(arg == nullptr) {
-		res = parse_missing_argument;
-		goto end;
+static parse_res new_debug(const parse_res res, const char * arg) {
+	if(res == parse_ok) {
+		return res;
 	}
 	
-	while(1) {												// przetwarzanie aż do napotkania znaku 0
-		if(*out_len == max_len) {							// Kontrola przepełnienia
-			res = parse_over_range;
-			goto end;
-		}
-		
-		(*out_len)++;										// Licznie znaków w stringu wynikowym
-		*output = *arg;										// Kopiowanie znaku
-		
-		if(*arg == NUL) {									// Sprawdzenie czy już doszliśmy do znaku NUL
-			break;
-		}
-		else {
-			output++;
-			arg++;
-		}
+	if(arg != nullptr) {
+		printf(TEXT_RED "Error in agument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", arg);
 	}
 	
-	if(*out_len < min_len) {								// Kontrola długości
-		res = parse_under_range;
+	printf(TEXT_RED);
+
+	switch(res) {
+		case parse_unknown_command:						printf("Unknown command");				break;
+		case parse_no_input:							printf("No input");						break;
+		case parse_missing_argument:					printf("Missing arg");					break;
+		case parse_over_range:							printf("Over range");					break;
+		case parse_under_range:							printf("Under range");					break;
+		case parse_error:								printf("Parse error");					break;
+		case parse_expected_bin:						printf("Expected bin");					break;
+		case parse_expected_dec:						printf("Expected dec");					break;
+		case parse_expected_hex:						printf("Expected hex");					break;
+		case parse_nullptr:								printf("Null ptr err");					break;
+		case parse_wrong_base:							printf("Wrong base");					break;
+		default:										printf("Unknown");						break;
 	}
-	
-	end:													// Wyświetlenie informacji o ewentualnym błędzie i zwrócenie wyniku
-	if(res) {
-		debug(res, arg_copy);
-	}
+
+	printf(FORMAT_RESET "\n");
 	return res;
 }
-
-// Parse a single character
-parse_res parse_ascii_char(const char * arg, uint8_t * output) {
-	parse_res res = parse_ok;
-	
-	if(arg == nullptr) {										// Kontrola czy podano argument
-		res = parse_missing_argument;
-	}
-	else {
-		res = parse_ok;
-		*output = *arg;
-	}
-	
-	debug(res, arg);
-	return res;
-}
-
-// Parse time given in format YYMMDDhhmmss
-parse_res parse_time(const char * arg, time_t * output) {
-	parse_res res = parse_ok;
-	tm new_time = {};
-	
-	if(arg == nullptr) {										// Sanity check
-		res = parse_missing_argument;
-		goto end;
-	}
-	
-	if(strlen(arg) != 12) {
-		res = parse_error;
-		goto end;
-	}
-	
-	uint8_t date_as_numbers[6];								// Parse characters into table
-	for(uint8_t i=0; i<sizeof(date_as_numbers); i++) {
-		date_as_numbers[i] = ((*arg++) - '0') * 10;
-		date_as_numbers[i] += ((*arg++) - '0');
-	}
-	
-	new_time.tm_year	= date_as_numbers[0] + 100;
-	new_time.tm_mon		= date_as_numbers[1] - 1;
-	new_time.tm_mday	= date_as_numbers[2];
-	new_time.tm_hour	= date_as_numbers[3];
-	new_time.tm_min		= date_as_numbers[4];
-	new_time.tm_sec		= date_as_numbers[5];
-	new_time.tm_isdst	= 0;
-	new_time.tm_yday	= 0;
-	
-	time_t time_seconds;
-	time_seconds = mktime(&new_time);
-	*output = time_seconds;
-	
-	end:
-	if(res) {
-		debug(res, arg);
-	}
-	return res;
-}
-
-void print_ok(void) {
-	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
-}
-
-// ========================================
-// New argument parsers
-// ========================================
-
-// Converts a single character of a decimal or hexadecimal value to uint8_t.
-// Set hex_mode = false for decimal numbers, true for hexadecimal.
-// parse_res new_parse_numeric_char(const char chr, uint8_t * output, bool hex_mode) {
-// 	if(chr >= '0' && chr <= '9') {
-// 		*output = chr - '0';
-// 		return parse_ok;
-// 	}
-// 	else if(hex_mode) {
-// 		if(chr >= 'A' && chr <= 'F') {
-// 			*output = chr - 'A' + 10;
-// 			return parse_ok;
-// 		}
-// 		else if(chr >= 'a' && chr <= 'f') {
-// 			*output = chr - 'a' + 10;
-// 			return parse_ok; 
-// 		}
-// 		else {
-// 			return parse_expected_hex;
-// 		}
-// 	}
-// 	else {
-// 		return parse_expected_dec;
-// 	}
-// }
 
 static parse_res new_parse_numeric_char(const char chr, uint8_t * output, uint8_t base) {
 	uint8_t value = 0;
@@ -968,7 +459,6 @@ parse_res new_parse_ascii_char(const char * arg, char * output) {
 }
 
 parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
-	printf("max_len: %zu\n", max_len);
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
 	
@@ -1014,24 +504,6 @@ parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_l
 			break;
 		}
 	}
-
-	// while(1) {
-	// 	if(*out_len >= max_len) {
-	// 		*output = NUL;
-	// 		res = parse_over_range;
-	// 		goto end;
-	// 	}
-
-	// 	*output = *arg;
-
-	// 	if(*arg++) {
-	// 		(*out_len)++;
-	// 		output++;
-	// 	}
-	// 	else {
-	// 		break;
-	// 	}
-	// }
 
 	if(*out_len < min_len) {								// Kontrola długości
 		res = parse_under_range;
@@ -1108,6 +580,66 @@ parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_
 	debug(res, arg_copy);
 	return res;
 }
+
+
+
+
+
+
+
+
+// Parse time given in format YYMMDDhhmmss
+parse_res parse_time(const char * arg, time_t * output) {
+	parse_res res = parse_ok;
+	tm new_time = {};
+	
+	if(arg == nullptr) {										// Sanity check
+		res = parse_missing_argument;
+		goto end;
+	}
+	
+	if(strlen(arg) != 12) {
+		res = parse_error;
+		goto end;
+	}
+	
+	uint8_t date_as_numbers[6];								// Parse characters into table
+	for(uint8_t i=0; i<sizeof(date_as_numbers); i++) {
+		date_as_numbers[i] = ((*arg++) - '0') * 10;
+		date_as_numbers[i] += ((*arg++) - '0');
+	}
+	
+	new_time.tm_year	= date_as_numbers[0] + 100;
+	new_time.tm_mon		= date_as_numbers[1] - 1;
+	new_time.tm_mday	= date_as_numbers[2];
+	new_time.tm_hour	= date_as_numbers[3];
+	new_time.tm_min		= date_as_numbers[4];
+	new_time.tm_sec		= date_as_numbers[5];
+	new_time.tm_isdst	= 0;
+	new_time.tm_yday	= 0;
+	
+	time_t time_seconds;
+	time_seconds = mktime(&new_time);
+	*output = time_seconds;
+	
+	end:
+	if(res) {
+		debug(res, arg);
+	}
+	return res;
+}
+
+void print_ok(void) {
+	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
+}
+
+// ========================================
+// New argument parsers
+// ========================================
+
+
+
+
 
 // ========================================
 // Commands

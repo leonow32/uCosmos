@@ -38,17 +38,8 @@ void		memory_status_cmd(int argc, char * argv[]);
 #if USE_CMD_PARSE_DEMO
 	void args_cmd(int argc, char * argv[]);
 	void echo_cmd(int argc, char * argv[]);
-	// void hex8_cmd(int argc, char * argv[]);
-	// void hex16_cmd(int argc, char * argv[]);
-	// void hex32_cmd(int argc, char * argv[]);
-	// void dec8_cmd(int argc, char * argv[]);
-	// void dec16_cmd(int argc, char * argv[]);
-	// void dec16s_cmd(int argc, char * argv[]);
-	// void dec32_cmd(int argc, char * argv[]);
-	// void dec32s_cmd(int argc, char * argv[]);
-	// void hexstr_cmd(int argc, char * argv[]);
-	void ascstr_cmd(int argc, char * argv[]);
-	void ascchr_cmd(int argc, char * argv[]);
+	
+	
 
 	void new_hex8_cmd(int argc, char * argv[]);
 	void new_hex16_cmd(int argc, char * argv[]);
@@ -65,6 +56,9 @@ void		memory_status_cmd(int argc, char * argv[]);
 	void new_int32_cmd(int argc, char * argv[]);
 	void new_int64_cmd(int argc, char * argv[]);
 
+	void ascstr_cmd(int argc, char * argv[]);
+	void ascchr_cmd(int argc, char * argv[]);
+	
 	void new_hexstr_cmd(int argc, char * argv[]);
 #endif
 

@@ -48,28 +48,14 @@ void		console_init(void);
 void		console_task(run_mode_t run_mode);
 
 // arg parsers
-void		debug(const parse_res result, const char * arg);
-// parse_res	new_parse_uint(const char * arg, uint8_t * output);
-// parse_res	new_parse_uint(const char * arg, uint16_t * output);
-// parse_res	parse_hex24(const char * arg, uint32_t * output);
-// parse_res	new_parse_uint(const char * arg, uint32_t * output);
-// parse_res	new_parse_uint(const char * arg, uint8_t * output, const uint8_t max = 255);
-// parse_res	new_parse_uint(const char * arg, uint16_t * output, const uint16_t max = 65535);
-// parse_res	parse_dec16s(const char * arg, int16_t * output);
-// parse_res	new_parse_uint(const char * arg, uint32_t * output, const uint32_t max = 4294967295UL);
-// parse_res	parse_dec32s(const char * arg, int32_t * output);
-
-// parse_res	parse_hex_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
-parse_res	parse_ascii_string(const char * arg, uint8_t * output, uint8_t * out_len, const uint8_t max_len = 255, const uint8_t min_len = 0);
-parse_res	parse_ascii_char(const char * arg, uint8_t * output);
-parse_res	parse_time(const char * arg, time_t * output);
-
 template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint8_t base = 10);
 template<typename T> parse_res new_parse_int(const char * arg, T * output);
 
 parse_res new_parse_ascii_char(const char * arg, char * output);
-parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len = 0);
-parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len = 0);
+parse_res new_parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+
+parse_res	parse_time(const char * arg, time_t * output);
 
 void		print_ok(void);
 
