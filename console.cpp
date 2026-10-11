@@ -248,18 +248,16 @@ static parse_res new_debug(const parse_res res, const char * arg) {
 		printf(TEXT_RED);
 
 		switch(res) {
-			case parse_unknown_command:						printf("Unknown command");				break;
-			case parse_no_input:							printf("No input");						break;
-			case parse_missing_argument:					printf("Missing arg");					break;
-			case parse_over_range:							printf("Over range");					break;
-			case parse_under_range:							printf("Under range");					break;
-			case parse_error:								printf("Parse error");					break;
-			case parse_expected_bin:						printf("Expected bin");					break;
-			case parse_expected_dec:						printf("Expected dec");					break;
-			case parse_expected_hex:						printf("Expected hex");					break;
-			case parse_nullptr:								printf("Null ptr err");					break;
-			case parse_wrong_base:							printf("Wrong base");					break;
-			default:										printf("Unknown");						break;
+			case parse_missing_argument:	printf("Missing arg");		break;
+			case parse_over_range:			printf("Over range");		break;
+			case parse_under_range:			printf("Under range");		break;
+			case parse_error:				printf("Parse error");		break;
+			case parse_expected_bin:		printf("Expected bin");		break;
+			case parse_expected_dec:		printf("Expected dec");		break;
+			case parse_expected_hex:		printf("Expected hex");		break;
+			case parse_nullptr:				printf("Null ptr err");		break;
+			case parse_wrong_base:			printf("Wrong base");		break;
+			case parse_wrong_time:			printf("Wrong time");		break;
 		}
 
 		printf(FORMAT_RESET "\n");
@@ -432,52 +430,47 @@ parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_
 	return parse_ok;
 }
 
+// Parse time YYMMDDhhmmss
+parse_res new_parse_time(const char * arg, time_t * output) {
+	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
+	if(output == nullptr)	return new_debug(parse_nullptr, arg);
+	if(strlen(arg) != 12)	return new_debug(parse_error, arg);
 
-
-
-
-
-
-
-// Parse time given in format YYMMDDhhmmss
-parse_res parse_time(const char * arg, time_t * output) {
-	parse_res res = parse_ok;
 	tm new_time = {};
-	
-	if(arg == nullptr) {										// Sanity check
-		res = parse_missing_argument;
-		goto end;
+	uint8_t digits[12] = {};
+	parse_res res = parse_ok;
+
+	for(uint8_t i=0; i<sizeof(digits); i++) {
+		res = new_parse_numeric_char(arg[i], &digits[i], 10);
+		if(res) return new_debug(res, arg);
 	}
-	
-	if(strlen(arg) != 12) {
-		res = parse_error;
-		goto end;
-	}
-	
-	uint8_t date_as_numbers[6];								// Parse characters into table
-	for(uint8_t i=0; i<sizeof(date_as_numbers); i++) {
-		date_as_numbers[i] = ((*arg++) - '0') * 10;
-		date_as_numbers[i] += ((*arg++) - '0');
-	}
-	
-	new_time.tm_year	= date_as_numbers[0] + 100;
-	new_time.tm_mon		= date_as_numbers[1] - 1;
-	new_time.tm_mday	= date_as_numbers[2];
-	new_time.tm_hour	= date_as_numbers[3];
-	new_time.tm_min		= date_as_numbers[4];
-	new_time.tm_sec		= date_as_numbers[5];
-	new_time.tm_isdst	= 0;
-	new_time.tm_yday	= 0;
-	
+
+	new_time.tm_year	= 10*digits[0]  + digits[1] + 100;
+	new_time.tm_mon		= 10*digits[2]  + digits[3] - 1;
+	new_time.tm_mday	= 10*digits[4]  + digits[5];
+	new_time.tm_hour	= 10*digits[6]  + digits[7];
+	new_time.tm_min		= 10*digits[8]  + digits[9];
+	new_time.tm_sec		= 10*digits[10] + digits[11];
+
+	bool leap_year = ((new_time.tm_year % 4 == 0) && (new_time.tm_year % 100 != 0)) || ((new_time.tm_year-100) % 400 == 0);
+	uint8_t days_in_month[] = {31, uint8_t(leap_year ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	uint8_t dm = days_in_month[new_time.tm_mon];
+
+	if(new_time.tm_mon > 11)  return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_mon < 0)   return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_mday > dm) return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_mday == 0) return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_hour > 23) return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_min > 59)  return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_sec > 59)  return new_debug(parse_wrong_time, arg);
+
 	time_t time_seconds;
 	time_seconds = mktime(&new_time);
+
+	if(time_seconds == time_t(-1)) return new_debug(parse_error, arg);
+
 	*output = time_seconds;
-	
-	end:
-	if(res) {
-		return new_debug(res, arg);
-	}
-	return res;
+	return parse_ok;
 }
 
 void print_ok(void) {

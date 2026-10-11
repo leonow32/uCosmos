@@ -393,7 +393,22 @@ void new_hexstr_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
+void new_time_cmd(int argc, char * argv[]) {
+	time_t time_seconds;
+	if(new_parse_time(argv[1], &time_seconds)) return;
 
+	tm time_struct;
+	gmtime_r(&time_seconds, &time_struct);
+	
+	printf("20%02u-%02u-%02u %02u:%02u:%02u\n",
+		time_struct.tm_year - 100,
+		time_struct.tm_mon + 1,
+		time_struct.tm_mday,
+		time_struct.tm_hour,
+		time_struct.tm_min,
+		time_struct.tm_sec
+	);
+}
 
 
 
