@@ -55,9 +55,9 @@ parse_res new_parse_ascii_char(const char * arg, char * output);
 parse_res new_parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
 parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
 
-parse_res	parse_time(const char * arg, time_t * output);
+parse_res parse_time(const char * arg, time_t * output);
 
-void		print_ok(void);
+void print_ok(void);
 
 // Demo commands
 #if USE_CMD_ALL
