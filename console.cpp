@@ -258,6 +258,7 @@ static parse_res new_debug(const parse_res res, const char * arg) {
 			case parse_nullptr:				printf("Null ptr err");		break;
 			case parse_wrong_base:			printf("Wrong base");		break;
 			case parse_wrong_time:			printf("Wrong time");		break;
+			default:						printf("?");				break;
 		}
 
 		printf(FORMAT_RESET "\n");
@@ -266,7 +267,7 @@ static parse_res new_debug(const parse_res res, const char * arg) {
 	return res;
 }
 
-static parse_res new_parse_numeric_char(const char chr, uint8_t * output, uint8_t base) {
+static parse_res parse_uinteric_char(const char chr, uint8_t * output, uint8_t base) {
 	uint8_t value = 0;
 	
 	if(chr >= '0' && chr <= '9')
@@ -291,7 +292,7 @@ static parse_res new_parse_numeric_char(const char chr, uint8_t * output, uint8_
 	return parse_ok;
 }
 
-template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint8_t base) {
+template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base) {
 	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
 	const char * arg_copy = arg;
 	
@@ -304,7 +305,7 @@ template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint
 
 	while(*arg) {
 		uint8_t char_value = 0;
-		parse_res res = new_parse_numeric_char(*arg++, &char_value, base);
+		parse_res res = parse_uinteric_char(*arg++, &char_value, base);
 		if(res) return new_debug(res, arg_copy);
 		if(*output > (std::numeric_limits<T>::max() - char_value) / base) return new_debug(parse_over_range, arg_copy);
 		*output = *output * base + char_value;
@@ -313,12 +314,12 @@ template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint
 	return parse_ok;
 }
 
-template parse_res new_parse_uint<uint8_t>(const char *, uint8_t *, uint8_t);
-template parse_res new_parse_uint<uint16_t>(const char *, uint16_t *, uint8_t);
-template parse_res new_parse_uint<uint32_t>(const char *, uint32_t *, uint8_t);
-template parse_res new_parse_uint<uint64_t>(const char *, uint64_t *, uint8_t);
+template parse_res parse_uint<uint8_t>(const char *, uint8_t *, uint8_t);
+template parse_res parse_uint<uint16_t>(const char *, uint16_t *, uint8_t);
+template parse_res parse_uint<uint32_t>(const char *, uint32_t *, uint8_t);
+template parse_res parse_uint<uint64_t>(const char *, uint64_t *, uint8_t);
 
-template<typename T> parse_res new_parse_int(const char * arg, T * output) {
+template<typename T> parse_res parse_int(const char * arg, T * output) {
 	static_assert(std::is_signed_v<T>, "This function works with signed integers only.");
 	const char * arg_copy = arg;
 	bool negative = false;
@@ -336,7 +337,7 @@ template<typename T> parse_res new_parse_int(const char * arg, T * output) {
 
 	while(*arg) {
 		uint8_t char_value = 0;
-		parse_res res = new_parse_numeric_char(*arg++, &char_value, 10);
+		parse_res res = parse_uinteric_char(*arg++, &char_value, 10);
 		if(res) return new_debug(res, arg_copy);
 
 		if(negative) {
@@ -352,19 +353,19 @@ template<typename T> parse_res new_parse_int(const char * arg, T * output) {
 	return parse_ok;
 }
 
-template parse_res new_parse_int<int8_t>(const char *, int8_t *);
-template parse_res new_parse_int<int16_t>(const char *, int16_t *);
-template parse_res new_parse_int<int32_t>(const char *, int32_t *);
-template parse_res new_parse_int<int64_t>(const char *, int64_t *);
+template parse_res parse_int<int8_t>(const char *, int8_t *);
+template parse_res parse_int<int16_t>(const char *, int16_t *);
+template parse_res parse_int<int32_t>(const char *, int32_t *);
+template parse_res parse_int<int64_t>(const char *, int64_t *);
 
-parse_res new_parse_ascii_char(const char * arg, char * output) {
+parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
 	if(output == nullptr)	return new_debug(parse_nullptr, arg);
 	*output = arg[0];
 	return parse_ok;
 }
 
-parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
+parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	const char * arg_copy = arg;
 	
 	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
@@ -394,7 +395,7 @@ parse_res new_parse_ascii_string(const char * arg, char * output, size_t * out_l
 	return parse_ok;
 }
 
-parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
+parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	parse_res res = parse_ok;
 	const char * arg_copy = arg;
 	uint8_t nibble_h;
@@ -416,10 +417,10 @@ parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_
 
 		if(*out_len >= max_len) return new_debug(parse_over_range, arg_copy);
 
-		res = new_parse_numeric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
+		res = parse_uinteric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
 		if(res) return new_debug(res, arg_copy);
 		
-		res = new_parse_numeric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
+		res = parse_uinteric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
 		if(res) return new_debug(res, arg_copy);
 		
 		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
@@ -431,7 +432,7 @@ parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * out_
 }
 
 // Parse time YYMMDDhhmmss
-parse_res new_parse_time(const char * arg, time_t * output) {
+parse_res parse_time(const char * arg, time_t * output) {
 	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
 	if(output == nullptr)	return new_debug(parse_nullptr, arg);
 	if(strlen(arg) != 12)	return new_debug(parse_error, arg);
@@ -441,7 +442,7 @@ parse_res new_parse_time(const char * arg, time_t * output) {
 	parse_res res = parse_ok;
 
 	for(uint8_t i=0; i<sizeof(digits); i++) {
-		res = new_parse_numeric_char(arg[i], &digits[i], 10);
+		res = parse_uinteric_char(arg[i], &digits[i], 10);
 		if(res) return new_debug(res, arg);
 	}
 

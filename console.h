@@ -47,12 +47,12 @@ void console_init(void);
 void console_task(run_mode_t run_mode);
 
 // Argument parsers
-template<typename T> parse_res new_parse_uint(const char * arg, T * output, uint8_t base = 10);
-template<typename T> parse_res new_parse_int(const char * arg, T * output);
-parse_res new_parse_ascii_char(const char * arg, char * output);
-parse_res new_parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
-parse_res new_parse_hex_string(const char * arg, uint8_t * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
-parse_res new_parse_time(const char * arg, time_t * output);
+template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10);
+template<typename T> parse_res parse_int(const char * arg, T * output);
+parse_res parse_ascii_char(const char * arg, char * output);
+parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+parse_res parse_time(const char * arg, time_t * output);
 
 void print_ok(void);
 

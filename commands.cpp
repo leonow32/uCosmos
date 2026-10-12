@@ -71,12 +71,12 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_uint(argv[1], &ptr, 16)) return;
+		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
 		uint16_t period;
-		if(new_parse_uint(argv[2], &period)) return;
+		if(parse_uint(argv[2], &period)) return;
 		
 		// Execute command
 		task_add(task_ptr, period);
@@ -93,7 +93,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_uint(argv[1], &ptr, 16)) return;
+		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -111,12 +111,12 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_uint(argv[1], &ptr, 16)) return;
+		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Argument 2 - period
 		uint16_t period;
-		if(new_parse_uint(argv[2], &period)) return;
+		if(parse_uint(argv[2], &period)) return;
 		
 		// Execute command
 		task_period_change(task_ptr, period);
@@ -133,7 +133,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		
 		// Argument 1 - task pointer
 		uint32_t ptr;
-		if(new_parse_uint(argv[1], &ptr, 16)) return;
+		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
@@ -224,7 +224,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		}
 		
 		uint16_t period;
-		if(new_parse_uint(argv[1], &period)) return;
+		if(parse_uint(argv[1], &period)) return;
 		
 		task_add(demo1_task, period);
 	}
@@ -238,7 +238,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		}
 		
 		uint16_t period;
-		if(new_parse_uint(argv[1], &period)) return;
+		if(parse_uint(argv[1], &period)) return;
 		
 		task_add(demo2_task, period);
 	}
@@ -273,49 +273,49 @@ void echo_cmd(int argc, char * argv[]) {
 
 void new_hex8_cmd(int argc, char * argv[]) {
 	uint8_t value;
-	if(new_parse_uint(argv[1], &value, 16)) return;
+	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
 void new_hex16_cmd(int argc, char * argv[]) {
 	uint16_t value;
-	if(new_parse_uint(argv[1], &value, 16)) return;
+	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
 void new_hex32_cmd(int argc, char * argv[]) {
 	uint32_t value;
-	if(new_parse_uint(argv[1], &value, 16)) return;
+	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%lu\n", value);
 }
 
 void new_hex64_cmd(int argc, char * argv[]) {
 	uint64_t value;
-	if(new_parse_uint(argv[1], &value, 16)) return;
+	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%llu\n", value);
 }
 
 void new_dec8_cmd(int argc, char * argv[]) {
 	uint8_t value;
-	if(new_parse_uint(argv[1], &value)) return;
+	if(parse_uint(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
 void new_dec16_cmd(int argc, char * argv[]) {
 	uint16_t value;
-	if(new_parse_uint(argv[1], &value)) return;
+	if(parse_uint(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
 void new_dec32_cmd(int argc, char * argv[]) {
 	uint32_t value;
-	if(new_parse_uint(argv[1], &value)) return;
+	if(parse_uint(argv[1], &value)) return;
 	printf("%lu\n", value);
 }
 
 void new_dec64_cmd(int argc, char * argv[]) {
 	uint64_t value;
-	if(new_parse_uint(argv[1], &value)) return;
+	if(parse_uint(argv[1], &value)) return;
 	printf("%llu\n", value);
 }
 
@@ -326,47 +326,47 @@ void new_numeric_cmd(int argc, char * argv[]) {
 	}
 
 	uint8_t base;
-	if(new_parse_uint(argv[1], &base)) return;
+	if(parse_uint(argv[1], &base)) return;
 
 	uint64_t value;
-	if(new_parse_uint(argv[2], &value, base)) return;
+	if(parse_uint(argv[2], &value, base)) return;
 	printf("%llu\n", value);
 }
 
 void new_int8_cmd(int argc, char * argv[]) {
 	int8_t value;
-	if(new_parse_int(argv[1], &value)) return;
+	if(parse_int(argv[1], &value)) return;
 	printf("%d\n", value);
 }
 
 void new_int16_cmd(int argc, char * argv[]) {
 	int16_t value;
-	if(new_parse_int(argv[1], &value)) return;
+	if(parse_int(argv[1], &value)) return;
 	printf("%d\n", value);
 }
 
 void new_int32_cmd(int argc, char * argv[]) {
 	int32_t value;
-	if(new_parse_int(argv[1], &value)) return;
+	if(parse_int(argv[1], &value)) return;
 	printf("%ld\n", value);
 }
 
 void new_int64_cmd(int argc, char * argv[]) {
 	int64_t value;
-	if(new_parse_int(argv[1], &value)) return;
+	if(parse_int(argv[1], &value)) return;
 	printf("%lld\n", value);
 }
 
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;
-	if(new_parse_ascii_char(argv[1], &chr)) return;
+	if(parse_ascii_char(argv[1], &chr)) return;
 	printf("%c\n", chr);
 }
 
 void ascstr_cmd(int argc, char * argv[]) {
 	char buffer[16] = {0};
 	size_t length;
-	if(new_parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
+	if(parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
 	printf("length: %u\n", length);
 	printf("strlen: %u\n", strlen(buffer));
 	printf("ASC: %s\n", buffer);
@@ -380,7 +380,7 @@ void ascstr_cmd(int argc, char * argv[]) {
 void new_hexstr_cmd(int argc, char * argv[]) {
 	uint8_t buffer[16];
 	size_t length;
-	if(new_parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
+	if(parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
 	printf("length: %u\n", length);
 	printf("ASC: ");
 	for(uint8_t i=0; i<length; i++) {
@@ -395,7 +395,7 @@ void new_hexstr_cmd(int argc, char * argv[]) {
 
 void new_time_cmd(int argc, char * argv[]) {
 	time_t time_seconds;
-	if(new_parse_time(argv[1], &time_seconds)) return;
+	if(parse_time(argv[1], &time_seconds)) return;
 
 	tm time_struct;
 	gmtime_r(&time_seconds, &time_struct);
