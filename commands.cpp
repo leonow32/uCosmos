@@ -271,55 +271,55 @@ void echo_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-void new_hex8_cmd(int argc, char * argv[]) {
+void hex8_cmd(int argc, char * argv[]) {
 	uint8_t value;
 	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
-void new_hex16_cmd(int argc, char * argv[]) {
+void hex16_cmd(int argc, char * argv[]) {
 	uint16_t value;
 	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%u\n", value);
 }
 
-void new_hex32_cmd(int argc, char * argv[]) {
+void hex32_cmd(int argc, char * argv[]) {
 	uint32_t value;
 	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%lu\n", value);
 }
 
-void new_hex64_cmd(int argc, char * argv[]) {
+void hex64_cmd(int argc, char * argv[]) {
 	uint64_t value;
 	if(parse_uint(argv[1], &value, 16)) return;
 	printf("%llu\n", value);
 }
 
-void new_dec8_cmd(int argc, char * argv[]) {
+void uint8_cmd(int argc, char * argv[]) {
 	uint8_t value;
 	if(parse_uint(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
-void new_dec16_cmd(int argc, char * argv[]) {
+void uint16_cmd(int argc, char * argv[]) {
 	uint16_t value;
 	if(parse_uint(argv[1], &value)) return;
 	printf("%u\n", value);
 }
 
-void new_dec32_cmd(int argc, char * argv[]) {
+void uint32_cmd(int argc, char * argv[]) {
 	uint32_t value;
 	if(parse_uint(argv[1], &value)) return;
 	printf("%lu\n", value);
 }
 
-void new_dec64_cmd(int argc, char * argv[]) {
+void uint64_cmd(int argc, char * argv[]) {
 	uint64_t value;
 	if(parse_uint(argv[1], &value)) return;
 	printf("%llu\n", value);
 }
 
-void new_numeric_cmd(int argc, char * argv[]) {
+void numeric_cmd(int argc, char * argv[]) {
 	if(argc == 1) {
 		printf("base value\n");
 		return;
@@ -333,25 +333,25 @@ void new_numeric_cmd(int argc, char * argv[]) {
 	printf("%llu\n", value);
 }
 
-void new_int8_cmd(int argc, char * argv[]) {
+void int8_cmd(int argc, char * argv[]) {
 	int8_t value;
 	if(parse_int(argv[1], &value)) return;
 	printf("%d\n", value);
 }
 
-void new_int16_cmd(int argc, char * argv[]) {
+void int16_cmd(int argc, char * argv[]) {
 	int16_t value;
 	if(parse_int(argv[1], &value)) return;
 	printf("%d\n", value);
 }
 
-void new_int32_cmd(int argc, char * argv[]) {
+void int32_cmd(int argc, char * argv[]) {
 	int32_t value;
 	if(parse_int(argv[1], &value)) return;
 	printf("%ld\n", value);
 }
 
-void new_int64_cmd(int argc, char * argv[]) {
+void int64_cmd(int argc, char * argv[]) {
 	int64_t value;
 	if(parse_int(argv[1], &value)) return;
 	printf("%lld\n", value);
@@ -377,7 +377,7 @@ void ascstr_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-void new_hexstr_cmd(int argc, char * argv[]) {
+void hexstr_cmd(int argc, char * argv[]) {
 	uint8_t buffer[16];
 	size_t length;
 	if(parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
@@ -393,7 +393,7 @@ void new_hexstr_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-void new_time_cmd(int argc, char * argv[]) {
+void time_demo_cmd(int argc, char * argv[]) {
 	time_t time_seconds;
 	if(parse_time(argv[1], &time_seconds)) return;
 

@@ -1,13 +1,8 @@
 #include "../config.h"
 #if COMPONENT_CONSOLE
-// static const char *TAG = "console";
-// #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <string.h>
 #include <limits>
 #include <iostream>
-// #include <string>
-// #include <cstdlib>
-// #include <cstdint>
 #include "log.h"
 #include "console.h"
 #include "../command_list.h"
@@ -239,10 +234,10 @@ void console_task(run_mode_t run_mode) {
 // Argument parsers
 // ========================================
 
-static parse_res new_debug(const parse_res res, const char * arg) {
+static parse_res debug(const parse_res res, const char * arg) {
 	if(res != parse_ok) {
 		if(arg != nullptr) {
-			printf(TEXT_RED "Error in agument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", arg);
+			printf(TEXT_RED "Error in argument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", arg);
 		}
 		
 		printf(TEXT_RED);
@@ -267,7 +262,7 @@ static parse_res new_debug(const parse_res res, const char * arg) {
 	return res;
 }
 
-static parse_res parse_uinteric_char(const char chr, uint8_t * output, uint8_t base) {
+static parse_res parse_numeric_char(const char chr, uint8_t * output, uint8_t base) {
 	uint8_t value = 0;
 	
 	if(chr >= '0' && chr <= '9')
@@ -296,18 +291,18 @@ template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t 
 	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
 	const char * arg_copy = arg;
 	
-	if(arg == nullptr)			return new_debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)			return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)		return new_debug(parse_nullptr, arg);
-	if(base < 2 || base > 16)	return new_debug(parse_wrong_base, arg);
+	if(arg == nullptr)			return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)			return debug(parse_missing_argument, arg);
+	if(output == nullptr)		return debug(parse_nullptr, arg);
+	if(base < 2 || base > 16)	return debug(parse_wrong_base, arg);
 
 	*output = 0;
 
 	while(*arg) {
 		uint8_t char_value = 0;
-		parse_res res = parse_uinteric_char(*arg++, &char_value, base);
-		if(res) return new_debug(res, arg_copy);
-		if(*output > (std::numeric_limits<T>::max() - char_value) / base) return new_debug(parse_over_range, arg_copy);
+		parse_res res = parse_numeric_char(*arg++, &char_value, base);
+		if(res) return debug(res, arg_copy);
+		if(*output > (std::numeric_limits<T>::max() - char_value) / base) return debug(parse_over_range, arg_copy);
 		*output = *output * base + char_value;
 	} 
 
@@ -324,9 +319,9 @@ template<typename T> parse_res parse_int(const char * arg, T * output) {
 	const char * arg_copy = arg;
 	bool negative = false;
 	
-	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)		return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)	return new_debug(parse_nullptr, arg);
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
 	
 	if(*arg == '-') {
 		negative = true;
@@ -337,15 +332,15 @@ template<typename T> parse_res parse_int(const char * arg, T * output) {
 
 	while(*arg) {
 		uint8_t char_value = 0;
-		parse_res res = parse_uinteric_char(*arg++, &char_value, 10);
-		if(res) return new_debug(res, arg_copy);
+		parse_res res = parse_numeric_char(*arg++, &char_value, 10);
+		if(res) return debug(res, arg_copy);
 
 		if(negative) {
-			if(*output < (std::numeric_limits<T>::min() + char_value) / 10) return new_debug(parse_under_range, arg_copy);
+			if(*output < (std::numeric_limits<T>::min() + char_value) / 10) return debug(parse_under_range, arg_copy);
 			*output = *output * 10 - char_value;
 		}
 		else {
-			if(*output > (std::numeric_limits<T>::max() - char_value) / 10) return new_debug(parse_over_range, arg_copy);
+			if(*output > (std::numeric_limits<T>::max() - char_value) / 10) return debug(parse_over_range, arg_copy);
 			*output = *output * 10 + char_value;
 		}
 	} 
@@ -359,8 +354,8 @@ template parse_res parse_int<int32_t>(const char *, int32_t *);
 template parse_res parse_int<int64_t>(const char *, int64_t *);
 
 parse_res parse_ascii_char(const char * arg, char * output) {
-	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)	return new_debug(parse_nullptr, arg);
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
 	*output = arg[0];
 	return parse_ok;
 }
@@ -368,11 +363,11 @@ parse_res parse_ascii_char(const char * arg, char * output) {
 parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	const char * arg_copy = arg;
 	
-	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)		return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)	return new_debug(parse_nullptr, arg);
-	if(out_len == nullptr)	return new_debug(parse_nullptr, arg);
-	if(max_len < min_len)	return new_debug(parse_error, arg);
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
+	if(out_len == nullptr)	return debug(parse_nullptr, arg);
+	if(max_len < min_len)	return debug(parse_error, arg);
 	
 	*out_len = 0;
 	
@@ -382,7 +377,7 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, 
 			(*out_len)++;
 			if(*out_len >= max_len) {
 				*output = NUL;
-				return new_debug(parse_over_range, arg_copy);
+				return debug(parse_over_range, arg_copy);
 			}
 			output++;
 		}
@@ -391,7 +386,7 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, 
 		}
 	}
 
-	if(*out_len < min_len) return new_debug(parse_under_range, arg_copy);
+	if(*out_len < min_len) return debug(parse_under_range, arg_copy);
 	return parse_ok;
 }
 
@@ -401,11 +396,11 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len,
 	uint8_t nibble_h;
 	uint8_t nibble_l;
 
-	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)		return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)	return new_debug(parse_nullptr, arg);
-	if(out_len == nullptr)	return new_debug(parse_nullptr, arg);
-	if(max_len < min_len)	return new_debug(parse_error, arg);
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
+	if(out_len == nullptr)	return debug(parse_nullptr, arg);
+	if(max_len < min_len)	return debug(parse_error, arg);
 
 	*out_len = 0;
 
@@ -415,35 +410,35 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len,
 			continue;
 		}
 
-		if(*out_len >= max_len) return new_debug(parse_over_range, arg_copy);
+		if(*out_len >= max_len) return debug(parse_over_range, arg_copy);
 
-		res = parse_uinteric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
-		if(res) return new_debug(res, arg_copy);
+		res = parse_numeric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
+		if(res) return debug(res, arg_copy);
 		
-		res = parse_uinteric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
-		if(res) return new_debug(res, arg_copy);
+		res = parse_numeric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
+		if(res) return debug(res, arg_copy);
 		
 		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
 		(*out_len)++;										// Licznie bajtów w tablicy wynikowej
 	}
 
-	if(*out_len < min_len) return new_debug(parse_under_range, arg_copy);
+	if(*out_len < min_len) return debug(parse_under_range, arg_copy);
 	return parse_ok;
 }
 
 // Parse time YYMMDDhhmmss
 parse_res parse_time(const char * arg, time_t * output) {
-	if(arg == nullptr)		return new_debug(parse_missing_argument, arg);
-	if(output == nullptr)	return new_debug(parse_nullptr, arg);
-	if(strlen(arg) != 12)	return new_debug(parse_error, arg);
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
+	if(strlen(arg) != 12)	return debug(parse_error, arg);
 
 	tm new_time = {};
 	uint8_t digits[12] = {};
 	parse_res res = parse_ok;
 
 	for(uint8_t i=0; i<sizeof(digits); i++) {
-		res = parse_uinteric_char(arg[i], &digits[i], 10);
-		if(res) return new_debug(res, arg);
+		res = parse_numeric_char(arg[i], &digits[i], 10);
+		if(res) return debug(res, arg);
 	}
 
 	new_time.tm_year	= 10*digits[0]  + digits[1] + 100;
@@ -457,18 +452,18 @@ parse_res parse_time(const char * arg, time_t * output) {
 	uint8_t days_in_month[] = {31, uint8_t(leap_year ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	uint8_t dm = days_in_month[new_time.tm_mon];
 
-	if(new_time.tm_mon > 11)  return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_mon < 0)   return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_mday > dm) return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_mday == 0) return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_hour > 23) return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_min > 59)  return new_debug(parse_wrong_time, arg);
-	if(new_time.tm_sec > 59)  return new_debug(parse_wrong_time, arg);
+	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
+	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
+	if(new_time.tm_mday > dm) return debug(parse_wrong_time, arg);
+	if(new_time.tm_mday == 0) return debug(parse_wrong_time, arg);
+	if(new_time.tm_hour > 23) return debug(parse_wrong_time, arg);
+	if(new_time.tm_min > 59)  return debug(parse_wrong_time, arg);
+	if(new_time.tm_sec > 59)  return debug(parse_wrong_time, arg);
 
 	time_t time_seconds;
 	time_seconds = mktime(&new_time);
 
-	if(time_seconds == time_t(-1)) return new_debug(parse_error, arg);
+	if(time_seconds == time_t(-1)) return debug(parse_error, arg);
 
 	*output = time_seconds;
 	return parse_ok;

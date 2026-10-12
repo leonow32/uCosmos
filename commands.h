@@ -39,27 +39,27 @@ void		memory_status_cmd(int argc, char * argv[]);
 	void args_cmd(int argc, char * argv[]);
 	void echo_cmd(int argc, char * argv[]);
 
-	void new_hex8_cmd(int argc, char * argv[]);
-	void new_hex16_cmd(int argc, char * argv[]);
-	void new_hex32_cmd(int argc, char * argv[]);
-	void new_hex64_cmd(int argc, char * argv[]);
+	void hex8_cmd(int argc, char * argv[]);
+	void hex16_cmd(int argc, char * argv[]);
+	void hex32_cmd(int argc, char * argv[]);
+	void hex64_cmd(int argc, char * argv[]);
 	
-	void new_dec8_cmd(int argc, char * argv[]);
-	void new_dec16_cmd(int argc, char * argv[]);
-	void new_dec32_cmd(int argc, char * argv[]);
-	void new_dec64_cmd(int argc, char * argv[]);
-	void new_numeric_cmd(int argc, char * argv[]);
+	void uint8_cmd(int argc, char * argv[]);
+	void uint16_cmd(int argc, char * argv[]);
+	void uint32_cmd(int argc, char * argv[]);
+	void uint64_cmd(int argc, char * argv[]);
+	void numeric_cmd(int argc, char * argv[]);
 
-	void new_int8_cmd(int argc, char * argv[]);
-	void new_int16_cmd(int argc, char * argv[]);
-	void new_int32_cmd(int argc, char * argv[]);
-	void new_int64_cmd(int argc, char * argv[]);
+	void int8_cmd(int argc, char * argv[]);
+	void int16_cmd(int argc, char * argv[]);
+	void int32_cmd(int argc, char * argv[]);
+	void int64_cmd(int argc, char * argv[]);
 
 	void ascstr_cmd(int argc, char * argv[]);
 	void ascchr_cmd(int argc, char * argv[]);
 	
-	void new_hexstr_cmd(int argc, char * argv[]);
-	void new_time_cmd(int argc, char * argv[]);
+	void hexstr_cmd(int argc, char * argv[]);
+	void time_demo_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */
