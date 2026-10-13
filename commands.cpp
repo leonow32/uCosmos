@@ -410,9 +410,28 @@ void time_demo_cmd(int argc, char * argv[]) {
 	);
 }
 
+void wrong1_cmd(int argc, char * argv[]) {
+	uint8_t value = 123;
+	if(parse_uint("10", &value)) return;
+	printf("val: %u\n", value);
+}
 
+void wrong2_cmd(int argc, char * argv[]) {
+	uint8_t * value = nullptr;
+	if(parse_uint("10", value)) return;
+}
 
+void wrong3_cmd(int argc, char * argv[]) {
+	uint8_t value = 123;
+	if(parse_uint("", &value)) return;
+	printf("val: %u\n", value);
+}
 
+void wrong4_cmd(int argc, char * argv[]) {
+	uint8_t value = 123;
+	if(parse_uint(nullptr, &value)) return;
+	printf("val: %u\n", value);
+}
 
 #endif
 #endif

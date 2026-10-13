@@ -3,6 +3,7 @@
 #define UCOSMOS_COMMANDS_H_
 
 #include "log.h"
+#include "uCosmos.h"
 
 // Basic commands
 void		reset_cmd(int argc, char * argv[]);
@@ -60,6 +61,11 @@ void		memory_status_cmd(int argc, char * argv[]);
 	
 	void hexstr_cmd(int argc, char * argv[]);
 	void time_demo_cmd(int argc, char * argv[]);
+
+	void wrong1_cmd(int argc, char * argv[]);
+	void wrong2_cmd(int argc, char * argv[]);
+	void wrong3_cmd(int argc, char * argv[]);
+	void wrong4_cmd(int argc, char * argv[]);
 #endif
 
 #endif /* UCOSMOS_COMMANDS_H_ */

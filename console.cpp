@@ -139,11 +139,9 @@ static inline console_res split_args(uint8_t * argc, char * argv[]) {
 // Argumentem przyjmowanym przez Console_FindCommand() jest wskaźnik do stringu EnteredName zawierającego polecenie wpisane przez użytkownika
 // Jeżeli Console_FindCommand nie znajdzie funkcji odpowiadającej poleceniu to zwraca wskaźnik nullptr
 static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[]) {
-	for(uint8_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
+	for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
 		if(strcmp(what_to_find, command_list[i].name) == 0) {
-			void (*cmd_ptr)(int argc, char * argv[]);							// Pusty wskaźnik do polecenia
-			cmd_ptr = command_list[i].ptr;										// Odczytanie wskaźnika do polecenia z pamięci flash i rzutowanie go na właściwy typ
-			return cmd_ptr;
+			return command_list[i].ptr;
 		}
 	}
 	return nullptr;
@@ -152,7 +150,7 @@ static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[
 // System task to periodicaly execute interpreter routine
 void console_task(run_mode_t run_mode) {
 	
-	// Normaln execution
+	// Normal execution
 	if(run_mode == os_run) {
 		while(1) {
 
@@ -173,7 +171,7 @@ void console_task(run_mode_t run_mode) {
 			switch(res) {
 				case con_recv_cmd: {
 					uint8_t	argc = 0;													// Liczba wpisanych argumentów
-					char *	argv[CONSOLE_MAX_ARGUMENTS];								// Tablica wskaźników do argumentów
+					char * argv[CONSOLE_MAX_ARGUMENTS];									// Tablica wskaźników do argumentów
 					memset(argv, 0, sizeof(argv));
 					
 					#if CONSOLE_USE_CTRL_Z												// Kopiowanie do bufora CTRL-Z
@@ -236,11 +234,11 @@ void console_task(run_mode_t run_mode) {
 
 static parse_res debug(const parse_res res, const char * arg) {
 	if(res != parse_ok) {
-		if(arg != nullptr) {
-			printf(TEXT_RED "Error in argument " TEXT_RED_BRIGHT "%s" TEXT_RED ": ", arg);
-		}
-		
 		printf(TEXT_RED);
+
+		if(arg != nullptr) {
+			printf("Error in argument \"" TEXT_RED_BRIGHT "%s" TEXT_RED "\": ", arg);
+		}
 
 		switch(res) {
 			case parse_missing_argument:	printf("Missing arg");		break;
@@ -250,7 +248,7 @@ static parse_res debug(const parse_res res, const char * arg) {
 			case parse_expected_bin:		printf("Expected bin");		break;
 			case parse_expected_dec:		printf("Expected dec");		break;
 			case parse_expected_hex:		printf("Expected hex");		break;
-			case parse_nullptr:				printf("Null ptr err");		break;
+			case parse_nullptr:				printf("Null ptr");			break;
 			case parse_wrong_base:			printf("Wrong base");		break;
 			case parse_wrong_time:			printf("Wrong time");		break;
 			default:						printf("?");				break;
