@@ -259,7 +259,7 @@ void args_cmd(int argc, char * argv[]) {
 	printf("argc = %u\n", argc);
 	
 	for(uint8_t i=0; i<argc; i++) {
-		printf("%u:\t%08lX\t%s\n", i, (uint32_t)argv[i], (const char *)argv[i]);
+		printf("%u:\t%08lX\t%s\n", i, (uint32_t)argv[i], argv[i]);
 	}
 }
 

@@ -16,6 +16,7 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 void console_init(void) {
 	LOGI("init");
 	task_add(console_task, 20);
+	// task_add(console2_task, 20);
 }
 
 static void prompt_show(void) {
@@ -220,6 +221,109 @@ void console_task(run_mode_t run_mode) {
 					// LOGW("response ok");
 					break;
 			}
+		}
+	}
+
+	else if(run_mode == os_id) {
+		task_name = __func__;
+	}
+}
+
+// ========================================
+// New Command Line Interpreter
+// ========================================
+
+// System task to periodicaly execute interpreter routine
+void console2_task(run_mode_t run_mode) {
+	if(run_mode == os_run) {
+		while(1) {
+
+			#if ESP_PLATFORM									// Read a character from console input
+				int chr = getchar();
+				if(chr == EOF) {
+					return;
+				}
+			#elif PICO_RP2040 || PICO_RP2350
+				int chr = getchar_timeout_us(0);
+				if(chr == PICO_ERROR_TIMEOUT) {
+					return;
+				}
+			#endif
+
+			if(chr == ESCAPE) {									// If the received char is ESCAPE - clear the buffer and display the prompt
+				received_cnt = 0;
+				memset(buffer, 0, sizeof(buffer));
+				prompt_show();
+			}
+
+			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display prompt and previously entered command
+				received_cnt = 0;
+				strcpy(buffer, buffer2);
+				received_cnt = strlen(buffer);
+				prompt_show();
+			}
+
+			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {	// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
+				if(received_cnt) {								// If any character has been received
+					received_cnt--;								// Decrement characters counter
+					buffer[received_cnt] = 0;					// Remove from the buffer
+					printf("%c", chr);							// Print backspace to the console so the user can see that the last character is erased
+				}
+			}
+			
+			else if(chr >= ' ' && chr <= '~') {					// If the received char is any printable character - add it to the buffer if possible or emit sound
+				if(received_cnt < CONSOLE_COMMAND_LENGTH) {		// IF there is space in the receive buffer
+					if(received_cnt == 0) {
+						prompt_show();
+					}
+					buffer[received_cnt++] = chr;				// Add the character to the buffer and increment the counter
+					printf("%c", chr);							// Print the received character so the user can see it
+				}
+				else {
+					printf("%c", BEL);							// Emit sound signal
+				}
+			}
+				
+			else if((received_cnt > 0) && (chr == CR || chr == LF)) {			// If the received char is ENTER and the buffer is not empty - try to execute the command
+				printf("\n");
+				printf("received_cnt: %u\n", received_cnt);
+				printf("buffer: '%s'\n", buffer);
+
+				// Copy the buffer to CTRL-Z buffer
+				strcpy(buffer2, buffer);
+				
+				// Split the buffer
+				uint8_t	argc = 0;													// Liczba wpisanych argumentów
+				char * argv[CONSOLE_MAX_ARGUMENTS] ={0};									// Tablica wskaźników do argumentów
+				// memset(argv, 0, sizeof(argv));
+				
+				console_res split_res = split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
+
+				printf("argc = %u\n", argc);
+	
+				for(uint8_t i=0; i<argc; i++) {
+					printf("%u:\t%08lX\t'%s'\n", i, (uint32_t)argv[i], argv[i]);
+				}
+
+				// Create argv array
+
+				// If too many args display error
+
+				// Find command pointer
+
+				// Execute the pointer and pass argc and argv
+
+				// Clear command buffer
+
+				received_cnt = 0;
+				memset(buffer, 0, sizeof(buffer));
+			}
+				
+
+
+
+
+			// Ignore all other characters
 		}
 	}
 
