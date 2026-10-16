@@ -15,8 +15,8 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 
 void console_init(void) {
 	LOGI("init");
-	// task_add(console_task, 20);
-	task_add(console2_task, 20);
+	task_add(console_task, 20);
+	// task_add(console2_task, 20);
 }
 
 static void prompt_show(void) {
