@@ -15,8 +15,8 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 
 void console_init(void) {
 	LOGI("init");
-	task_add(console_task, 20);
-	// task_add(console2_task, 20);
+	// task_add(console_task, 20);
+	task_add(console2_task, 20);
 }
 
 static void prompt_show(void) {
@@ -90,6 +90,51 @@ static inline console_res char_input(char received_char) {
 // - argc -	Wskaźnik, przez który zwracana jest liczba znalezionych argumentów
 // - argv -	Wskaźnik do tablicy wskaźników, w której zapisywane są wskaźniki do kolejnych argumentów
 static inline console_res split_args(uint8_t * argc, char * argv[]) {
+	uint8_t	arg_cnt		=	0;
+	char *	char_ptr	=	buffer;
+	bool	new_arg		=	true;
+	bool	string_mode	=	false;
+	
+	while(*char_ptr != NUL) {													// Przesuwanie wskaźnika aż do napotkania znaku NUL kończącego string
+		switch(*char_ptr) {
+		
+			case ' ':															// Spacja = nowy argument jeśli to nie jest "string objęty cudzysłowiem"
+				if(string_mode == false) {
+					new_arg = true;
+					*char_ptr = 0;												// zamiana spacji na nullptr
+				}
+				break;
+			
+			case '"':
+				if(string_mode) {
+					string_mode = false;
+					*char_ptr = 0;												// zmiana zamykającego " na zero
+				}
+				else {
+					string_mode = true;
+					new_arg = true;
+				}
+				break;
+			
+			default:															// Dowolny inny znak
+				if(new_arg) {													// Jeśli wcześniej była spacja to mamy tutaj początek nowego argumentu
+					if(arg_cnt >= CONSOLE_MAX_ARGUMENTS) {
+						return con_too_many_args;
+					}
+					argv[arg_cnt++] = char_ptr;
+					new_arg = false;
+				}
+				break;
+		}
+		
+		char_ptr++;																// Przesuwanie wskaźnika na następny znak linii poleceń
+	}
+	
+	*argc = arg_cnt;
+	return con_ok;
+}
+
+static inline console_res split_args(int * argc, char * argv[]) {
 	uint8_t	arg_cnt		=	0;
 	char *	char_ptr	=	buffer;
 	bool	new_arg		=	true;
@@ -288,24 +333,52 @@ void console2_task(run_mode_t run_mode) {
 				printf("\n");
 				printf("received_cnt: %u\n", received_cnt);
 				printf("buffer: '%s'\n", buffer);
-
-				// Copy the buffer to CTRL-Z buffer
-				strcpy(buffer2, buffer);
 				
-				// Split the buffer
-				uint8_t	argc = 0;													// Liczba wpisanych argumentów
-				char * argv[CONSOLE_MAX_ARGUMENTS] ={0};									// Tablica wskaźników do argumentów
-				// memset(argv, 0, sizeof(argv));
+				strcpy(buffer2, buffer);											// Copy the buffer to CTRL-Z buffer
 				
-				console_res split_res = split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
+				// Create argv array
+				int	   argc = 0;													// Liczba wpisanych argumentów
+				char * argv[CONSOLE_MAX_ARGUMENTS] = {0};									// Tablica wskaźników do argumentów
+				
+				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
+				char * char_ptr = buffer;
+				bool new_argument = true;
+				while(*char_ptr) {
+					if(*char_ptr == NUL) {
+						break;
+					}
 
-				printf("argc = %u\n", argc);
-	
-				for(uint8_t i=0; i<argc; i++) {
-					printf("%u:\t%08lX\t'%s'\n", i, (uint32_t)argv[i], argv[i]);
+					else if(*char_ptr == ' ') {
+						*char_ptr = NUL;
+						char_ptr++;
+						// argc++;
+						// TODO kontrola czy argc > limit
+						new_argument = true;
+					}
+
+					else {
+						if(new_argument) {
+							new_argument = false;
+							argv[argc++] = char_ptr;
+							if(argc > CONSOLE_MAX_ARGUMENTS) {
+								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+								// received_cnt = 0;
+								// memset(buffer, 0, sizeof(buffer));
+								argc = 0;
+								break;
+							}
+						}
+						char_ptr++;
+					}
 				}
 
-				// Create argv array
+				// debug
+				printf("argc = %u\n", argc);
+				for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
+					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
+				}
+
+				
 
 				// If too many args display error
 
@@ -314,16 +387,9 @@ void console2_task(run_mode_t run_mode) {
 				// Execute the pointer and pass argc and argv
 
 				// Clear command buffer
-
 				received_cnt = 0;
 				memset(buffer, 0, sizeof(buffer));
 			}
-				
-
-
-
-
-			// Ignore all other characters
 		}
 	}
 
