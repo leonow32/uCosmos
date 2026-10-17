@@ -15,8 +15,8 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 
 void console_init(void) {
 	LOGI("init");
-	task_add(console_task, 20);
-	// task_add(console2_task, 20);
+	// task_add(console_task, 20);
+	task_add(console2_task, 20);
 }
 
 static void prompt_show(void) {
@@ -339,6 +339,7 @@ void console2_task(run_mode_t run_mode) {
 				// Create argv array
 				int	   argc = 0;													// Liczba wpisanych argumentów
 				char * argv[CONSOLE_MAX_ARGUMENTS] = {0};									// Tablica wskaźników do argumentów
+				bool   string_mode	=	false;
 				
 				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
 				char * char_ptr = buffer;
@@ -348,25 +349,34 @@ void console2_task(run_mode_t run_mode) {
 						break;
 					}
 
-					else if(*char_ptr == ' ') {
+					else if(*char_ptr == ' ' && string_mode == false) {
 						*char_ptr = NUL;
 						char_ptr++;
-						// argc++;
-						// TODO kontrola czy argc > limit
 						new_argument = true;
+					}
+
+					else if(new_argument && *char_ptr == '"') {
+						string_mode = true;
+						char_ptr++;
+					}
+
+					else if(*char_ptr == '"' && string_mode == true) {
+						*char_ptr++ = NUL;
+						*char_ptr++ = NUL;
+						new_argument = true;
+						string_mode = false;
 					}
 
 					else {
 						if(new_argument) {
 							new_argument = false;
-							argv[argc++] = char_ptr;
-							if(argc > CONSOLE_MAX_ARGUMENTS) {
+							if(argc >= CONSOLE_MAX_ARGUMENTS) {
 								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-								// received_cnt = 0;
-								// memset(buffer, 0, sizeof(buffer));
-								argc = 0;
+								// argc = 0;
+								argv[0] = nullptr;
 								break;
 							}
+							argv[argc++] = char_ptr;
 						}
 						char_ptr++;
 					}
@@ -378,13 +388,28 @@ void console2_task(run_mode_t run_mode) {
 					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
 				}
 
-				
+				if(argv[0]) {
+					// Find command pointer
+					void (*command_ptr)(int argc, char * argv[]) = nullptr;
 
-				// If too many args display error
+					if(argv[0]) {
+						for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
+							if(strcmp(argv[0], command_list[i].name) == 0) {
+								command_ptr = command_list[i].ptr;
+								break;
+							}
+						}
+					}
 
-				// Find command pointer
-
-				// Execute the pointer and pass argc and argv
+					// Execute the pointer and pass argc and argv
+					if(command_ptr) {
+						printf(FORMAT_RESET "\n");									// Przejście do kolejnej linii
+						command_ptr(argc, argv);
+					}
+					else {
+						printf(TEXT_RED "\nUnknown cmd\n" FORMAT_RESET);			// Jeżeli nie rozpoznano polecenia
+					}
+				}
 
 				// Clear command buffer
 				received_cnt = 0;
