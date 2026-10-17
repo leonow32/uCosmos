@@ -18,6 +18,12 @@ enum console_res {
 	con_error_to_fix = 255,		// Tylko do celów deweloperskich, normalnie żadna funkcja nie powinna zwracać czegoś takiego
 };
 
+enum console_state {
+	console_idle,
+	console_argument,
+	console_string,
+};
+
 // Result type for argument parser
 enum parse_res {
 	parse_ok = 0,				// Zwracane przez wszystkie funkcje, jeżeli zakończyły się prawidłowo

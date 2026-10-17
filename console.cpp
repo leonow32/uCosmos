@@ -330,7 +330,7 @@ void console2_task(run_mode_t run_mode) {
 			}
 				
 			else if((received_cnt > 0) && (chr == CR || chr == LF)) {			// If the received char is ENTER and the buffer is not empty - try to execute the command
-				printf("\n");
+				printf(FORMAT_RESET "\n");
 				printf("received_cnt: %u\n", received_cnt);
 				printf("buffer: '%s'\n", buffer);
 				
@@ -343,7 +343,7 @@ void console2_task(run_mode_t run_mode) {
 				
 				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
 				char * char_ptr = buffer;
-				bool new_argument = true;
+				bool pick_new_argument = true;
 				while(*char_ptr) {
 					if(*char_ptr == NUL) {
 						break;
@@ -352,10 +352,189 @@ void console2_task(run_mode_t run_mode) {
 					else if(*char_ptr == ' ' && string_mode == false) {
 						*char_ptr = NUL;
 						char_ptr++;
-						new_argument = true;
+						pick_new_argument = true;
 					}
 
-					else if(new_argument && *char_ptr == '"') {
+					else if(*char_ptr == '"' && pick_new_argument) {
+						string_mode = true;
+						char_ptr++;
+						if(*char_ptr != NUL) {
+							if(argc >= CONSOLE_MAX_ARGUMENTS) {
+								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+								argv[0] = nullptr;
+								break;
+							}
+							argv[argc++] = char_ptr;
+							char_ptr++;
+						}
+					}
+
+					else if(*char_ptr == '"' && string_mode == true) {
+						*char_ptr++ = NUL;
+						// char_ptr++;
+						pick_new_argument = true;
+						string_mode = false;
+					}
+
+					else if(*char_ptr != ' ' && pick_new_argument) {
+						pick_new_argument = false;
+						if(argc >= CONSOLE_MAX_ARGUMENTS) {
+							printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+							argv[0] = nullptr;
+							break;
+						}
+						argv[argc++] = char_ptr;
+					}
+
+					else {
+						char_ptr++;
+					}
+				}
+
+				// debug
+				printf("argc = %u\n", argc);
+				for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
+					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
+				}
+
+				if(argv[0]) {
+					// Find command pointer
+					void (*command_ptr)(int argc, char * argv[]) = nullptr;
+
+					if(argv[0]) {
+						for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
+							if(strcmp(argv[0], command_list[i].name) == 0) {
+								command_ptr = command_list[i].ptr;
+								break;
+							}
+						}
+					}
+
+					// Execute the pointer and pass argc and argv
+					if(command_ptr) {
+						printf(FORMAT_RESET "\n");									// Przejście do kolejnej linii
+						command_ptr(argc, argv);
+					}
+					else {
+						printf(TEXT_RED "\nUnknown cmd\n" FORMAT_RESET);			// Jeżeli nie rozpoznano polecenia
+					}
+				}
+
+				// Clear command buffer
+				received_cnt = 0;
+				memset(buffer, 0, sizeof(buffer));
+			}
+		}
+	}
+
+	else if(run_mode == os_id) {
+		task_name = __func__;
+	}
+}
+
+/*
+void console3_task(run_mode_t run_mode) {
+	if(run_mode == os_run) {
+		while(1) {
+
+			#if ESP_PLATFORM									// Read a character from console input
+				int chr = getchar();
+				if(chr == EOF) {
+					return;
+				}
+			#elif PICO_RP2040 || PICO_RP2350
+				int chr = getchar_timeout_us(0);
+				if(chr == PICO_ERROR_TIMEOUT) {
+					return;
+				}
+			#endif
+
+			if(chr == ESCAPE) {									// If the received char is ESCAPE - clear the buffer and display the prompt
+				received_cnt = 0;
+				memset(buffer, 0, sizeof(buffer));
+				prompt_show();
+			}
+
+			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display prompt and previously entered command
+				received_cnt = 0;
+				strcpy(buffer, buffer2);
+				received_cnt = strlen(buffer);
+				prompt_show();
+			}
+
+			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {	// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
+				if(received_cnt) {								// If any character has been received
+					received_cnt--;								// Decrement characters counter
+					buffer[received_cnt] = 0;					// Remove from the buffer
+					printf("%c", chr);							// Print backspace to the console so the user can see that the last character is erased
+				}
+			}
+			
+			else if(chr >= ' ' && chr <= '~') {					// If the received char is any printable character - add it to the buffer if possible or emit sound
+				if(received_cnt < CONSOLE_COMMAND_LENGTH) {		// IF there is space in the receive buffer
+					if(received_cnt == 0) {
+						prompt_show();
+					}
+					buffer[received_cnt++] = chr;				// Add the character to the buffer and increment the counter
+					printf("%c", chr);							// Print the received character so the user can see it
+				}
+				else {
+					printf("%c", BEL);							// Emit sound signal
+				}
+			}
+				
+			else if((received_cnt > 0) && (chr == CR || chr == LF)) {			// If the received char is ENTER and the buffer is not empty - try to execute the command
+				printf("\n");
+				printf("received_cnt: %u\n", received_cnt);
+				printf("buffer: '%s'\n", buffer);
+				
+				strcpy(buffer2, buffer);											// Copy the buffer to CTRL-Z buffer
+				
+				// Create argv array
+				int	   argc = 0;													// Liczba wpisanych argumentów
+				char * argv[CONSOLE_MAX_ARGUMENTS] = {0};									// Tablica wskaźników do argumentów
+				// bool   string_mode	=	false;
+				console_state state = console_idle;
+				
+				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
+				char * char_ptr = buffer;
+				// bool pick_new_argument = true;
+				while(*char_ptr) {
+
+					switch(state) {
+						case console_idle:
+							if(*char_ptr == '"') {
+								state = console_string;
+							}
+							else {
+								state = console_argument;
+							}
+							break;
+
+						case console_argument:
+
+							break;
+
+						case console_string:
+
+
+							break;
+					}
+
+
+
+
+					if(*char_ptr == NUL) {
+						break;
+					}
+
+					else if(*char_ptr == ' ' && string_mode == false) {
+						*char_ptr = NUL;
+						char_ptr++;
+						pick_new_argument = true;
+					}
+
+					else if(pick_new_argument && *char_ptr == '"') {
 						string_mode = true;
 						char_ptr++;
 					}
@@ -363,13 +542,13 @@ void console2_task(run_mode_t run_mode) {
 					else if(*char_ptr == '"' && string_mode == true) {
 						*char_ptr++ = NUL;
 						*char_ptr++ = NUL;
-						new_argument = true;
+						pick_new_argument = true;
 						string_mode = false;
 					}
 
 					else {
-						if(new_argument) {
-							new_argument = false;
+						if(pick_new_argument) {
+							pick_new_argument = false;
 							if(argc >= CONSOLE_MAX_ARGUMENTS) {
 								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
 								// argc = 0;
@@ -422,6 +601,7 @@ void console2_task(run_mode_t run_mode) {
 		task_name = __func__;
 	}
 }
+*/
 
 // ========================================
 // Argument parsers
