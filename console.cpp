@@ -472,7 +472,7 @@ void console3_task(run_mode_t run_mode) {
 			}
 			
 			else if(chr >= ' ' && chr <= '~') {					// If the received char is any printable character - add it to the buffer if possible or emit sound
-				if(received_cnt < CONSOLE_COMMAND_LENGTH) {		// IF there is space in the receive buffer
+				if(received_cnt < CONSOLE_COMMAND_LENGTH-1) {		// IF there is space in the receive buffer
 					if(received_cnt == 0) {
 						prompt_show();
 					}
@@ -494,81 +494,62 @@ void console3_task(run_mode_t run_mode) {
 				// Create argv array
 				int	   argc = 0;													// Liczba wpisanych argumentów
 				char * argv[CONSOLE_MAX_ARGUMENTS] = {0};									// Tablica wskaźników do argumentów
-				console_state state = console_idle;
 				
 				char * char_ptr = buffer;
+				char   argument_terminator;
+				bool   find_new_argument = true;
+
 				while(*char_ptr) {
 
-					switch(state) {
-						case console_idle:
-							if(*char_ptr == ' ') {
-								char_ptr++;
+					if(find_new_argument) {
+						if(*char_ptr == ' ') {
+							char_ptr++;
+						}
+						else {
+							if(argc >= CONSOLE_MAX_ARGUMENTS) {
+								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+								argv[0] = nullptr;
+								break;
 							}
-							else if(*char_ptr == '"') {
-								if(argc >= CONSOLE_MAX_ARGUMENTS) {
-									printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-									argv[0] = nullptr;
-									*char_ptr = NUL; // To tylko po to aby wyjść z while
-									break;
-								}
-							
-								char_ptr++;
-								argv[argc++] = char_ptr;
-								state = console_string;
-							}
-							else {
-								if(argc >= CONSOLE_MAX_ARGUMENTS) {
-									printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-									argv[0] = nullptr;
-									*char_ptr = NUL; // To tylko po to aby wyjść z while
-									break;
-								}
-								
-								argv[argc++] = char_ptr;
-								char_ptr++;
-								state = console_argument;
-							}
-							break;
 
-						case console_argument:
-							if(*char_ptr == ' ') {
-								*char_ptr++ = NUL;
-								state = console_idle;
-							}
-							else {
-								char_ptr++;
-							}
-							break;
-
-						case console_string:
 							if(*char_ptr == '"') {
-								*char_ptr++ = NUL;
-								state = console_idle;
+								argv[argc++] = ++char_ptr;
+								argument_terminator = '"';
 							}
 							else {
-								char_ptr++;
+								argv[argc++] = char_ptr++;
+								argument_terminator = ' ';
 							}
 
-							break;
+							find_new_argument = false;
+						}
+					}
+
+					else {
+						if(*char_ptr == argument_terminator) {
+							*char_ptr++ = NUL;
+							find_new_argument = true;
+						}
+						else {
+							char_ptr++;
+						}
 					}
 				}
 
 				// debug
-				printf("argc = %u\n", argc);
-				for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
-					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
-				}
+				// printf("argc = %u\n", argc);
+				// for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
+				// 	printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
+				// }
 
 				if(argv[0]) {
 					// Find command pointer
 					void (*command_ptr)(int argc, char * argv[]) = nullptr;
 
-					if(argv[0]) {
-						for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-							if(strcmp(argv[0], command_list[i].name) == 0) {
-								command_ptr = command_list[i].ptr;
-								break;
-							}
+					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
+						if(strcmp(argv[0], command_list[i].name) == 0) {
+							command_ptr = command_list[i].ptr;
+							break;
 						}
 					}
 
