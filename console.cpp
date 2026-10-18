@@ -448,6 +448,8 @@ void console3_task(run_mode_t run_mode) {
 				if(chr == PICO_ERROR_TIMEOUT) {
 					return;
 				}
+			#else
+				#error "Platform not supported"
 			#endif
 
 			if(chr == ESCAPE) {									// If the received char is ESCAPE - clear the buffer and display the prompt
@@ -456,7 +458,7 @@ void console3_task(run_mode_t run_mode) {
 				prompt_show();
 			}
 
-			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display prompt and previously entered command
+			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display the prompt and previously entered command
 				received_cnt = 0;
 				strcpy(buffer, buffer2);
 				received_cnt = strlen(buffer);
@@ -467,7 +469,7 @@ void console3_task(run_mode_t run_mode) {
 				if(received_cnt) {								// If any character has been received
 					received_cnt--;								// Decrement characters counter
 					buffer[received_cnt] = 0;					// Remove from the buffer
-					printf("%c", chr);							// Print backspace to the console so the user can see that the last character is erased
+					printf("\b \b", chr);						// Print backspace to the console so the user can see that the last character is erased
 				}
 			}
 			
@@ -537,10 +539,10 @@ void console3_task(run_mode_t run_mode) {
 				}
 
 				// debug
-				// printf("argc = %u\n", argc);
-				// for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
-				// 	printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
-				// }
+				printf("argc = %u\n", argc);
+				for(int i=0; i<CONSOLE_MAX_ARGUMENTS; i++) {
+					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
+				}
 
 				if(argv[0]) {
 					// Find command pointer
