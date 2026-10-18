@@ -16,7 +16,8 @@ char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed comman
 void console_init(void) {
 	LOGI("init");
 	// task_add(console_task, 20);
-	task_add(console2_task, 20);
+	// task_add(console2_task, 20);
+	task_add(console3_task, 20);
 }
 
 static void prompt_show(void) {
@@ -432,7 +433,7 @@ void console2_task(run_mode_t run_mode) {
 	}
 }
 
-/*
+
 void console3_task(run_mode_t run_mode) {
 	if(run_mode == os_run) {
 		while(1) {
@@ -493,71 +494,62 @@ void console3_task(run_mode_t run_mode) {
 				// Create argv array
 				int	   argc = 0;													// Liczba wpisanych argumentów
 				char * argv[CONSOLE_MAX_ARGUMENTS] = {0};									// Tablica wskaźników do argumentów
-				// bool   string_mode	=	false;
 				console_state state = console_idle;
 				
-				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
 				char * char_ptr = buffer;
-				// bool pick_new_argument = true;
 				while(*char_ptr) {
 
 					switch(state) {
 						case console_idle:
-							if(*char_ptr == '"') {
+							if(*char_ptr == ' ') {
+								char_ptr++;
+							}
+							else if(*char_ptr == '"') {
+								if(argc >= CONSOLE_MAX_ARGUMENTS) {
+									printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+									argv[0] = nullptr;
+									*char_ptr = NUL; // To tylko po to aby wyjść z while
+									break;
+								}
+							
+								char_ptr++;
+								argv[argc++] = char_ptr;
 								state = console_string;
 							}
 							else {
+								if(argc >= CONSOLE_MAX_ARGUMENTS) {
+									printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
+									argv[0] = nullptr;
+									*char_ptr = NUL; // To tylko po to aby wyjść z while
+									break;
+								}
+								
+								argv[argc++] = char_ptr;
+								char_ptr++;
 								state = console_argument;
 							}
 							break;
 
 						case console_argument:
-
+							if(*char_ptr == ' ') {
+								*char_ptr++ = NUL;
+								state = console_idle;
+							}
+							else {
+								char_ptr++;
+							}
 							break;
 
 						case console_string:
-
+							if(*char_ptr == '"') {
+								*char_ptr++ = NUL;
+								state = console_idle;
+							}
+							else {
+								char_ptr++;
+							}
 
 							break;
-					}
-
-
-
-
-					if(*char_ptr == NUL) {
-						break;
-					}
-
-					else if(*char_ptr == ' ' && string_mode == false) {
-						*char_ptr = NUL;
-						char_ptr++;
-						pick_new_argument = true;
-					}
-
-					else if(pick_new_argument && *char_ptr == '"') {
-						string_mode = true;
-						char_ptr++;
-					}
-
-					else if(*char_ptr == '"' && string_mode == true) {
-						*char_ptr++ = NUL;
-						*char_ptr++ = NUL;
-						pick_new_argument = true;
-						string_mode = false;
-					}
-
-					else {
-						if(pick_new_argument) {
-							pick_new_argument = false;
-							if(argc >= CONSOLE_MAX_ARGUMENTS) {
-								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-								// argc = 0;
-								argv[0] = nullptr;
-								break;
-							}
-							argv[argc++] = char_ptr;
-						}
-						char_ptr++;
 					}
 				}
 
@@ -601,7 +593,7 @@ void console3_task(run_mode_t run_mode) {
 		task_name = __func__;
 	}
 }
-*/
+
 
 // ========================================
 // Argument parsers

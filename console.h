@@ -52,6 +52,7 @@ extern const command_struct	command_list[];
 void console_init(void);
 void console_task(run_mode_t run_mode);
 void console2_task(run_mode_t run_mode);
+void console3_task(run_mode_t run_mode);
 
 // Argument parsers
 template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10);
