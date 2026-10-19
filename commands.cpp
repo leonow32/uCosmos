@@ -257,9 +257,15 @@ void task_monitor_cmd(int argc, char * argv[]) {
 // Print all provided arguments
 void args_cmd(int argc, char * argv[]) {
 	printf("argc = %u\n", argc);
+	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tLen\tVal" FORMAT_RESET "\n");
 	
-	for(uint8_t i=0; i<argc; i++) {
-		printf("%u:\t%08lX\t%s\n", i, (uint32_t)argv[i], argv[i]);
+	for(uint8_t i=0; i<CONSOLE_MAX_ARGC; i++) {
+		printf("%u:\t%08lX\t%u\t'%s'\n", 
+			i, 
+			uint32_t(argv[i]), 
+			argv[i] ? strlen(argv[i]) : 0, 
+			argv[i] ? argv[i] : "nullptr"
+		);
 	}
 }
 

@@ -9,7 +9,7 @@
 
 // Konfiguracja konsoli
 #define CONSOLE_COMMAND_LENGTH			250
-#define CONSOLE_MAX_ARGUMENTS			11
+#define CONSOLE_MAX_ARGC				11			// Max count of arguments, including command name
 #define CONSOLE_USE_HELP				1
 #define CONSOLE_USE_CTRL_Z				1
 
