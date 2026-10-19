@@ -7,447 +7,32 @@
 #include "console.h"
 #include "../command_list.h"
 
-size_t	received_cnt;							// Number of characters in receive buffer
-char 	buffer[CONSOLE_COMMAND_LENGTH];			// Buffer for currently processed command
+size_t	received_cnt;																		// Number of characters in receive buffer
+char 	buffer[CONSOLE_COMMAND_LENGTH];														// Buffer for currently processed command
 #if CONSOLE_USE_CTRL_Z
-	char buffer2[CONSOLE_COMMAND_LENGTH];		// Buffer for last processed command, recalled with CTRL-Z
+	char buffer2[CONSOLE_COMMAND_LENGTH];													// Buffer for last processed command, recalled with CTRL-Z
 #endif
 
 void console_init(void) {
 	LOGI("init");
-	task_add(console_task, 20);
-	// task_add(console2_task, 20);
-	// task_add(console3_task, 20);
+	task_add(console_task, CONSOLE_TASK_PERIOD_MS);
 }
 
 static void prompt_show(void) {
 	printf("\n" TEXT_YELLOW_BRIGHT FORMAT_BOLD "/> %s", buffer);
 }
 
-// Pobieranie jednego znaku z bufora wejściowego i kopiowanie do bufora konsoli lub wykonywanie akcji
-/*
-static inline console_res char_input(char received_char) {
-	if(received_char >= ' ' && received_char <= '~') {							// Znaki printable dodajemy do bufora
-		if(received_cnt >= (CONSOLE_COMMAND_LENGTH - 1)) {						// Sprawdzenie czy jest wolne miejsce w buforze
-			return con_buffer_full;
-		}
-		else {
-			buffer[received_cnt++] = received_char;								// Dodawanie znaków do bufora 
-			if(received_cnt == 1) {												// TODO to jest słabe, trzeba wymyślić coś bardziej sensownego
-				return con_recv_begin;											// tu zostanie wyświetlony prompt jeżeli użytkownik skasował polecenie przez backspace
-			}
-			else {
-				printf("%c", received_char);
-				return con_ok;
-			}
-		}
-	}
-	
-	switch(received_char) {														// Interpretowanie znaków kontrolnych dla HMI
-		case CR:																// Enter
-		case LF:
-			if(received_cnt) {													// Zwracanie con_ok tylko jeżeli coś mamy w buforze, jeśli bufor jest pusty to brak reakcji
-				return con_recv_cmd;	
-			}
-			break;
-		
-		case BACKSPACE1:														// Backspace
-		case BACKSPACE2:
-			if(received_cnt) {
-				received_cnt--;
-				buffer[received_cnt] = 0;
-				printf("%c", received_char);
-			}
-			break;
-		
-		
-		#if CONSOLE_USE_CTRL_Z													// Przywrócenie ostatnio wpisywanego polecenia
-		case CTRL_Z:
-			while(received_cnt) {												// Kasowanie dotychczas wpisanego polecenia
-				received_cnt--;
-				buffer[received_cnt] = 0;
-				printf("%c", BACKSPACE1);
-			}
-
-			memcpy(buffer, buffer2, CONSOLE_COMMAND_LENGTH);					// Kopiowanie bufora poprzedniego polecanie do bufora aktywnego polecenia
-			buffer[CONSOLE_COMMAND_LENGTH - 1] = NUL;
-			received_cnt = strlen(buffer);
-			prompt_show();
-			break;
-		#endif
-		
-		case ESC:																// ESCAPE - to samo, ale wprowadzone z klawiatury przez użytkownika
-			received_cnt = 0;
-			memset(buffer, 0, CONSOLE_COMMAND_LENGTH);
-			return con_input_cancelled;
-		
-		default:																// Wszystkie inne znaki ignorujemy - w tym NUL
-			break;
-	}
-	
-	return con_ok;
-}
-	*/
-
-// Dzielenie wejściowego stringu z wierza poleceń na pojedyncze argumenty
-// - argc -	Wskaźnik, przez który zwracana jest liczba znalezionych argumentów
-// - argv -	Wskaźnik do tablicy wskaźników, w której zapisywane są wskaźniki do kolejnych argumentów
-/*
-static inline console_res split_args(uint8_t * argc, char * argv[]) {
-	uint8_t	arg_cnt		=	0;
-	char *	char_ptr	=	buffer;
-	bool	new_arg		=	true;
-	bool	string_mode	=	false;
-	
-	while(*char_ptr != NUL) {													// Przesuwanie wskaźnika aż do napotkania znaku NUL kończącego string
-		switch(*char_ptr) {
-		
-			case ' ':															// Spacja = nowy argument jeśli to nie jest "string objęty cudzysłowiem"
-				if(string_mode == false) {
-					new_arg = true;
-					*char_ptr = 0;												// zamiana spacji na nullptr
-				}
-				break;
-			
-			case '"':
-				if(string_mode) {
-					string_mode = false;
-					*char_ptr = 0;												// zmiana zamykającego " na zero
-				}
-				else {
-					string_mode = true;
-					new_arg = true;
-				}
-				break;
-			
-			default:															// Dowolny inny znak
-				if(new_arg) {													// Jeśli wcześniej była spacja to mamy tutaj początek nowego argumentu
-					if(arg_cnt >= CONSOLE_MAX_ARGC) {
-						return con_too_many_args;
-					}
-					argv[arg_cnt++] = char_ptr;
-					new_arg = false;
-				}
-				break;
-		}
-		
-		char_ptr++;																// Przesuwanie wskaźnika na następny znak linii poleceń
-	}
-	
-	*argc = arg_cnt;
-	return con_ok;
-}
-
-static inline console_res split_args(int * argc, char * argv[]) {
-	uint8_t	arg_cnt		=	0;
-	char *	char_ptr	=	buffer;
-	bool	new_arg		=	true;
-	bool	string_mode	=	false;
-	
-	while(*char_ptr != NUL) {													// Przesuwanie wskaźnika aż do napotkania znaku NUL kończącego string
-		switch(*char_ptr) {
-		
-			case ' ':															// Spacja = nowy argument jeśli to nie jest "string objęty cudzysłowiem"
-				if(string_mode == false) {
-					new_arg = true;
-					*char_ptr = 0;												// zamiana spacji na nullptr
-				}
-				break;
-			
-			case '"':
-				if(string_mode) {
-					string_mode = false;
-					*char_ptr = 0;												// zmiana zamykającego " na zero
-				}
-				else {
-					string_mode = true;
-					new_arg = true;
-				}
-				break;
-			
-			default:															// Dowolny inny znak
-				if(new_arg) {													// Jeśli wcześniej była spacja to mamy tutaj początek nowego argumentu
-					if(arg_cnt >= CONSOLE_MAX_ARGC) {
-						return con_too_many_args;
-					}
-					argv[arg_cnt++] = char_ptr;
-					new_arg = false;
-				}
-				break;
-		}
-		
-		char_ptr++;																// Przesuwanie wskaźnika na następny znak linii poleceń
-	}
-	
-	*argc = arg_cnt;
-	return con_ok;
-}
-
-// Wyszukiwanie funkcji dla wpisanego polecenia
-// Nazwa polecenia jest przechowywana w argumencie zerowym argv[0]
-// Funkcja zwraca wskaźnik do funkcji typu void pobierającej argumenty int argc, char * argv[]
-// Argumentem przyjmowanym przez Console_FindCommand() jest wskaźnik do stringu EnteredName zawierającego polecenie wpisane przez użytkownika
-// Jeżeli Console_FindCommand nie znajdzie funkcji odpowiadającej poleceniu to zwraca wskaźnik nullptr
-static inline void (*find_ptr(const char * what_to_find))(int argc, char * argv[]) {
-	for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-		if(strcmp(what_to_find, command_list[i].name) == 0) {
-			return command_list[i].ptr;
-		}
-	}
-	return nullptr;
-}
-
-// System task to periodicaly execute interpreter routine
 void console_task(run_mode_t run_mode) {
-	
-	// Normal execution
 	if(run_mode == os_run) {
-		while(1) {
+		while(1) {																			// Process all the characters in the input stream
 
-			#if ESP_PLATFORM
-				int chr = getchar();
+			#if ESP_PLATFORM				
+				int chr = getchar();														// Read a character from console input
 				if(chr == EOF) {
 					return;
 				}
 			#elif PICO_RP2040 || PICO_RP2350
-				int chr = getchar_timeout_us(0);
-				if (chr == PICO_ERROR_TIMEOUT) {
-					return;
-				}
-			#endif
-			
-			console_res res = char_input(chr);											// Przekazywanie znaków z bufora wejściowego do bufora konsoli i podejmywanie dalszych działa w zależności od console_res
-			
-			switch(res) {
-				case con_recv_cmd: {
-					uint8_t	argc = 0;													// Liczba wpisanych argumentów
-					char * argv[CONSOLE_MAX_ARGC];									// Tablica wskaźników do argumentów
-					memset(argv, 0, sizeof(argv));
-					
-					#if CONSOLE_USE_CTRL_Z												// Kopiowanie do bufora CTRL-Z
-						memcpy(buffer2, buffer, CONSOLE_COMMAND_LENGTH);
-					#endif
-					
-					console_res split_res = split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
-					if(split_res == con_too_many_args) {
-						printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-					}
-					else {
-						void (*cmd_ptr)(int argc, char * argv[]) = find_ptr(argv[0]);	// Wyszukiwanie wskaźnika 
-						
-						if(cmd_ptr) {													// Wykonanie polecenia, jeśli rozpoznano
-							printf(FORMAT_RESET "\n");									// Przejście do kolejnej linii
-							cmd_ptr(argc, argv);										// Wywołanie funkcji odpowiadającej poleceniu
-						}
-						else {
-							printf(TEXT_RED "\nUnknown cmd\n" FORMAT_RESET);			// Jeżeli nie rozpoznano polecenia
-						}
-					}
-					
-					memset(buffer, 0, CONSOLE_COMMAND_LENGTH);							// Czyszczenie aktualnego bufora wiersza poleceń
-					received_cnt = 0;
-					break;
-				}
-			
-				case con_buffer_full:													// Koniec bufora
-					printf("%c", BEL);													// Dźwięk jeżeli przepełniono bufor konsoli
-					break;
-
-				case con_input_cancelled:												// Wciśnięto ESCAPE
-				case con_recv_begin:													// Jeżeli to pierwszy znak polecenia to wyświetla prompt, który wcześniej był ukryty
-					prompt_show();
-					break;
-
-				case con_too_many_args:					// TODO z jakiegoś powodu to jest potrzebne na ESP, a na PICO nie
-					LOGW("Too many args");
-					break;
-
-				case con_error_to_fix:					// TODO to musi być na ESP32
-					LOGW("Er to fix");
-					break;
-
-				case con_ok:					// TODO to musi być na ESP32
-					// LOGW("response ok");
-					break;
-			}
-		}
-	}
-
-	else if(run_mode == os_id) {
-		task_name = __func__;
-	}
-}*/
-
-// ========================================
-// New Command Line Interpreter
-// ========================================
-
-// System task to periodicaly execute interpreter routine
-// void console2_task(run_mode_t run_mode) {
-// 	if(run_mode == os_run) {
-// 		while(1) {
-
-// 			#if ESP_PLATFORM									// Read a character from console input
-// 				int chr = getchar();
-// 				if(chr == EOF) {
-// 					return;
-// 				}
-// 			#elif PICO_RP2040 || PICO_RP2350
-// 				int chr = getchar_timeout_us(0);
-// 				if(chr == PICO_ERROR_TIMEOUT) {
-// 					return;
-// 				}
-// 			#endif
-
-// 			if(chr == ESCAPE) {									// If the received char is ESCAPE - clear the buffer and display the prompt
-// 				received_cnt = 0;
-// 				memset(buffer, 0, sizeof(buffer));
-// 				prompt_show();
-// 			}
-
-// 			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display prompt and previously entered command
-// 				received_cnt = 0;
-// 				strcpy(buffer, buffer2);
-// 				received_cnt = strlen(buffer);
-// 				prompt_show();
-// 			}
-
-// 			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {	// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
-// 				if(received_cnt) {								// If any character has been received
-// 					received_cnt--;								// Decrement characters counter
-// 					buffer[received_cnt] = 0;					// Remove from the buffer
-// 					printf("%c", chr);							// Print backspace to the console so the user can see that the last character is erased
-// 				}
-// 			}
-			
-// 			else if(chr >= ' ' && chr <= '~') {					// If the received char is any printable character - add it to the buffer if possible or emit sound
-// 				if(received_cnt < CONSOLE_COMMAND_LENGTH) {		// IF there is space in the receive buffer
-// 					if(received_cnt == 0) {
-// 						prompt_show();
-// 					}
-// 					buffer[received_cnt++] = chr;				// Add the character to the buffer and increment the counter
-// 					printf("%c", chr);							// Print the received character so the user can see it
-// 				}
-// 				else {
-// 					printf("%c", BEL);							// Emit sound signal
-// 				}
-// 			}
-				
-// 			else if((received_cnt > 0) && (chr == CR || chr == LF)) {			// If the received char is ENTER and the buffer is not empty - try to execute the command
-// 				printf(FORMAT_RESET "\n");
-// 				printf("received_cnt: %u\n", received_cnt);
-// 				printf("buffer: '%s'\n", buffer);
-				
-// 				strcpy(buffer2, buffer);											// Copy the buffer to CTRL-Z buffer
-				
-// 				// Create argv array
-// 				int	   argc = 0;													// Liczba wpisanych argumentów
-// 				char * argv[CONSOLE_MAX_ARGC] = {0};									// Tablica wskaźników do argumentów
-// 				bool   string_mode	=	false;
-				
-// 				// split_args(&argc, argv);					// Dzielenie bufora na poszczególne argumenty
-// 				char * char_ptr = buffer;
-// 				bool pick_new_argument = true;
-// 				while(*char_ptr) {
-// 					if(*char_ptr == NUL) {
-// 						break;
-// 					}
-
-// 					else if(*char_ptr == ' ' && string_mode == false) {
-// 						*char_ptr = NUL;
-// 						char_ptr++;
-// 						pick_new_argument = true;
-// 					}
-
-// 					else if(*char_ptr == '"' && pick_new_argument) {
-// 						string_mode = true;
-// 						char_ptr++;
-// 						if(*char_ptr != NUL) {
-// 							if(argc >= CONSOLE_MAX_ARGC) {
-// 								printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-// 								argv[0] = nullptr;
-// 								break;
-// 							}
-// 							argv[argc++] = char_ptr;
-// 							char_ptr++;
-// 						}
-// 					}
-
-// 					else if(*char_ptr == '"' && string_mode == true) {
-// 						*char_ptr++ = NUL;
-// 						// char_ptr++;
-// 						pick_new_argument = true;
-// 						string_mode = false;
-// 					}
-
-// 					else if(*char_ptr != ' ' && pick_new_argument) {
-// 						pick_new_argument = false;
-// 						if(argc >= CONSOLE_MAX_ARGC) {
-// 							printf(TEXT_RED "\nToo many args\n" FORMAT_RESET);
-// 							argv[0] = nullptr;
-// 							break;
-// 						}
-// 						argv[argc++] = char_ptr;
-// 					}
-
-// 					else {
-// 						char_ptr++;
-// 					}
-// 				}
-
-// 				// debug
-// 				printf("argc = %u\n", argc);
-// 				for(int i=0; i<CONSOLE_MAX_ARGC; i++) {
-// 					printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
-// 				}
-
-// 				if(argv[0]) {
-// 					// Find command pointer
-// 					void (*command_ptr)(int argc, char * argv[]) = nullptr;
-
-// 					if(argv[0]) {
-// 						for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-// 							if(strcmp(argv[0], command_list[i].name) == 0) {
-// 								command_ptr = command_list[i].ptr;
-// 								break;
-// 							}
-// 						}
-// 					}
-
-// 					// Execute the pointer and pass argc and argv
-// 					if(command_ptr) {
-// 						printf(FORMAT_RESET "\n");									// Przejście do kolejnej linii
-// 						command_ptr(argc, argv);
-// 					}
-// 					else {
-// 						printf(TEXT_RED "\nUnknown cmd\n" FORMAT_RESET);			// Jeżeli nie rozpoznano polecenia
-// 					}
-// 				}
-
-// 				// Clear command buffer
-// 				received_cnt = 0;
-// 				memset(buffer, 0, sizeof(buffer));
-// 			}
-// 		}
-// 	}
-
-// 	else if(run_mode == os_id) {
-// 		task_name = __func__;
-// 	}
-// }
-
-
-void console_task(run_mode_t run_mode) {
-	if(run_mode == os_run) {
-		while(1) {
-
-			#if ESP_PLATFORM									// Read a character from console input
-				int chr = getchar();
-				if(chr == EOF) {
-					return;
-				}
-			#elif PICO_RP2040 || PICO_RP2350
-				int chr = getchar_timeout_us(0);
+				int chr = getchar_timeout_us(0);											// Read a character from console input
 				if(chr == PICO_ERROR_TIMEOUT) {
 					return;
 				}
@@ -455,53 +40,56 @@ void console_task(run_mode_t run_mode) {
 				#error "Platform not supported"
 			#endif
 
-			if(chr == ESCAPE) {									// If the received char is ESCAPE - clear the buffer and display the prompt
+			if(chr == ESCAPE) {																// If the received char is ESCAPE - clear the buffer and display the prompt
 				received_cnt = 0;
 				memset(buffer, 0, sizeof(buffer));
 				prompt_show();
 			}
 
-			else if(chr == CTRL_Z) {							// If the received char is CTRL-Z - clear the buffer, display the prompt and previously entered command
+			#if CONSOLE_USE_CTRL_Z
+			else if(chr == CTRL_Z) {														// If the received char is CTRL-Z - clear the buffer, display the prompt and previously entered command
 				received_cnt = 0;
 				strcpy(buffer, buffer2);
 				received_cnt = strlen(buffer);
 				prompt_show();
 			}
+			#endif
 
-			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {	// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
-				if(received_cnt) {								// If any character has been received
-					// received_cnt--;								// Decrement characters counter
-					buffer[--received_cnt] = 0;					// Remove from the buffer
-					printf("\b \b");							// Print backspace to the console so the user can see that the last character is erased
+			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {								// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
+				if(received_cnt) {															// If any character has been received
+					buffer[--received_cnt] = 0;												// Remove last character from the buffer and decrement the count
+					printf("\b \b");														// Print backspace to the console so the user can see that the last character is erased
 				}
 			}
 			
-			else if(chr >= ' ' && chr <= '~') {					// If the received char is any printable character - add it to the buffer if possible or emit sound
-				if(received_cnt < CONSOLE_COMMAND_LENGTH-1) {		// IF there is space in the receive buffer
-					if(received_cnt == 0) {
-						prompt_show();
+			else if(chr >= ' ' && chr <= '~') {												// If the received char is any printable character - add it to the buffer if possible or emit sound
+				if(received_cnt < CONSOLE_COMMAND_LENGTH-1) {								// If there is space in the receive buffer
+					if(received_cnt == 0) {													// If the character is the first one...
+						prompt_show();														// ...then display the prompt to make sure it will be printed in the new line
 					}
-					buffer[received_cnt++] = chr;				// Add the character to the buffer and increment the counter
-					printf("%c", chr);							// Print the received character so the user can see it
+					buffer[received_cnt++] = chr;											// Add the character to the buffer and increment the counter
+					printf("%c", chr);														// Print the received character so the user can see it
 				}
 				else {
-					printf("%c", BEL);							// Emit sound signal
+					printf("%c", BEL);														// Emit sound signal in case the buffer is out of space
 				}
 			}
 				
-			else if((received_cnt > 0) && (chr == CR || chr == LF)) {			// If the received char is ENTER and the buffer is not empty - try to execute the command
+			else if((received_cnt > 0) && (chr == CR || chr == LF)) {						// If the received char is ENTER and the buffer is not empty - try to execute the command
 				// printf("\n");
 				// printf("received_cnt: %u\n", received_cnt);
 				// printf("buffer: '%s'\n", buffer);
 				
-				strcpy(buffer2, buffer);											// Copy the buffer to CTRL-Z buffer
+				#if CONSOLE_USE_CTRL_Z
+				strcpy(buffer2, buffer);													// Copy the buffer to CTRL-Z buffer
+				#endif
 				
 				// Create argv array
-				int	   argc = 0;													// Liczba wpisanych argumentów
-				char * argv[CONSOLE_MAX_ARGC] = {0};									// Tablica wskaźników do argumentów
+				int	   argc = 0;															// The count of received arguments
+				char * argv[CONSOLE_MAX_ARGC] = {0};										// Array of pointers to the firy character of each argument
 				char * char_ptr = buffer;
-				char   argument_terminator;
 				bool   find_new_argument = true;
+				char   argument_terminator;
 
 				while(*char_ptr) {
 
@@ -550,26 +138,24 @@ void console_task(run_mode_t run_mode) {
 					// Find command pointer
 					void (*command_ptr)(int argc, char * argv[]) = nullptr;
 
-					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-						if(strcmp(argv[0], command_list[i].name) == 0) {
-							command_ptr = command_list[i].ptr;
-							break;
+					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {	// Iterate throught command list
+						if(strcmp(argv[0], command_list[i].name) == 0) {					// if argv[0] == command_list[i].name
+							command_ptr = command_list[i].ptr;								// Assign the command pointer
+							break;															// Break iterating
 						}
 					}
 
-					// Execute the pointer and pass argc and argv
-					if(command_ptr) {
-						printf("\n" FORMAT_RESET);									// Przejście do kolejnej linii
-						command_ptr(argc, argv);
+					if(command_ptr) {														// If any command pointer has been found
+						printf("\n" FORMAT_RESET);											// New line and default text formatting
+						command_ptr(argc, argv);											// Execute the command pointer and pass argument count and argument values
 					}
 					else {
-						printf("\n" TEXT_RED "Unknown cmd" FORMAT_RESET "\n");			// Jeżeli nie rozpoznano polecenia
+						printf("\n" TEXT_RED "Unknown cmd" FORMAT_RESET "\n");				// If command not found
 					}
 				}
-
-				// Clear command buffer
+				
 				received_cnt = 0;
-				memset(buffer, 0, sizeof(buffer));
+				memset(buffer, 0, sizeof(buffer));											// Clear command buffer
 			}
 		}
 	}
@@ -831,7 +417,7 @@ void print_ok(void) {
 		printf(TEXT_WHITE_BRIGHT "Num\tPointer\t\tName\n" FORMAT_RESET);
 		
 		for(uint16_t i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {
-			printf("%u:\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
+			printf("%u\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
 		}
 	}
 #endif

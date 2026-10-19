@@ -8,6 +8,7 @@
 #define OS_SHOW_RESET_SOURCE_AT_START	1			// Czy pokazywać źródło resetu na starcie
 
 // Konfiguracja konsoli
+#define CONSOLE_TASK_PERIOD_MS			20
 #define CONSOLE_COMMAND_LENGTH			250
 #define CONSOLE_MAX_ARGC				11			// Max count of arguments, including command name
 #define CONSOLE_USE_HELP				1

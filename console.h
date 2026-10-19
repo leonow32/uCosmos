@@ -4,19 +4,20 @@
 
 #include <time.h>
 #include "uCosmos.h"
-
 #include "log.h"
 
-// Result type for command interpreter
-// enum console_res {
-// 	con_ok = 0,					// Zwracane przez wszystkie funkcje, jeżeli zakończyły się prawidłowo
-// 	con_recv_begin,				// Odebrano pierwszy znak nowego polecenia
-// 	con_recv_cmd,				// Odebrano pełne polecenie gotowe do dalszej analizy
-// 	con_buffer_full,			// Przepełnienie bufora
-// 	con_input_cancelled,		// Wciśnięto ESC, trzeba wyświetlić ponownie znak zachęty wiersza poleceń
-// 	con_too_many_args,			// Użytkownik wpisał więcej argumentów niż jest to dopuszczalne
-// 	con_error_to_fix = 255,		// Tylko do celów deweloperskich, normalnie żadna funkcja nie powinna zwracać czegoś takiego
-// };
+// Struct used to build table of commands and pointers to specified functions
+struct command_struct {
+	const char *name;
+	void (*ptr)(int argc, char * argv[]);
+};
+
+// Command list
+extern const command_struct	command_list[];
+
+// Command line interpreter
+void console_init(void);
+void console_task(run_mode_t run_mode);
 
 // Result type for argument parser
 enum parse_res {
@@ -32,21 +33,6 @@ enum parse_res {
 	parse_wrong_time,
 	parse_nullptr,				// No result pointer was given
 };
-
-// Struct used to build table of commands and pointers to specified functions
-struct command_struct {
-	const char *name;
-	void (*ptr)(int argc, char * argv[]);
-};
-
-// Command list
-extern const command_struct	command_list[];
-
-// Command line interpreter
-void console_init(void);
-void console_task(run_mode_t run_mode);
-// void console2_task(run_mode_t run_mode);
-// void console3_task(run_mode_t run_mode);
 
 // Argument parsers
 template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10);

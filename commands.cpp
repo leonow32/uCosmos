@@ -260,7 +260,7 @@ void args_cmd(int argc, char * argv[]) {
 	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tLen\tVal" FORMAT_RESET "\n");
 	
 	for(uint8_t i=0; i<CONSOLE_MAX_ARGC; i++) {
-		printf("%u:\t%08lX\t%u\t'%s'\n", 
+		printf("%u\t%08lX\t%u\t'%s'\n", 
 			i, 
 			uint32_t(argv[i]), 
 			argv[i] ? strlen(argv[i]) : 0, 
