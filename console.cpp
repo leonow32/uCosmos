@@ -55,7 +55,7 @@ void console_task(run_mode_t run_mode) {
 			}
 			#endif
 
-			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {								// If the received char is BACKSPACE - clear thbuffer, display prompt and previously entered command
+			else if(chr == BACKSPACE1 || chr == BACKSPACE2) {								// If the received char is BACKSPACE - clear the buffer, display prompt and previously entered command
 				if(received_cnt) {															// If any character has been received
 					buffer[--received_cnt] = 0;												// Remove last character from the buffer and decrement the count
 					printf("\b \b");														// Print backspace to the console so the user can see that the last character is erased
@@ -75,40 +75,36 @@ void console_task(run_mode_t run_mode) {
 				}
 			}
 				
-			else if((received_cnt > 0) && (chr == CR || chr == LF)) {						// If the received char is ENTER and the buffer is not empty - try to execute the command
-				// printf("\n");
-				// printf("received_cnt: %u\n", received_cnt);
-				// printf("buffer: '%s'\n", buffer);
-				
+			else if((received_cnt > 0) && (chr == CR || chr == LF)) {						// If the received char is ENTER and the buffer is not empty - try to execute the command				
 				#if CONSOLE_USE_CTRL_Z
 				strcpy(buffer2, buffer);													// Copy the buffer to CTRL-Z buffer
 				#endif
 				
 				// Create argv array
 				int	   argc = 0;															// The count of received arguments
-				char * argv[CONSOLE_MAX_ARGC] = {0};										// Array of pointers to the firy character of each argument
-				char * char_ptr = buffer;
-				bool   find_new_argument = true;
-				char   argument_terminator;
+				char * argv[CONSOLE_MAX_ARGC] = {0};										// Array of pointers to the first character of each argument
+				char * char_ptr = buffer;													// Pointer to the currently processed character from the buffer
+				bool   find_new_argument = true;											// Look for first char of the another argument
+				char   argument_terminator;													// What character terminates the argument: space or "
 
-				while(*char_ptr) {
+				while(*char_ptr) {															// Loop as long the character is not NUL
 
 					if(find_new_argument) {
-						if(*char_ptr == ' ') {
+						if(*char_ptr == ' ') {												// Skip all spaces
 							char_ptr++;
 						}
 						else {
-							if(argc >= CONSOLE_MAX_ARGC) {
+							if(argc >= CONSOLE_MAX_ARGC) {									// Check if there is free space in argv array
 								printf("\n" TEXT_RED "Too many args" FORMAT_RESET "\n");
-								argv[0] = nullptr;
+								argv[0] = nullptr;											// Clear 0th argument (command name) to prevent it from execution
 								break;
 							}
 
-							if(*char_ptr == '"') {
+							if(*char_ptr == '"') {											// If the new argument is "string"
 								argv[argc++] = ++char_ptr;
 								argument_terminator = '"';
 							}
-							else {
+							else {															// If the argument is a value without spaces inside
 								argv[argc++] = char_ptr++;
 								argument_terminator = ' ';
 							}
@@ -118,27 +114,21 @@ void console_task(run_mode_t run_mode) {
 					}
 
 					else {
-						if(*char_ptr == argument_terminator) {
-							*char_ptr++ = NUL;
+						if(*char_ptr == argument_terminator) {								// If this character is the last one...
+							*char_ptr++ = NUL;												// ...change it to NUL to make proper C-string
 							find_new_argument = true;
 						}
 						else {
-							char_ptr++;
+							char_ptr++;														// Check another one
 						}
 					}
 				}
 
-				// debug
-				// printf("argc = %u\n", argc);
-				// for(int i=0; i<CONSOLE_MAX_ARGC; i++) {
-				// 	printf("%u:\t%08lX\t'%s'\n", i, uint32_t(argv[i]), argv[i] ? argv[i] : "nullptr");
-				// }
+				if(argv[0]) {																// If at least one argument is given (command name)
+					
+					void (*command_ptr)(int argc, char * argv[]) = nullptr;					// The command pointer
 
-				if(argv[0]) {
-					// Find command pointer
-					void (*command_ptr)(int argc, char * argv[]) = nullptr;
-
-					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {	// Iterate throught command list
+					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {	// Iterate through command list
 						if(strcmp(argv[0], command_list[i].name) == 0) {					// if argv[0] == command_list[i].name
 							command_ptr = command_list[i].ptr;								// Assign the command pointer
 							break;															// Break iterating
@@ -295,22 +285,22 @@ parse_res parse_ascii_char(const char * arg, char * output) {
 	return parse_ok;
 }
 
-parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, const size_t max_len, const size_t min_len) {
+parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length) {
 	const char * arg_copy = arg;
 	
-	if(arg == nullptr)		return debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
-	if(output == nullptr)	return debug(parse_nullptr, arg);
-	if(out_len == nullptr)	return debug(parse_nullptr, arg);
-	if(max_len < min_len)	return debug(parse_error, arg);
+	if(arg == nullptr)				return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
+	if(output == nullptr)			return debug(parse_nullptr, arg);
+	if(output_length == nullptr)	return debug(parse_nullptr, arg);
+	if(buffer_size < min_length)	return debug(parse_error, arg);
 	
-	*out_len = 0;
+	*output_length = 0;
 	
 	while(1) {
 		*output = *arg;
 		if(*arg++) {
-			(*out_len)++;
-			if(*out_len >= max_len) {
+			(*output_length)++;
+			if(*output_length >= buffer_size) {
 				*output = NUL;
 				return debug(parse_over_range, arg_copy);
 			}
@@ -321,7 +311,7 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * out_len, 
 		}
 	}
 
-	if(*out_len < min_len) return debug(parse_under_range, arg_copy);
+	if(*output_length < min_length) return debug(parse_under_range, arg_copy);
 	return parse_ok;
 }
 
@@ -340,21 +330,21 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len,
 	*out_len = 0;
 
 	while(*arg != 0) {
-		if(*arg == ' ') {									// Pomijanie spacji
+		if(*arg == ' ') {
 			arg++;
 			continue;
 		}
 
 		if(*out_len >= max_len) return debug(parse_over_range, arg_copy);
 
-		res = parse_numeric_char(*arg++, &nibble_h, 16);				// Przetwarzanie starszego nibble
+		res = parse_numeric_char(*arg++, &nibble_h, 16);
 		if(res) return debug(res, arg_copy);
 		
-		res = parse_numeric_char(*arg++, &nibble_l, 16);				// Przetwarzanie młodszego nibble
+		res = parse_numeric_char(*arg++, &nibble_l, 16);
 		if(res) return debug(res, arg_copy);
 		
-		*output++ = nibble_h << 4 | nibble_l;				// Sklejanie wyniku
-		(*out_len)++;										// Licznie bajtów w tablicy wynikowej
+		*output++ = nibble_h << 4 | nibble_l;
+		(*out_len)++;
 	}
 
 	if(*out_len < min_len) return debug(parse_under_range, arg_copy);
@@ -383,12 +373,13 @@ parse_res parse_time(const char * arg, time_t * output) {
 	new_time.tm_min		= 10*digits[8]  + digits[9];
 	new_time.tm_sec		= 10*digits[10] + digits[11];
 
+	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
+	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
+	
 	bool leap_year = ((new_time.tm_year % 4 == 0) && (new_time.tm_year % 100 != 0)) || ((new_time.tm_year-100) % 400 == 0);
 	uint8_t days_in_month[] = {31, uint8_t(leap_year ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	uint8_t dm = days_in_month[new_time.tm_mon];
 
-	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
-	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
 	if(new_time.tm_mday > dm) return debug(parse_wrong_time, arg);
 	if(new_time.tm_mday == 0) return debug(parse_wrong_time, arg);
 	if(new_time.tm_hour > 23) return debug(parse_wrong_time, arg);

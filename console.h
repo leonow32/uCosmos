@@ -21,7 +21,7 @@ void console_task(run_mode_t run_mode);
 
 // Result type for argument parser
 enum parse_res {
-	parse_ok = 0,				// Zwracane przez wszystkie funkcje, jeżeli zakończyły się prawidłowo
+	parse_ok = 0,
 	parse_missing_argument,
 	parse_over_range,
 	parse_under_range,
@@ -31,7 +31,7 @@ enum parse_res {
 	parse_expected_hex,
 	parse_wrong_base,
 	parse_wrong_time,
-	parse_nullptr,				// No result pointer was given
+	parse_nullptr,
 };
 
 // Argument parsers
