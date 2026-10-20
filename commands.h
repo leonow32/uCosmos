@@ -3,7 +3,7 @@
 #define UCOSMOS_COMMANDS_H_
 
 #include "log.h"
-#include "uCosmos.h"
+// #include "uCosmos.h"
 
 // Basic commands
 void reset_cmd(int argc, char * argv[]);

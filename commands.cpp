@@ -6,6 +6,10 @@
 #include "console.h"
 #include "uCosmos.h"
 
+#if PICO_RP2040 || PICO_RP2350
+	#include "hardware/watchdog.h"
+#endif
+
 // ========================================
 // Basic commands
 // ========================================
@@ -15,7 +19,7 @@ void reset_cmd(int argc, char * argv[]) {
 	#if ESP_PLATFORM
 		esp_restart();
 	#elif PICO_RP2040 || PICO_RP2350
-		// TODO
+		watchdog_reboot(0, 0, 0);
 	#endif
 }
 

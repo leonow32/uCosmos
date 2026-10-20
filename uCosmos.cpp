@@ -23,7 +23,7 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 	#if ESP_PLATFORM
 		printf("%s%c (%ld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#elif PICO_RP2040 || PICO_RP2350
-		printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+		printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#endif
 	return res;
 }
@@ -137,6 +137,8 @@ void os_init(void) {
 	#elif PICO_RP2040 || PICO_RP2350
 		static struct repeating_timer timer = {};
 		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, os_system_tick, nullptr, &timer);
+	#else
+		#error "Platform not supported"
 	#endif
 }
 
