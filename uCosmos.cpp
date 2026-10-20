@@ -1,8 +1,5 @@
 #include "../config.h"
 #if COMPONENT_UCOSMOS
-// static const char *TAG = "uCosmos";
-// #define LOG_LOCAL_LEVEL ESP_LOG_INFO
-#include <stdio.h>
 #include "log.h"
 #include "uCosmos.h"
 
@@ -22,12 +19,13 @@ static const char * debug_res(os_t result) {
 	return "?";
 }
 
-static void debug_print(const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms, os_t result) {
+static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	#if ESP_PLATFORM
-		printf("%s%c (%ld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
+		printf("%s%c (%ld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#elif PICO_RP2040 || PICO_RP2350
 		printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", result ? TEXT_RED : TEXT_GREEN, result ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(result));
 	#endif
+	return res;
 }
 
 static void slot_erase(uint8_t slot_number) {
@@ -165,77 +163,40 @@ void task_scheduler(void) {
 
 // Dodawanie tasku do tablicy tasków
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
-	os_t res = os_ok;
-
-	if(period_ms < OS_TICK_PERIOD_MS) {
-		res = os_task_period_under_range;
-		goto end;
-	}
+	uint8_t slot_number;
+	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
+	if(task_is_running(task_ptr))								return debug_print(os_task_already_created, __func__, task_ptr, period_ms);
+	if(task_find_free_slot(&slot_number) == os_no_free_slot)	return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);
 	
-	if(task_is_running(task_ptr)) {								// Szukanie czy task już istnieje
-		res = os_task_already_created;
-		goto end;
-	}
-	
-	uint8_t slot_number;										// Szukanie pierwszego wolnego slotu
-	if(task_find_free_slot(&slot_number) == os_no_free_slot) {
-		res = os_no_free_slot;
-		goto end;
-	}
-	
-	task_table[slot_number].task_ptr = task_ptr;				// Wpisywanie nowego procesu
+	task_table[slot_number].task_ptr = task_ptr;
 	task_table[slot_number].counter  = (period_ms / OS_TICK_PERIOD_MS)-1;
 	task_table[slot_number].period   = period_ms / OS_TICK_PERIOD_MS;
-	
-	task_ptr(os_constructor);									// Wywołanie inicjalizacyjne (konstruktor tasku)
-
-	end:
-	debug_print(__func__, task_ptr, period_ms, res);
-	return res;
+	task_ptr(os_constructor);
+	return os_ok;
 }
 
 // Execute task destructor and then remove it from the array
 os_t task_close(void (*task_ptr)(run_mode_t)) {
-	os_t res = os_ok;
-	
 	uint8_t slot_number;										// Szukanie tasku
-	if(task_find(task_ptr, &slot_number)) {
-		res = os_not_found;
-		goto end;
-	}
+	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, 0);
 	
-	task_ptr(os_destructor);														// Execute task destructor
-	slot_erase(slot_number);													// clear task from the array
-	
-	end:
-	debug_print(__func__, task_ptr, 0, res);
-	return res;
+	task_ptr(os_destructor);													// Execute task destructor
+	slot_erase(slot_number);													// Clear task from the array
+	return os_ok;
 }
 
 // Zmiana czasów
 // - task_ptr  - wskaźnik do procesu, który ma być zmieniony
 // - period_ms - nowy okres
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
-	os_t res = os_ok;
-
-	uint8_t slot_number;										// Szukanie tasku
-	if(task_find(task_ptr, &slot_number)) {
-		res = os_not_found;
-		goto end;
-	}
-
-	if(period_ms < OS_TICK_PERIOD_MS) {
-		res = os_task_period_under_range;
-		goto end;
-	}
+	uint8_t slot_number;
+	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, period_ms);
+	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 
 	task_table[slot_number].counter	= (period_ms / OS_TICK_PERIOD_MS)-1;
 	task_table[slot_number].period	= period_ms / OS_TICK_PERIOD_MS;
 	task_table[slot_number].flag	= 0;
-
-	end:
-	debug_print(__func__, task_ptr, period_ms, res);
-	return res;
+	return os_ok;
 }
 
 // Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)

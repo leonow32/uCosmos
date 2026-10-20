@@ -125,7 +125,6 @@ void console_task(run_mode_t run_mode) {
 				}
 
 				if(argv[0]) {																// If at least one argument is given (command name)
-					
 					void (*command_ptr)(int argc, char * argv[]) = nullptr;					// The command pointer
 
 					for(int i=0; i<(sizeof(command_list)/sizeof(command_struct)); i++) {	// Iterate through command list
