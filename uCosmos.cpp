@@ -9,69 +9,6 @@
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 const char * task_name = nullptr;
 
-static void os_splash_screen(void) {
-	#if ESP_PLATFORM
-		printf(TEXT_YELLOW "\n");
-		printf("     ___________ ____            __________  _____ __  _______  _____ \n");
-		printf("    / ____/ ___// __ \\    __  __/ ____/ __ \\/ ___//  |/  / __ \\/ ___/ \n");
-		printf("   / ___/ \\__ \\/ /_/ /   / / / / /   / / / /\\__ \\/ /|_/ / / / /\\__ \\  \n");
-		printf("  / /___ ___/ / ____/   / /_/ / /___/ /_/ /___/ / /  / / /_/ /___/ /  \n");
-		printf(" /_____/_____/_/       / ____/\\____/\\____//____/_/  /_/\\____//____/   \n");
-		printf(TEXT_CYAN);
-		for(uint8_t i=0; i<23; i++) {
-			printf("-");
-		}
-		printf(TEXT_YELLOW "\\/" TEXT_CYAN);
-		for(uint8_t i=0; i<42; i++) {
-			printf("-");
-		}
-		printf("\n");
-	#elif PICO_RP2040 || PICO_RP2350
-		printf(TEXT_YELLOW "\n");
-		printf("      ____  ____________            __________  _____ __  _______  _____\n");
-		printf("     / __ \\/ / ____/ __ \\    __  __/ ____/ __ \\/ ___//  |/  / __ \\/ ___/\n");
-		printf("    / /_/ / / /   / / / /   / / / / /   / / / /\\__ \\/ /|_/ / / / /\\__ \\\n");
-		printf("   / ____/ / /___/ /_/ /   / /_/ / /___/ /_/ /___/ / /  / / /_/ /___/ /\n");
-		printf("  /_/   /_/\\____/\\____/   / ____/\\____/\\____//____/_/  /_/\\____//____/\n");
-		printf(TEXT_CYAN);
-		for(uint8_t i=0; i<26; i++) {
-			printf("-");
-		}
-		printf(TEXT_YELLOW "\\/" TEXT_CYAN);
-		for(uint8_t i=0; i<42; i++) {
-			printf("-");
-		}
-		printf("\n");
-	#endif
-}
-
-static const char * os_print_reset_source() {
-	#if ESP_PLATFORM
-		switch(esp_reset_reason()) {
-			case ESP_RST_UNKNOWN:   		return "UNKNOWN";
-			case ESP_RST_POWERON:   		return "POWERON";
-			case ESP_RST_EXT:       		return "EXT";
-			case ESP_RST_SW:        		return "SW";
-			case ESP_RST_PANIC:     		return "PANIC";
-			case ESP_RST_INT_WDT:   		return "INT_WDT";
-			case ESP_RST_TASK_WDT:  		return "TASK_WDT";
-			case ESP_RST_WDT:       		return "WDT";
-			case ESP_RST_DEEPSLEEP: 		return "DEEPSLEEP";
-			case ESP_RST_BROWNOUT:  		return "BROWNOUT";
-			case ESP_RST_SDIO:      		return "SDIO";
-			case ESP_RST_USB:       		return "USB";
-			case ESP_RST_JTAG:      		return "JTAG";
-			case ESP_RST_EFUSE:     		return "EFUSE";
-			case ESP_RST_PWR_GLITCH:		return "PWR_GLITCH";
-			case ESP_RST_CPU_LOCKUP:		return "CPU_LOCKUP";
-		}
-	#elif PICO_RP2040 || PICO_RP2350
-		return "UNKNOWN";
-	#endif
-
-	return "?";
-}
-
 static const char * debug_res(os_t result) {
 	switch(result) {
 		case os_ok:							return("ok");
@@ -176,11 +113,15 @@ void os_init(void) {
 	}
 
 	#if OS_SHOW_SPLASH_SCREEN_AT_START
-		os_splash_screen();
-	#endif
-
-	#if OS_SHOW_RESET_SOURCE_AT_START
-		printf(TEXT_CYAN_BRIGHT "reset source: " TEXT_CYAN "%s" FORMAT_RESET "\n\n", os_print_reset_source());
+		printf(TEXT_YELLOW);
+		printf("            __________  _____ __  _______  _____ \n");
+		printf("     __  __/ ____/ __ \\/ ___//  |/  / __ \\/ ___/ \n");
+		printf("    / / / / /   / / / /\\__ \\/ /|_/ / / / /\\__ \\  \n");
+		printf("   / /_/ / /___/ /_/ /___/ / /  / / /_/ /___/ /  \n");
+		printf("  / ____/\\____/\\____//____/_/  /_/\\____//____/   \n");
+		printf(TEXT_CYAN "--" TEXT_YELLOW "\\/" TEXT_CYAN);
+		for(uint8_t i=0; i<46; i++) printf("-");
+		printf("\n" TEXT_CYAN_BRIGHT "System version: " TEXT_CYAN "%u.%u.%u" FORMAT_RESET "\n\n", UCOSMOS_VERSION_MAJOR, UCOSMOS_VERSION_MINOR, UCOSMOS_VERSION_PATCH);
 	#endif
 
 	#if ESP_PLATFORM

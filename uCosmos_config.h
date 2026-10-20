@@ -5,7 +5,6 @@
 #define OS_TASK_MAXCOUNT				10			// Od tego zalezy rozmiar tablicy tasków w RAM
 #define OS_TICK_PERIOD_MS				10			// Okres timera systemowego w ms, zakres 1-1000
 #define OS_SHOW_SPLASH_SCREEN_AT_START	1			// Czy pokazywać logo systemu na starcie
-#define OS_SHOW_RESET_SOURCE_AT_START	1			// Czy pokazywać źródło resetu na starcie
 
 // Konfiguracja konsoli
 #define CONSOLE_TASK_PERIOD_MS			20

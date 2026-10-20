@@ -12,6 +12,10 @@
 	#include "pico/stdlib.h"
 #endif
 
+#define UCOSMOS_VERSION_MAJOR 5
+#define UCOSMOS_VERSION_MINOR 0
+#define UCOSMOS_VERSION_PATCH 0
+
 // Task exection mode
 enum run_mode_t {
 	os_run = 0,
