@@ -1,9 +1,8 @@
-#if COMPONENT_UCOSMOS
 #ifndef UCOSMOS_COMMANDS_H_
 #define UCOSMOS_COMMANDS_H_
 
-#include "log.h"
-// #include "uCosmos.h"
+#include "../_config/uCosmos_config.h"
+#include "task.h"
 
 // Basic commands
 void reset_cmd(int argc, char * argv[]);
@@ -68,5 +67,4 @@ void memory_status_cmd(int argc, char * argv[]);
 	void wrong4_cmd(int argc, char * argv[]);
 #endif
 
-#endif /* UCOSMOS_COMMANDS_H_ */
 #endif

@@ -1,10 +1,8 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
-#if COMPONENT_CONSOLE
 
 #include <time.h>
-#include "uCosmos.h"
-#include "log.h"
+#include "task.h"
 
 // Struct used to build table of commands and pointers to specified functions
 struct command_struct {
@@ -50,4 +48,3 @@ void print_ok(void);
 #endif
 
 #endif
-#endif /* CONSOLE_H_ */

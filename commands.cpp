@@ -1,10 +1,9 @@
 #include "../config.h"
-#if COMPONENT_UCOSMOS
 
 #include <string.h>
 #include "commands.h"
 #include "console.h"
-#include "uCosmos.h"
+#include "log.h"
 
 #if PICO_RP2040 || PICO_RP2350
 	#include "hardware/watchdog.h"
@@ -443,5 +442,4 @@ void wrong4_cmd(int argc, char * argv[]) {
 	printf("val: %u\n", value);
 }
 
-#endif
 #endif

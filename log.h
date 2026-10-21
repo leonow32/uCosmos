@@ -1,6 +1,8 @@
 
 #if ESP_PLATFORM
 	#include "esp_clk_tree.h"
+	#include "esp_log.h"
+	#include "esp_timer.h"
 #elif PICO_RP2040 || PICO_RP2350
 	#include <stdio.h>	
 	#include "pico/stdlib.h"

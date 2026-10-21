@@ -1,8 +1,6 @@
 #include "../config.h"
-#if COMPONENT_CONSOLE
 #include <string.h>
 #include <limits>
-#include <iostream>
 #include "log.h"
 #include "console.h"
 #include "../command_list.h"
@@ -410,5 +408,4 @@ void print_ok(void) {
 			printf("%u\t%08lX\t%s\n", i, uint32_t(command_list[i].ptr), command_list[i].name);
 		}
 	}
-#endif
 #endif
