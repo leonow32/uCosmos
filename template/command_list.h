@@ -7,6 +7,7 @@
 // ========================================
 
 #include "uCosmos/console.h"
+#include "uCosmos/commands.h"
 
 #if COMPONENT_CIPHER_AES128
 	#include "cipher_aes128/aes128_demo.h"
