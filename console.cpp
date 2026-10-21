@@ -1,4 +1,5 @@
 #include "../config.h"
+#include <iostream>
 #include <string.h>
 #include <limits>
 #include "log.h"
