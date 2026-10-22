@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "../_config/_config.h"
 
 #include <string.h>
 #include "commands.h"

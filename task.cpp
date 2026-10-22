@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "../_config/_config.h"
 #include "log.h"
 #include "task.h"
 #include "uCosmos.h"

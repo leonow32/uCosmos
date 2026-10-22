@@ -1,10 +1,10 @@
-#include "../config.h"
+#include "../_config/_config.h"
 #include <iostream>
 #include <string.h>
 #include <limits>
 #include "log.h"
 #include "console.h"
-#include "../command_list.h"
+#include "../_config/_commands.h"
 
 size_t	received_cnt;																		// Number of characters in receive buffer
 char 	buffer[CONSOLE_COMMAND_LENGTH];														// Buffer for currently processed command

@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "../_config/_config.h"
 #include "uCosmos.h"
 
 void uCosmos_init(void) {
