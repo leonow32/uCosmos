@@ -5,25 +5,21 @@
 #include "console.h"
 #include "log.h"
 
-#if PICO_RP2040 || PICO_RP2350
-	#include "hardware/watchdog.h"
-#endif
-
 // ========================================
 // Basic commands
 // ========================================
 
 // System reboot
-void reset_cmd(int argc, char * argv[]) {
+void old_reset_cmd(int argc, char * argv[]) {
 	#if ESP_PLATFORM
 		esp_restart();
 	#elif PICO_RP2040 || PICO_RP2350
-		watchdog_reboot(0, 0, 0);
+		// watchdog_reboot(0, 0, 0);
 	#endif
 }
 
 // Memory status
-void memory_status_cmd(int argc, char * argv[]) {
+void old_memory_status_cmd(int argc, char * argv[]) {
 	#if ESP_PLATFORM
 		printf("Heap size: %ld\n", esp_get_free_heap_size());
 		printf("Hear min:  %ld\n", esp_get_minimum_free_heap_size());

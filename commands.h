@@ -5,8 +5,8 @@
 #include "task.h"
 
 // Basic commands
-void reset_cmd(int argc, char * argv[]);
-void memory_status_cmd(int argc, char * argv[]);
+void old_reset_cmd(int argc, char * argv[]);
+void old_memory_status_cmd(int argc, char * argv[]);
 
 #if USE_CMD_TASK_MONITOR
 	void task_monitor_cmd(int argc, char * argv[]);

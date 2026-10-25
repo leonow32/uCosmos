@@ -1,4 +1,4 @@
-#include "config.h"
+#include "_config/_config.h"
 #ifndef INTERPRETER_COMMANDS_H_
 #define INTERPRETER_COMMANDS_H_
 
@@ -19,6 +19,10 @@
 
 #if COMPONENT_CRC
 	#include "crc/crc_demo.h"
+#endif
+
+#if COMPONENT_TOOLS_RP
+	#include "tools_rp/tools_rp.h"
 #endif
 
 // ========================================
@@ -46,9 +50,6 @@ const command_struct command_list[] = {
 	{"per",						task_period_change_cmd},
 	{"exe",						task_exe_cmd},
 #endif
-
-	{"reset",					reset_cmd},
-	{"mem",						memory_status_cmd},
 
 #if USE_CMD_TASK_DEMO
 	{"demo1_add",				demo1_add_cmd},
@@ -88,6 +89,22 @@ const command_struct command_list[] = {
 #endif
 
 // ========================================
+// Hardware related
+// ========================================
+
+#if COMPONENT_TOOLS_RP
+	{"reset",					tools_rp::reset_cmd},
+	{"mem",						tools_rp::mem_cmd},
+	{"fcpu",					tools_rp::fcpu_cmd},
+#endif
+
+#if COMPONENT_TOOLS_ESP32
+	{"reset",					tools_rp::reset_cmd},
+	{"mem",						tools_rp::mem_cmd},
+	{"fcpu",					tools_rp::fcpu_cmd},
+#endif
+
+// ========================================
 // Cipher AES-128
 // ========================================
 
@@ -114,7 +131,7 @@ const command_struct command_list[] = {
 #endif
 
 // ========================================
-// Cipher SBox
+// Cipher S-Box
 // ========================================
 
 #if SBOX_USE_DEMO_COMMANDS
@@ -128,6 +145,14 @@ const command_struct command_list[] = {
 
 #if CRC_USE_DEMO_COMMANDS
 	{"crc",				crc::crc16_cmd},
+#endif
+
+// ========================================
+// Tools for Raspberry Pico
+// ========================================
+
+#if COMPONENT_TOOLS_RP
+	{"test",			tools_rp::mem_cmd},
 #endif
 
 };
