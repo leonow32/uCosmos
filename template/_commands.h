@@ -99,9 +99,9 @@ const command_struct command_list[] = {
 #endif
 
 #if COMPONENT_TOOLS_ESP32
-	{"reset",					tools_rp::reset_cmd},
-	{"mem",						tools_rp::mem_cmd},
-	{"fcpu",					tools_rp::fcpu_cmd},
+	{"reset",					tools_esp32::reset_cmd},
+	{"mem",						tools_esp32::mem_cmd},
+	{"fcpu",					tools_esp32::fcpu_cmd},
 #endif
 
 // ========================================
