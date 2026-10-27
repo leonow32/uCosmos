@@ -32,9 +32,9 @@ enum os_t {
 // Task control structure
 struct task_control_t {
 	void (*task_ptr)(run_mode_t);
-	uint16_t counter;
-	uint16_t period;
-	bool flag;
+	volatile uint16_t counter;
+	volatile uint16_t period;
+	volatile bool flag;
 };
 
 // Task management

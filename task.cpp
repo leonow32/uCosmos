@@ -6,8 +6,8 @@
 #if ESP_PLATFORM
 	#include "esp_timer.h"
 	#include "freertos/task.h"
-	#define IRQ_DISABLE ;
-	#define IRQ_ENABLE  ;
+	#define IRQ_DISABLE() portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED; portENTER_CRITICAL(&mutex);
+	#define IRQ_ENABLE()  portEXIT_CRITICAL(&mutex);
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
 	#include "hardware/sync.h"
@@ -52,30 +52,37 @@ static void slot_erase(uint8_t slot_number) {
 
 // Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik. Jeśli brak wolnych slotów to zwraca os_no_free_slot.
 static os_t task_find_free_slot(uint8_t * slot_number) {
+	IRQ_DISABLE();
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
 		if(task_table[i].task_ptr == nullptr) {			// Szukanie pierwszego wolnego slotu, w którym wskaźnik do tasku jest nullptr
 			*slot_number = i;
+			IRQ_ENABLE();
 			return os_ok;
 		}
 	}
 	
+	IRQ_ENABLE();
 	return os_no_free_slot;								// Jeżeli brak wolnych slotów
 }
 
-// Szukanie slotu, w któym znajduje się funkcja o podanym wskaźniku task_ptr
+// Szukanie slotu, w którym znajduje się funkcja o podanym wskaźniku task_ptr
 // - task_ptr - wskaźnik do szukaniego tasku
 // - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
+	
+	IRQ_DISABLE();
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
 			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
 				*slot_number = i;
 			}
+			IRQ_ENABLE();
 			return os_ok;
 		}
 	}
 	
+	IRQ_ENABLE();
 	return os_not_found;
 }
 
