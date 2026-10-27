@@ -6,10 +6,10 @@
 #include "console.h"
 #include "../_config/_commands.h"
 
-size_t	received_cnt;																		// Number of characters in receive buffer
-char 	buffer[CONSOLE_COMMAND_LENGTH];														// Buffer for currently processed command
+static size_t	received_cnt;																// Number of characters in receive buffer
+static char 	buffer[CONSOLE_COMMAND_LENGTH];												// Buffer for currently processed command
 #if CONSOLE_USE_CTRL_Z
-	char buffer2[CONSOLE_COMMAND_LENGTH];													// Buffer for last processed command, recalled with CTRL-Z
+	static char buffer2[CONSOLE_COMMAND_LENGTH];											// Buffer for last processed command, recalled with CTRL-Z
 #endif
 
 void console_init(void) {
@@ -48,7 +48,7 @@ void console_task(run_mode_t run_mode) {
 			#if CONSOLE_USE_CTRL_Z
 			else if(chr == CTRL_Z) {														// If the received char is CTRL-Z - clear the buffer, display the prompt and previously entered command
 				received_cnt = 0;
-				strcpy(buffer, buffer2);
+				memcpy(buffer, buffer2, CONSOLE_COMMAND_LENGTH);
 				received_cnt = strlen(buffer);
 				prompt_show();
 			}
@@ -76,7 +76,7 @@ void console_task(run_mode_t run_mode) {
 				
 			else if((received_cnt > 0) && (chr == CR || chr == LF)) {						// If the received char is ENTER and the buffer is not empty - try to execute the command				
 				#if CONSOLE_USE_CTRL_Z
-				strcpy(buffer2, buffer);													// Copy the buffer to CTRL-Z buffer
+				memcpy(buffer2, buffer, CONSOLE_COMMAND_LENGTH);							// Copy the buffer to CTRL-Z buffer
 				#endif
 				
 				// Create argv array
@@ -249,6 +249,7 @@ template<typename T> parse_res parse_int(const char * arg, T * output) {
 	if(*arg == '-') {
 		negative = true;
 		arg++;
+		if(*arg == NUL)		return debug(parse_expected_dec, arg_copy);
 	}
 
 	*output = 0;
@@ -278,6 +279,7 @@ template parse_res parse_int<int64_t>(const char *, int64_t *);
 
 parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
 	if(output == nullptr)	return debug(parse_nullptr, arg);
 	*output = arg[0];
 	return parse_ok;

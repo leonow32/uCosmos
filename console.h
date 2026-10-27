@@ -1,5 +1,5 @@
-#ifndef CONSOLE_H_
-#define CONSOLE_H_
+#ifndef UCOSMOS_CONSOLE_H_
+#define UCOSMOS_CONSOLE_H_
 
 #include <time.h>
 #include "task.h"

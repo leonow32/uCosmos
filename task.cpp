@@ -6,8 +6,13 @@
 #if ESP_PLATFORM
 	#include "esp_timer.h"
 	#include "freertos/task.h"
+	#define IRQ_DISABLE ;
+	#define IRQ_ENABLE  ;
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
+	#include "hardware/sync.h"
+	#define IRQ_DISABLE() uint32_t irq_status = save_and_disable_interrupts();
+	#define IRQ_ENABLE()  restore_interrupts(irq_status);
 #endif
 
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
@@ -16,6 +21,7 @@ const char * task_name = nullptr;
 static const char * debug_res(os_t result) {
 	switch(result) {
 		case os_ok:							return("ok");
+		case os_nullptr:					return("nullptr");
 		case os_no_free_slot:				return("no free slot");
 		case os_not_found:					return("not found");
 		case os_task_already_created:		return("already created");
@@ -28,18 +34,20 @@ static const char * debug_res(os_t result) {
 
 static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	#if ESP_PLATFORM
-		printf("%s%c (%ld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
+		printf("%s%c (%lu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#elif PICO_RP2040 || PICO_RP2350
-		printf("%s%c (%lld) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
+		printf("%s%c (%llu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#endif
 	return res;
 }
 
 static void slot_erase(uint8_t slot_number) {
+	IRQ_DISABLE();
 	task_table[slot_number].task_ptr = nullptr;
 	task_table[slot_number].counter  = 0;
 	task_table[slot_number].period   = 0;
 	task_table[slot_number].flag     = false;
+	IRQ_ENABLE();
 }
 
 // Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik. Jeśli brak wolnych slotów to zwraca os_no_free_slot.
@@ -58,6 +66,7 @@ static os_t task_find_free_slot(uint8_t * slot_number) {
 // - task_ptr - wskaźnik do szukaniego tasku
 // - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
+	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
 			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
@@ -160,20 +169,25 @@ void task_scheduler(void) {
 // Dodawanie tasku do tablicy tasków
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
+	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
 	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 	if(task_is_running(task_ptr))								return debug_print(os_task_already_created, __func__, task_ptr, period_ms);
 	if(task_find_free_slot(&slot_number) == os_no_free_slot)	return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);
 	
-	task_table[slot_number].task_ptr = task_ptr;
+	IRQ_DISABLE();
 	task_table[slot_number].counter  = (period_ms / OS_TICK_PERIOD_MS)-1;
 	task_table[slot_number].period   = period_ms / OS_TICK_PERIOD_MS;
+	task_table[slot_number].flag     = false;
+	task_table[slot_number].task_ptr = task_ptr;
+	IRQ_ENABLE();
 	task_ptr(os_constructor);
 	return os_ok;
 }
 
 // Execute task destructor and then remove it from the array
 os_t task_close(void (*task_ptr)(run_mode_t)) {
-	uint8_t slot_number;										// Szukanie tasku
+	uint8_t slot_number;
+	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
 	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, 0);
 	
 	task_ptr(os_destructor);													// Execute task destructor
@@ -186,26 +200,31 @@ os_t task_close(void (*task_ptr)(run_mode_t)) {
 // - period_ms - nowy okres
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
+	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
 	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, period_ms);
 	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 
+	IRQ_DISABLE();
 	task_table[slot_number].counter	= (period_ms / OS_TICK_PERIOD_MS)-1;
 	task_table[slot_number].period	= period_ms / OS_TICK_PERIOD_MS;
 	task_table[slot_number].flag	= 0;
+	IRQ_ENABLE();
 	return os_ok;
 }
 
 // Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
+	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
 	return task_find(task_ptr) == os_ok;
 }
 
 const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 	if(task_ptr) {
+		task_name = "unknown";
 		task_ptr(os_id);
 		return task_name;
 	}
 	else {
-		return "";
+		return "nullptr";
 	}
 }

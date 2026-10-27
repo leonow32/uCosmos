@@ -21,6 +21,7 @@ enum run_mode_t {
 // Return value for task managemen functions
 enum os_t {
 	os_ok = 0,
+	os_nullptr,
 	os_no_free_slot,
 	os_not_found,
 	os_task_already_created,

@@ -71,7 +71,7 @@ const command_struct command_list[] = {
 	{"hex32",					hex32_cmd},
 	{"hex64",					hex64_cmd},
 
-	{"uint88",					uint8_cmd},
+	{"uint8",					uint8_cmd},
 	{"uint16",					uint16_cmd},
 	{"uint32",					uint32_cmd},
 	{"uint64",					uint64_cmd},
