@@ -2,6 +2,7 @@
 #define UCOSMOS_CONSOLE_H_
 
 #include <time.h>
+#include <limits>
 #include "task.h"
 
 // Struct used to build table of commands and pointers to specified functions
@@ -33,7 +34,7 @@ enum parse_res {
 };
 
 // Argument parsers
-template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10);
+template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10, T max = std::numeric_limits<T>::max());
 template<typename T> parse_res parse_int(const char * arg, T * output);
 parse_res parse_ascii_char(const char * arg, char * output);
 parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);

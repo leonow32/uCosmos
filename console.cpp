@@ -1,7 +1,6 @@
 #include "../_config/_config.h"
 #include <iostream>
 #include <string.h>
-#include <limits>
 #include "log.h"
 #include "console.h"
 #include "../_config/_commands.h"
@@ -210,7 +209,7 @@ static parse_res parse_numeric_char(const char chr, uint8_t * output, uint8_t ba
 	return parse_ok;
 }
 
-template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base) {
+template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base, T max) {
 	static_assert(std::is_unsigned_v<T>, "This function works with unsigned integers only.");
 	const char * arg_copy = arg;
 	
@@ -225,17 +224,17 @@ template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t 
 		uint8_t char_value = 0;
 		parse_res res = parse_numeric_char(*arg++, &char_value, base);
 		if(res) return debug(res, arg_copy);
-		if(*output > (std::numeric_limits<T>::max() - char_value) / base) return debug(parse_over_range, arg_copy);
+		if(*output > (max - char_value) / base) return debug(parse_over_range, arg_copy);
 		*output = *output * base + char_value;
 	} 
 
 	return parse_ok;
 }
 
-template parse_res parse_uint<uint8_t>(const char *, uint8_t *, uint8_t);
-template parse_res parse_uint<uint16_t>(const char *, uint16_t *, uint8_t);
-template parse_res parse_uint<uint32_t>(const char *, uint32_t *, uint8_t);
-template parse_res parse_uint<uint64_t>(const char *, uint64_t *, uint8_t);
+template parse_res parse_uint<uint8_t>(const char *, uint8_t *, uint8_t, uint8_t);
+template parse_res parse_uint<uint16_t>(const char *, uint16_t *, uint8_t, uint16_t);
+template parse_res parse_uint<uint32_t>(const char *, uint32_t *, uint8_t, uint32_t);
+template parse_res parse_uint<uint64_t>(const char *, uint64_t *, uint8_t, uint64_t);
 
 template<typename T> parse_res parse_int(const char * arg, T * output) {
 	static_assert(std::is_signed_v<T>, "This function works with signed integers only.");
@@ -292,7 +291,8 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * output_le
 	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	if(output_length == nullptr)	return debug(parse_nullptr, arg);
-	if(buffer_size < min_length)	return debug(parse_error, arg);
+	if(buffer_size == 0)			return debug(parse_error, arg);
+	if(buffer_size <= min_length)	return debug(parse_error, arg);
 	
 	*output_length = 0;
 	
@@ -366,15 +366,14 @@ parse_res parse_time(const char * arg, time_t * output) {
 		if(res) return debug(res, arg);
 	}
 
-	new_time.tm_year	= 10*digits[0]  + digits[1] + 100;
-	new_time.tm_mon		= 10*digits[2]  + digits[3] - 1;
-	new_time.tm_mday	= 10*digits[4]  + digits[5];
-	new_time.tm_hour	= 10*digits[6]  + digits[7];
-	new_time.tm_min		= 10*digits[8]  + digits[9];
-	new_time.tm_sec		= 10*digits[10] + digits[11];
+	new_time.tm_year = 10*digits[0]  + digits[1] + 100;
+	new_time.tm_mon	 = 10*digits[2]  + digits[3] - 1;
+	new_time.tm_mday = 10*digits[4]  + digits[5];
+	new_time.tm_hour = 10*digits[6]  + digits[7];
+	new_time.tm_min  = 10*digits[8]  + digits[9];
+	new_time.tm_sec  = 10*digits[10] + digits[11];
 
 	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
-	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
 	
 	bool leap_year = ((new_time.tm_year % 4 == 0) && (new_time.tm_year % 100 != 0)) || ((new_time.tm_year-100) % 400 == 0);
 	uint8_t days_in_month[] = {31, uint8_t(leap_year ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};

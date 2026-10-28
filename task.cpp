@@ -156,11 +156,14 @@ void task_init(void) {
 void task_scheduler(void) {
 	while(1) {
 		for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-			if(task_table[i].flag) {
-				task_table[i].flag = false;
-				if(task_table[i].task_ptr) {
-					task_table[i].task_ptr(os_run);				// Task execution
-				}
+			IRQ_DISABLE();
+			void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
+			bool flag = task_table[i].flag;
+			task_table[i].flag = false;
+			IRQ_ENABLE();
+
+			if(flag && task_ptr) {
+				task_ptr(os_run);				// Task execution
 			}
 		}
 

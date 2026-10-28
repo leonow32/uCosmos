@@ -367,7 +367,7 @@ void time_demo_cmd(int argc, char * argv[]) {
 	if(parse_time(argv[1], &time_seconds)) return;
 
 	tm time_struct;
-	gmtime_r(&time_seconds, &time_struct);
+	localtime_r(&time_seconds, &time_struct);
 	
 	printf("20%02u-%02u-%02u %02u:%02u:%02u\n",
 		time_struct.tm_year - 100,

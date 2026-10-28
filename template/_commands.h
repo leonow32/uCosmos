@@ -21,6 +21,10 @@
 	#include "crc/crc_demo.h"
 #endif
 
+#if COMPONENT_TOOLS_ESP32
+	#include "tools_esp32/tools_esp32.h"
+#endif
+
 #if COMPONENT_TOOLS_RP
 	#include "tools_rp/tools_rp.h"
 #endif
@@ -135,8 +139,8 @@ const command_struct command_list[] = {
 // ========================================
 
 #if SBOX_USE_DEMO_COMMANDS
-	{"sbox_e",			sbox::encrypt_cmd},
-	{"sbox_d",			sbox::decrypt_cmd},
+	{"sbox_e",					sbox::encrypt_cmd},
+	{"sbox_d",					sbox::decrypt_cmd},
 #endif
 
 // ========================================
@@ -144,15 +148,7 @@ const command_struct command_list[] = {
 // ========================================
 
 #if CRC_USE_DEMO_COMMANDS
-	{"crc",				crc::crc16_cmd},
-#endif
-
-// ========================================
-// Tools for Raspberry Pico
-// ========================================
-
-#if COMPONENT_TOOLS_RP
-	{"test",			tools_rp::mem_cmd},
+	{"crc",						crc::crc16_cmd},
 #endif
 
 };
