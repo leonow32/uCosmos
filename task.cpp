@@ -6,7 +6,8 @@
 #if ESP_PLATFORM
 	#include "esp_timer.h"
 	#include "freertos/task.h"
-	#define IRQ_DISABLE() portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED; portENTER_CRITICAL(&mutex);
+	static portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
+	#define IRQ_DISABLE() portENTER_CRITICAL(&mutex);
 	#define IRQ_ENABLE()  portEXIT_CRITICAL(&mutex);
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
@@ -224,7 +225,6 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 
 // Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
-	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
 	return task_find(task_ptr) == os_ok;
 }
 
