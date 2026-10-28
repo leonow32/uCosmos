@@ -171,7 +171,7 @@ void task_scheduler(void) {
 			vTaskDelay(1);
 		#elif PICO_RP2040 || PICO_RP2350
 			tight_loop_contents();
-			// __asm("  wfi");
+			__asm("  wfi");
 		#endif
 	}
 }

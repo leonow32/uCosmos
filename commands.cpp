@@ -120,7 +120,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		time(&time_now);
 
 		tm time_struct;
-		gmtime_r(&time_now, &time_struct);
+		localtime_r(&time_now, &time_struct);
 		
 		printf("%04u-%02u-%02u %02u:%02u:%02u\n",
 			time_struct.tm_year + 1900,
