@@ -141,40 +141,52 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	void demo1_task(run_mode_t run_mode) {
 		static int counter = 0;
 
-		if(run_mode == os_run) {
-			LOGI("%s %d", __func__, counter++);
-		}
-		
-		else if(run_mode == os_constructor) {
-			LOGI("%s constructor", __func__);
-		}
-		
-		else if(run_mode == os_destructor) {
-			LOGI("%s destructor", __func__);
-		}
+		switch(run_mode) {
+			case os_run: {
+				LOGI("%s %d", __func__, counter++);
+				break;
+			}
 
-		else if(run_mode == os_id) {
-			task_name = __func__;
+			case os_constructor: {
+				LOGI("%s constructor", __func__);
+				break;
+			}
+
+			case os_destructor: {
+				LOGI("%s destructor", __func__);
+				break;
+			}
+
+			case os_id: {
+				task_name = __func__;
+				break;
+			}
 		}
 	}
 
 	void demo2_task(run_mode_t run_mode) {
 		static int counter = 0;
 
-		if(run_mode == os_run) {
-			LOGD("%s %d", __func__, counter++);
-		}
-		
-		else if(run_mode == os_constructor) {
-			LOGD("%s constructor", __func__);
-		}
-		
-		else if(run_mode == os_destructor) {
-			LOGD("%s destructor", __func__);
-		}
+		switch(run_mode) {
+			case os_run: {
+				LOGD("%s %d", __func__, counter++);
+				break;
+			}
 
-		else if(run_mode == os_id) {
-			task_name = __func__;
+			case os_constructor: {
+				LOGD("%s constructor", __func__);
+				break;
+			}
+
+			case os_destructor: {
+				LOGD("%s destructor", __func__);
+				break;
+			}
+
+			case os_id: {
+				task_name = __func__;
+				break;
+			}
 		}
 	}
 

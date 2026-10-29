@@ -3,20 +3,26 @@
 
 void template_task(run_mode_t run_mode) {
 	
-	if(run_mode == os_run) {
-		
-	}
-	
-	else if(run_mode == os_constructor) {
-		
-	}
-	
-	else if(run_mode == os_destructor) {
-		
-	}
-	
-	else if(run_mode == os_id) {
-		task_name = __func__;
+	switch(run_mode) {
+		case os_run: {
+
+			break;
+		}
+
+		case os_constructor: {
+
+			break;
+		}
+
+		case os_destructor: {
+
+			break;
+		}
+
+		case os_id: {
+			task_name = __func__;
+			break;
+		}
 	}
 }
 
