@@ -223,8 +223,10 @@ template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t 
 	while(*arg) {
 		uint8_t char_value = 0;
 		parse_res res = parse_numeric_char(*arg++, &char_value, base);
-		if(res) return debug(res, arg_copy);
-		if(*output > (max - char_value) / base) return debug(parse_over_range, arg_copy);
+		if(res) 												return debug(res, arg_copy);
+		if(*output > max / base) 								return debug(parse_over_range, arg_copy);
+		if(*output == max / base && char_value > max % base)	return debug(parse_over_range, arg_copy);
+
 		*output = *output * base + char_value;
 	} 
 
