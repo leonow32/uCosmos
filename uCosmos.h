@@ -1,6 +1,7 @@
 #ifndef UCOSMOS_H
 #define UCOSMOS_H
 
+#include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
 #include "console.h"
 #include "log.h"

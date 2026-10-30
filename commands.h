@@ -1,6 +1,7 @@
 #ifndef UCOSMOS_COMMANDS_H_
 #define UCOSMOS_COMMANDS_H_
 
+#include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
 #include "task.h"
 

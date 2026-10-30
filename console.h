@@ -1,6 +1,8 @@
 #ifndef UCOSMOS_CONSOLE_H_
 #define UCOSMOS_CONSOLE_H_
 
+#include "../_config/_config.h"
+#include "../_config/uCosmos_config.h"
 #include <time.h>
 #include <limits>
 #include "task.h"

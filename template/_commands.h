@@ -27,7 +27,7 @@
 
 const command_struct command_list[] = {
 	#include "uCosmos/commands.hxx"
-	#include "cipher_aes128/aes_demo.hxx"
+	#include "cipher_aes128/aes128_demo.hxx"
 	#include "cipher_sbox/sbox_demo.hxx"
 	#include "crc/crc_demo.hxx"
 	#include "tools_esp32/tools_esp32.hxx"

@@ -1,6 +1,7 @@
 #ifndef UCOSMOS_TASK_H
 #define UCOSMOS_TASK_H
 
+#include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
 
 #if ESP_PLATFORM
