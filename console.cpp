@@ -226,6 +226,7 @@ template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t 
 		if(res) 												return debug(res, arg_copy);
 		if(*output > max / base) 								return debug(parse_over_range, arg_copy);
 		if(*output == max / base && char_value > max % base)	return debug(parse_over_range, arg_copy);
+		// if(*output > (std::numeric_limits<T>::max() - char_value) / base) return debug(parse_over_range, arg_copy);
 
 		*output = *output * base + char_value;
 	} 
