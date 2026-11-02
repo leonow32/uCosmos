@@ -300,17 +300,20 @@ void uint64_cmd(int argc, char * argv[]) {
 	printf("%llu\n", value);
 }
 
-void numeric_cmd(int argc, char * argv[]) {
+void uintx_cmd(int argc, char * argv[]) {
 	if(argc == 1) {
-		printf("base value\n");
+		printf("base max value\n");
 		return;
 	}
 
 	uint8_t base;
 	if(parse_uint(argv[1], &base)) return;
 
+	uint64_t max;
+	if(parse_uint(argv[2], &max)) return;
+
 	uint64_t value;
-	if(parse_uint(argv[2], &value, base)) return;
+	if(parse_uint(argv[3], &value, base, max)) return;
 	printf("%llu\n", value);
 }
 

@@ -45,7 +45,7 @@
 	void uint16_cmd(int argc, char * argv[]);
 	void uint32_cmd(int argc, char * argv[]);
 	void uint64_cmd(int argc, char * argv[]);
-	void numeric_cmd(int argc, char * argv[]);
+	void uintx_cmd(int argc, char * argv[]);
 
 	void int8_cmd(int argc, char * argv[]);
 	void int16_cmd(int argc, char * argv[]);

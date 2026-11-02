@@ -38,7 +38,7 @@
 	{"uint16",					uint16_cmd},
 	{"uint32",					uint32_cmd},
 	{"uint64",					uint64_cmd},
-	{"anybase",					numeric_cmd},
+	{"uintx",					uintx_cmd},
 
 	{"int8",					int8_cmd},
 	{"int16",					int16_cmd},
