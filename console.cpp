@@ -374,6 +374,7 @@ parse_res parse_time(const char * arg, time_t * output) {
 	new_time.tm_min  = 10*digits[8]  + digits[9];
 	new_time.tm_sec  = 10*digits[10] + digits[11];
 
+	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
 	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
 	
 	bool leap_year = ((new_time.tm_year % 4 == 0) && (new_time.tm_year % 100 != 0)) || ((new_time.tm_year-100) % 400 == 0);
