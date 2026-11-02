@@ -70,7 +70,7 @@ static os_t task_find_free_slot(uint8_t * slot_number) {
 // - task_ptr - wskaźnik do szukaniego tasku
 // - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
-	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
+	if(task_ptr == nullptr)					return os_nullptr;
 	
 	IRQ_DISABLE();
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
@@ -192,7 +192,7 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	task_table[slot_number].task_ptr = task_ptr;
 	IRQ_ENABLE();
 	task_ptr(os_constructor);
-	return os_ok;
+	return debug_print(os_ok, __func__, task_ptr, period_ms);
 }
 
 // Execute task destructor and then remove it from the array
@@ -203,7 +203,7 @@ os_t task_close(void (*task_ptr)(run_mode_t)) {
 	
 	task_ptr(os_destructor);													// Execute task destructor
 	slot_erase(slot_number);													// Clear task from the array
-	return os_ok;
+	return debug_print(os_ok, __func__, task_ptr, 0);
 }
 
 // Zmiana czasów
@@ -220,7 +220,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	task_table[slot_number].period	= period_ms / OS_TICK_PERIOD_MS;
 	task_table[slot_number].flag	= 0;
 	IRQ_ENABLE();
-	return os_ok;
+	return debug_print(os_ok, __func__, task_ptr, period_ms);
 }
 
 // Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
