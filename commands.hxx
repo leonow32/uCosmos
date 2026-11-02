@@ -40,6 +40,11 @@
 	{"uint64",					uint64_cmd},
 	{"uintx",					uintx_cmd},
 
+	{"dec8",					dec8_cmd},
+	{"dec16",					dec16_cmd},
+	{"dec32",					dec32_cmd},
+	{"dec64",					dec64_cmd},
+
 	{"int8",					int8_cmd},
 	{"int16",					int16_cmd},
 	{"int32",					int32_cmd},

@@ -317,6 +317,86 @@ void uintx_cmd(int argc, char * argv[]) {
 	printf("%llu\n", value);
 }
 
+void dec8_cmd(int argc, char * argv[]) {	
+	if(argc == 2) {
+		uint8_t value;
+		if(parse_dec8(argv[1], &value)) return;
+		printf("Result: %u\n", value);
+	}
+	else if(argc == 3) {
+		uint8_t max;
+		if(parse_dec8(argv[2], &max)) return;
+
+		uint8_t value;
+		if(parse_dec8(argv[1], &value, max)) return;
+		printf("Result: %u\n", value);
+	}
+	else {
+		printf("val (max)\n");
+		return;
+	}
+}
+
+void dec16_cmd(int argc, char * argv[]) {
+	if(argc == 2) {
+		uint16_t value;
+		if(parse_dec16(argv[1], &value)) return;
+		printf("Result: %u\n", value);
+	}
+	else if(argc == 3) {
+		uint16_t max;
+		if(parse_dec16(argv[2], &max)) return;
+
+		uint16_t value;
+		if(parse_dec16(argv[1], &value, max)) return;
+		printf("Result: %u\n", value);
+	}
+	else {
+		printf("val (max)\n");
+		return;
+	}
+}
+
+void dec32_cmd(int argc, char * argv[]) {
+	if(argc == 2) {
+		uint32_t value;
+		if(parse_dec32(argv[1], &value)) return;
+		printf("Result: %lu\n", value);
+	}
+	else if(argc == 3) {
+		uint32_t max;
+		if(parse_dec32(argv[2], &max)) return;
+
+		uint32_t value;
+		if(parse_dec32(argv[1], &value, max)) return;
+		printf("Result: %lu\n", value);
+	}
+	else {
+		printf("val (max)\n");
+		return;
+	}	
+}
+
+void dec64_cmd(int argc, char * argv[]) {
+	if(argc == 2) {
+		uint64_t value;
+		if(parse_dec64(argv[1], &value)) return;
+		printf("Result: %llu\n", value);
+	}
+	else if(argc == 3) {
+		uint64_t max;
+		if(parse_dec64(argv[2], &max)) return;
+
+		uint64_t value;
+		if(parse_dec64(argv[1], &value, max)) return;
+		printf("Result: %llu\n", value);
+	}
+	else {
+		printf("val (max)\n");
+		return;
+	}	
+}
+
 void int8_cmd(int argc, char * argv[]) {
 	int8_t value;
 	if(parse_int(argv[1], &value)) return;

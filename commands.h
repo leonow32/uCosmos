@@ -47,6 +47,11 @@
 	void uint64_cmd(int argc, char * argv[]);
 	void uintx_cmd(int argc, char * argv[]);
 
+	void dec8_cmd(int argc, char * argv[]);
+	void dec16_cmd(int argc, char * argv[]);
+	void dec32_cmd(int argc, char * argv[]);
+	void dec64_cmd(int argc, char * argv[]);
+
 	void int8_cmd(int argc, char * argv[]);
 	void int16_cmd(int argc, char * argv[]);
 	void int32_cmd(int argc, char * argv[]);

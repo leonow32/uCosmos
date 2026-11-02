@@ -223,12 +223,12 @@ template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t 
 	while(*arg) {
 		uint8_t char_value = 0;
 		parse_res res = parse_numeric_char(*arg++, &char_value, base);
-		if(res) 									return debug(res, arg_copy);
-		if(*output > (max - char_value) / base) 	return debug(parse_over_range, arg_copy);
+		if(res) 												return debug(res, arg_copy);
+		if(*output > max / base) 								return debug(parse_over_range, arg_copy);
+		if(*output == max / base && char_value > max % base)	return debug(parse_over_range, arg_copy);
 		*output = *output * base + char_value;
 	}
 
-	if(*output > max) 			return debug(parse_over_range, arg_copy);
 	return parse_ok;
 }
 
@@ -236,6 +236,38 @@ template parse_res parse_uint<uint8_t>(const char *, uint8_t *, uint8_t, uint8_t
 template parse_res parse_uint<uint16_t>(const char *, uint16_t *, uint8_t, uint16_t);
 template parse_res parse_uint<uint32_t>(const char *, uint32_t *, uint8_t, uint32_t);
 template parse_res parse_uint<uint64_t>(const char *, uint64_t *, uint8_t, uint64_t);
+
+parse_res parse_dec8(const char * arg, uint8_t * output, uint8_t max) {
+	return parse_uint(arg, output, 10, max);
+}
+
+parse_res parse_dec16(const char * arg, uint16_t * output, uint16_t max) {
+	return parse_uint(arg, output, 10, max);
+}
+
+parse_res parse_dec32(const char * arg, uint32_t * output, uint32_t max) {
+	return parse_uint(arg, output, 10, max);
+}
+
+parse_res parse_dec64(const char * arg, uint64_t * output, uint64_t max) {
+	return parse_uint(arg, output, 10, max);
+}
+
+parse_res parse_hex8(const char * arg, uint8_t * output, uint8_t max) {
+	return parse_uint(arg, output, 16, max);
+}
+
+parse_res parse_hex16(const char * arg, uint16_t * output, uint16_t max) {
+	return parse_uint(arg, output, 16, max);
+}
+
+parse_res parse_hex32(const char * arg, uint32_t * output, uint32_t max) {
+	return parse_uint(arg, output, 16, max);
+}
+
+parse_res parse_hex64(const char * arg, uint64_t * output, uint64_t max) {
+	return parse_uint(arg, output, 16, max);
+}
 
 template<typename T> parse_res parse_int(const char * arg, T * output) {
 	static_assert(std::is_signed_v<T>, "This function works with signed integers only.");
