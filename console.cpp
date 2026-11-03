@@ -242,53 +242,20 @@ template parse_res parse_uint<uint16_t>(const char *, uint16_t *, uint8_t, uint1
 template parse_res parse_uint<uint32_t>(const char *, uint32_t *, uint8_t, uint32_t);
 template parse_res parse_uint<uint64_t>(const char *, uint64_t *, uint8_t, uint64_t);
 
-parse_res parse_dec(const char * arg, uint8_t * output, uint8_t max) {
-	return parse_uint(arg, output, 10, max);
-}
+parse_res parse_dec(const char * arg, uint8_t  * output, uint8_t  max)	{return parse_uint(arg, output, 10, max);}
+parse_res parse_dec(const char * arg, uint16_t * output, uint16_t max)	{return parse_uint(arg, output, 10, max);}
+parse_res parse_dec(const char * arg, uint32_t * output, uint32_t max)	{return parse_uint(arg, output, 10, max);}
+parse_res parse_dec(const char * arg, uint64_t * output, uint64_t max)	{return parse_uint(arg, output, 10, max);}
 
-parse_res parse_dec(const char * arg, uint16_t * output, uint16_t max) {
-	return parse_uint(arg, output, 10, max);
-}
+parse_res parse_hex(const char * arg, uint8_t  * output, uint8_t  max)	{return parse_uint(arg, output, 16, max);}
+parse_res parse_hex(const char * arg, uint16_t * output, uint16_t max)	{return parse_uint(arg, output, 16, max);}
+parse_res parse_hex(const char * arg, uint32_t * output, uint32_t max)	{return parse_uint(arg, output, 16, max);}
+parse_res parse_hex(const char * arg, uint64_t * output, uint64_t max)	{return parse_uint(arg, output, 16, max);}
 
-parse_res parse_dec(const char * arg, uint32_t * output, uint32_t max) {
-	return parse_uint(arg, output, 10, max);
-}
-
-parse_res parse_dec(const char * arg, uint64_t * output, uint64_t max) {
-	return parse_uint(arg, output, 10, max);
-}
-
-parse_res parse_hex(const char * arg, uint8_t * output, uint8_t max) {
-	return parse_uint(arg, output, 16, max);
-}
-
-parse_res parse_hex(const char * arg, uint16_t * output, uint16_t max) {
-	return parse_uint(arg, output, 16, max);
-}
-
-parse_res parse_hex(const char * arg, uint32_t * output, uint32_t max) {
-	return parse_uint(arg, output, 16, max);
-}
-
-parse_res parse_hex(const char * arg, uint64_t * output, uint64_t max) {
-	return parse_uint(arg, output, 16, max);
-}
-
-parse_res parse_bin(const char * arg, uint8_t * output, uint8_t max) {
-	return parse_uint(arg, output, 2, max);
-}
-
-parse_res parse_bin(const char * arg, uint16_t * output, uint16_t max) {
-	return parse_uint(arg, output, 2, max);
-}
-
-parse_res parse_bin(const char * arg, uint32_t * output, uint32_t max) {
-	return parse_uint(arg, output, 2, max);
-}
-
-parse_res parse_bin(const char * arg, uint64_t * output, uint64_t max) {
-	return parse_uint(arg, output, 2, max);
-}
+parse_res parse_bin(const char * arg, uint8_t  * output, uint8_t  max)	{return parse_uint(arg, output, 2, max);}
+parse_res parse_bin(const char * arg, uint16_t * output, uint16_t max)	{return parse_uint(arg, output, 2, max);}
+parse_res parse_bin(const char * arg, uint32_t * output, uint32_t max)	{return parse_uint(arg, output, 2, max);}
+parse_res parse_bin(const char * arg, uint64_t * output, uint64_t max)	{return parse_uint(arg, output, 2, max);}
 
 template<typename T> parse_res parse_int(const char * arg, T * output) {
 	static_assert(std::is_signed_v<T>, "This function works with signed integers only.");

@@ -51,8 +51,6 @@
 	void bin32_cmd(int argc, char * argv[]);
 	void bin64_cmd(int argc, char * argv[]);
 
-	void uintx_cmd(int argc, char * argv[]);
-
 	void int8_cmd(int argc, char * argv[]);
 	void int16_cmd(int argc, char * argv[]);
 	void int32_cmd(int argc, char * argv[]);

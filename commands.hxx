@@ -44,8 +44,6 @@
 	{"bin32",					bin32_cmd},
 	{"bin64",					bin64_cmd},
 
-	{"uintx",					uintx_cmd},
-
 	{"int8",					int8_cmd},
 	{"int16",					int16_cmd},
 	{"int32",					int32_cmd},

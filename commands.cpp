@@ -250,286 +250,49 @@ void echo_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-void dec8_cmd(int argc, char * argv[]) {	
-	if(argc == 2) {
-		uint8_t value;
-		if(parse_dec(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint8_t max;
-		if(parse_dec(argv[2], &max)) return;
-
-		uint8_t value;
-		if(parse_dec(argv[1], &value, max)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void dec16_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint16_t value;
-		if(parse_dec(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint16_t max;
-		if(parse_dec(argv[2], &max)) return;
-
-		uint16_t value;
-		if(parse_dec(argv[1], &value, max)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void dec32_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint32_t value;
-		if(parse_dec(argv[1], &value)) return;
-		printf("Result: %lu\n", value);
-	}
-	else if(argc == 3) {
-		uint32_t max;
-		if(parse_dec(argv[2], &max)) return;
-
-		uint32_t value;
-		if(parse_dec(argv[1], &value, max)) return;
-		printf("Result: %lu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void dec64_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint64_t value;
-		if(parse_dec(argv[1], &value)) return;
-		printf("Result: %llu\n", value);
-	}
-	else if(argc == 3) {
-		uint64_t max;
-		if(parse_dec(argv[2], &max)) return;
-
-		uint64_t value;
-		if(parse_dec(argv[1], &value, max)) return;
-		printf("Result: %llu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void hex8_cmd(int argc, char * argv[]) {	
-	if(argc == 2) {
-		uint8_t value;
-		if(parse_hex(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint8_t max;
-		if(parse_hex(argv[2], &max)) return;
-
-		uint8_t value;
-		if(parse_hex(argv[1], &value, 1)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void hex16_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint16_t value;
-		if(parse_hex(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint16_t max;
-		if(parse_hex(argv[2], &max)) return;
-
-		uint16_t value;
-		if(parse_hex(argv[1], &value, 12)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void hex32_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint32_t value;
-		if(parse_hex(argv[1], &value)) return;
-		printf("Result: %lu\n", value);
-	}
-	else if(argc == 3) {
-		uint32_t max;
-		if(parse_hex(argv[2], &max)) return;
-
-		uint32_t value;
-		if(parse_hex(argv[1], &value, 123)) return;
-		printf("Result: %lu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void hex64_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint64_t value;
-		if(parse_hex(argv[1], &value)) return;
-		printf("Result: %llu\n", value);
-	}
-	else if(argc == 3) {
-		uint64_t max;
-		if(parse_hex(argv[2], &max)) return;
-
-		uint64_t value;
-		if(parse_hex(argv[1], &value, 1234)) return;
-		printf("Result: %llu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void bin8_cmd(int argc, char * argv[]) {	
-	if(argc == 2) {
-		uint8_t value;
-		if(parse_bin(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint8_t max;
-		if(parse_bin(argv[2], &max)) return;
-
-		uint8_t value;
-		if(parse_bin(argv[1], &value, 1)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void bin16_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint16_t value;
-		if(parse_bin(argv[1], &value)) return;
-		printf("Result: %u\n", value);
-	}
-	else if(argc == 3) {
-		uint16_t max;
-		if(parse_bin(argv[2], &max)) return;
-
-		uint16_t value;
-		if(parse_bin(argv[1], &value, 12)) return;
-		printf("Result: %u\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}
-}
-
-void bin32_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint32_t value;
-		if(parse_bin(argv[1], &value)) return;
-		printf("Result: %lu\n", value);
-	}
-	else if(argc == 3) {
-		uint32_t max;
-		if(parse_bin(argv[2], &max)) return;
-
-		uint32_t value;
-		if(parse_bin(argv[1], &value, 123)) return;
-		printf("Result: %lu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void bin64_cmd(int argc, char * argv[]) {
-	if(argc == 2) {
-		uint64_t value;
-		if(parse_bin(argv[1], &value)) return;
-		printf("Result: %llu\n", value);
-	}
-	else if(argc == 3) {
-		uint64_t max;
-		if(parse_bin(argv[2], &max)) return;
-
-		uint64_t value;
-		if(parse_bin(argv[1], &value, 1234)) return;
-		printf("Result: %llu\n", value);
-	}
-	else {
-		printf("val (max)\n");
-		return;
-	}	
-}
-
-void uintx_cmd(int argc, char * argv[]) {
-	if(argc == 1) {
-		printf("base max value\n");
-		return;
+#define DEFINE_UINT_CMD(command_name, var_type, print_format, parse_function) \
+	void command_name(int argc, char *argv[]) {                               \
+		if(argc == 2) {                                                       \
+			var_type value;                                                   \
+			if (parse_function(argv[1], &value)) return;                      \
+			printf("Result: " print_format "\n", value);                      \
+		} else if(argc == 3) {                                                \
+			var_type max;                                                     \
+			if (parse_function(argv[2], &max)) return;                        \
+			var_type value;                                                   \
+			if (parse_function(argv[1], &value, max)) return;                 \
+			printf("Result: " print_format "\n", value);                      \
+		} else {                                                              \
+			printf("val (max)\n");                                            \
+		}                                                                     \
 	}
 
-	uint8_t base;
-	if(parse_uint(argv[1], &base)) return;
+DEFINE_UINT_CMD(dec8_cmd,  uint8_t,  "%u",   parse_dec)
+DEFINE_UINT_CMD(dec16_cmd, uint16_t, "%u",   parse_dec)
+DEFINE_UINT_CMD(dec32_cmd, uint32_t, "%lu",  parse_dec)
+DEFINE_UINT_CMD(dec64_cmd, uint64_t, "%llu", parse_dec)
 
-	uint64_t max;
-	if(parse_uint(argv[2], &max)) return;
+DEFINE_UINT_CMD(hex8_cmd,  uint8_t,  "%u",   parse_hex)
+DEFINE_UINT_CMD(hex16_cmd, uint16_t, "%u",   parse_hex)
+DEFINE_UINT_CMD(hex32_cmd, uint32_t, "%lu",  parse_hex)
+DEFINE_UINT_CMD(hex64_cmd, uint64_t, "%llu", parse_hex)
 
-	uint64_t value;
-	if(parse_uint(argv[3], &value, base, max)) return;
-	printf("%llu\n", value);
-}
+DEFINE_UINT_CMD(bin8_cmd,  uint8_t,  "%u",   parse_bin)
+DEFINE_UINT_CMD(bin16_cmd, uint16_t, "%u",   parse_bin)
+DEFINE_UINT_CMD(bin32_cmd, uint32_t, "%lu",  parse_bin)
+DEFINE_UINT_CMD(bin64_cmd, uint64_t, "%llu", parse_bin)
 
-void int8_cmd(int argc, char * argv[]) {
-	int8_t value;
-	if(parse_int(argv[1], &value)) return;
-	printf("%d\n", value);
-}
+#define DEFINE_INT_CMD(command_name, var_type, print_format) \
+	void command_name(int argc, char * argv[]) {             \
+		var_type value;                                      \
+		if(parse_int(argv[1], &value)) return;               \
+		printf(print_format "\n", value);                    \
+	}                                                        \
 
-void int16_cmd(int argc, char * argv[]) {
-	int16_t value;
-	if(parse_int(argv[1], &value)) return;
-	printf("%d\n", value);
-}
-
-void int32_cmd(int argc, char * argv[]) {
-	int32_t value;
-	if(parse_int(argv[1], &value)) return;
-	printf("%ld\n", value);
-}
-
-void int64_cmd(int argc, char * argv[]) {
-	int64_t value;
-	if(parse_int(argv[1], &value)) return;
-	printf("%lld\n", value);
-}
+DEFINE_INT_CMD(int8_cmd,  int8_t, "%d");
+DEFINE_INT_CMD(int16_cmd, int8_t, "%d");
+DEFINE_INT_CMD(int32_cmd, int8_t, "%ld");
+DEFINE_INT_CMD(int64_cmd, int8_t, "%lld");
 
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;
