@@ -36,21 +36,22 @@
 	void args_cmd(int argc, char * argv[]);
 	void echo_cmd(int argc, char * argv[]);
 
-	void hex8_cmd(int argc, char * argv[]);
-	void hex16_cmd(int argc, char * argv[]);
-	void hex32_cmd(int argc, char * argv[]);
-	void hex64_cmd(int argc, char * argv[]);
-	
-	void uint8_cmd(int argc, char * argv[]);
-	void uint16_cmd(int argc, char * argv[]);
-	void uint32_cmd(int argc, char * argv[]);
-	void uint64_cmd(int argc, char * argv[]);
-	void uintx_cmd(int argc, char * argv[]);
-
 	void dec8_cmd(int argc, char * argv[]);
 	void dec16_cmd(int argc, char * argv[]);
 	void dec32_cmd(int argc, char * argv[]);
 	void dec64_cmd(int argc, char * argv[]);
+
+	void hex8_cmd(int argc, char * argv[]);
+	void hex16_cmd(int argc, char * argv[]);
+	void hex32_cmd(int argc, char * argv[]);
+	void hex64_cmd(int argc, char * argv[]);
+
+	void bin8_cmd(int argc, char * argv[]);
+	void bin16_cmd(int argc, char * argv[]);
+	void bin32_cmd(int argc, char * argv[]);
+	void bin64_cmd(int argc, char * argv[]);
+
+	void uintx_cmd(int argc, char * argv[]);
 
 	void int8_cmd(int argc, char * argv[]);
 	void int16_cmd(int argc, char * argv[]);
@@ -61,7 +62,7 @@
 	void ascchr_cmd(int argc, char * argv[]);
 	
 	void hexstr_cmd(int argc, char * argv[]);
-	void time_demo_cmd(int argc, char * argv[]);
+	void timestr_cmd(int argc, char * argv[]);
 
 	void wrong1_cmd(int argc, char * argv[]);
 	void wrong2_cmd(int argc, char * argv[]);

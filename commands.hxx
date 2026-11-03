@@ -29,21 +29,22 @@
 	{"args",					args_cmd},
 	{"echo",					echo_cmd},
 
+	{"dec8",					dec8_cmd},
+	{"dec16",					dec16_cmd},
+	{"dec32",					dec32_cmd},
+	{"dec64",					dec64_cmd},
+
 	{"hex8",					hex8_cmd},
 	{"hex16",					hex16_cmd},
 	{"hex32",					hex32_cmd},
 	{"hex64",					hex64_cmd},
 
-	{"uint8",					uint8_cmd},
-	{"uint16",					uint16_cmd},
-	{"uint32",					uint32_cmd},
-	{"uint64",					uint64_cmd},
-	{"uintx",					uintx_cmd},
+	{"bin8",					bin8_cmd},
+	{"bin16",					bin16_cmd},
+	{"bin32",					bin32_cmd},
+	{"bin64",					bin64_cmd},
 
-	{"dec8",					dec8_cmd},
-	{"dec16",					dec16_cmd},
-	{"dec32",					dec32_cmd},
-	{"dec64",					dec64_cmd},
+	{"uintx",					uintx_cmd},
 
 	{"int8",					int8_cmd},
 	{"int16",					int16_cmd},
@@ -53,5 +54,5 @@
 	{"ascchr",					ascchr_cmd},
 	{"ascstr",					ascstr_cmd},
 	{"hexstr",					hexstr_cmd},
-	{"ptime",					time_demo_cmd},
+	{"timestr",					timestr_cmd},
 #endif
