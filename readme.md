@@ -8,6 +8,9 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 # Change Log
 
+## 5.2.0 - 
+* Added float parser.
+
 ## 5.1.0 - 2026.11.03
 * Added `parse_dec()`, `parse_hex()` and `parse_bin()` for greater convenience, eliminating the need to specify the numeral base each time.
 * Kay `'` can be used as a digit separator in numeric parsers.

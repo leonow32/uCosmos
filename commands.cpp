@@ -294,6 +294,74 @@ GENERATE_INT_CMD(int16_cmd, int16_t, "%d");
 GENERATE_INT_CMD(int32_cmd, int32_t, "%ld");
 GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
 
+void float_cmd(int argc, char * argv[]) {
+	float numbers[] = {
+		1.0,
+		1.1,
+		1.01,
+		1.001,
+		1.0001,
+		1.00001,
+		1.000001,
+		1.0000001,
+		1.00000001,
+		1.000000001,
+		1.0000000001,
+		1.00000000001,
+		1.000000000001,
+		1.0000000000001,
+		1.00000000000001,
+		1.000000000000001,
+		1e0,
+		1e1,
+		1e2,
+		1e3,
+		1e4,
+		1e5,
+		1e6,
+		1e10,
+		1e20,
+	};
+
+	for(int i=0; i<sizeof(numbers)/sizeof(numbers[0]); i++) {
+		printf("%3u:   %.10f   %1.10e\n", i, numbers[i], numbers[i]);
+	}
+}
+
+void double_cmd(int argc, char * argv[]) {
+	double numbers[] = {
+		1.0,
+		1.1,
+		1.01,
+		1.001,
+		1.0001,
+		1.00001,
+		1.000001,
+		1.0000001,
+		1.00000001,
+		1.000000001,
+		1.0000000001,
+		1.00000000001,
+		1.000000000001,
+		1.0000000000001,
+		1.00000000000001,
+		1.000000000000001,
+		1e0,
+		1e1,
+		1e2,
+		1e3,
+		1e4,
+		1e5,
+		1e6,
+		1e10,
+		1e20,
+	};
+
+	for(int i=0; i<sizeof(numbers)/sizeof(numbers[0]); i++) {
+		printf("%3u:   %.10f   %1.10e\n", i, numbers[i], numbers[i]);
+	}
+}
+
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;
 	if(parse_ascii_char(argv[1], &chr)) return;

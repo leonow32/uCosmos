@@ -297,6 +297,10 @@ template<typename T> parse_res parse_int(const char * arg, T * output) {
 	return parse_ok;
 }
 
+parse_res parse_ascii_char(const char * arg, float * output) {
+	return parse_ok;
+}
+
 template parse_res parse_int<int8_t>(const char *, int8_t *);
 template parse_res parse_int<int16_t>(const char *, int16_t *);
 template parse_res parse_int<int32_t>(const char *, int32_t *);

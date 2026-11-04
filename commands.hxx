@@ -49,6 +49,9 @@
 	{"int32",					int32_cmd},
 	{"int64",					int64_cmd},
 
+	{"float",					float_cmd},
+	{"double",					double_cmd},
+
 	{"ascchr",					ascchr_cmd},
 	{"ascstr",					ascstr_cmd},
 	{"hexstr",					hexstr_cmd},
