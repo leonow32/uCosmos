@@ -1,3 +1,11 @@
+# μCOSMOS
+What's all about it?
+* **μC** - Microcontroller
+* **OS** - Operating System
+* **MOS** - Metal Oxide Semiconductor (yeah, that's dumb...)
+
+This is a simple, single-threaded, single-core operating system and command-line interpreter designed for microcontrollers. It currently supports microcontrollers such as the Espressif ESP32, as well as the Raspberry Pi RP2040, RP2350, and RP2354; however, adding support for other devices is very straightforward. All that is required is a single timer that triggers an interrupt at regular intervals and an input stream for keyboard data, such as a UART or USB interface.
+
 # Change Log
 
 ## 5.1.0 - 2026.11.03
