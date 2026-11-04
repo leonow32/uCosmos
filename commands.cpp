@@ -250,49 +250,49 @@ void echo_cmd(int argc, char * argv[]) {
 	printf("\n");
 }
 
-#define DEFINE_UINT_CMD(command_name, var_type, print_format, parse_function) \
-	void command_name(int argc, char *argv[]) {                               \
-		if(argc == 2) {                                                       \
-			var_type value;                                                   \
-			if (parse_function(argv[1], &value)) return;                      \
-			printf("Result: " print_format "\n", value);                      \
-		} else if(argc == 3) {                                                \
-			var_type max;                                                     \
-			if (parse_function(argv[2], &max)) return;                        \
-			var_type value;                                                   \
-			if (parse_function(argv[1], &value, max)) return;                 \
-			printf("Result: " print_format "\n", value);                      \
-		} else {                                                              \
-			printf("val (max)\n");                                            \
-		}                                                                     \
+#define GENERATE_UINT_CMD(command_name, var_type, print_format, parse_function) \
+	void command_name(int argc, char *argv[]) {                                 \
+		if(argc == 2) {                                                         \
+			var_type value;                                                     \
+			if (parse_function(argv[1], &value)) return;                        \
+			printf("Result: " print_format "\n", value);                        \
+		} else if(argc == 3) {                                                  \
+			var_type max;                                                       \
+			if (parse_dec(argv[2], &max)) return;                               \
+			var_type value;                                                     \
+			if (parse_function(argv[1], &value, max)) return;                   \
+			printf("Result: " print_format "\n", value);                        \
+		} else {                                                                \
+			printf("val (max)\n");                                              \
+		}                                                                       \
 	}
 
-DEFINE_UINT_CMD(dec8_cmd,  uint8_t,  "%u",   parse_dec)
-DEFINE_UINT_CMD(dec16_cmd, uint16_t, "%u",   parse_dec)
-DEFINE_UINT_CMD(dec32_cmd, uint32_t, "%lu",  parse_dec)
-DEFINE_UINT_CMD(dec64_cmd, uint64_t, "%llu", parse_dec)
+GENERATE_UINT_CMD(dec8_cmd,  uint8_t,  "%u",   parse_dec)
+GENERATE_UINT_CMD(dec16_cmd, uint16_t, "%u",   parse_dec)
+GENERATE_UINT_CMD(dec32_cmd, uint32_t, "%lu",  parse_dec)
+GENERATE_UINT_CMD(dec64_cmd, uint64_t, "%llu", parse_dec)
 
-DEFINE_UINT_CMD(hex8_cmd,  uint8_t,  "%u",   parse_hex)
-DEFINE_UINT_CMD(hex16_cmd, uint16_t, "%u",   parse_hex)
-DEFINE_UINT_CMD(hex32_cmd, uint32_t, "%lu",  parse_hex)
-DEFINE_UINT_CMD(hex64_cmd, uint64_t, "%llu", parse_hex)
+GENERATE_UINT_CMD(hex8_cmd,  uint8_t,  "%u",   parse_hex)
+GENERATE_UINT_CMD(hex16_cmd, uint16_t, "%u",   parse_hex)
+GENERATE_UINT_CMD(hex32_cmd, uint32_t, "%lu",  parse_hex)
+GENERATE_UINT_CMD(hex64_cmd, uint64_t, "%llu", parse_hex)
 
-DEFINE_UINT_CMD(bin8_cmd,  uint8_t,  "%u",   parse_bin)
-DEFINE_UINT_CMD(bin16_cmd, uint16_t, "%u",   parse_bin)
-DEFINE_UINT_CMD(bin32_cmd, uint32_t, "%lu",  parse_bin)
-DEFINE_UINT_CMD(bin64_cmd, uint64_t, "%llu", parse_bin)
+GENERATE_UINT_CMD(bin8_cmd,  uint8_t,  "%u",   parse_bin)
+GENERATE_UINT_CMD(bin16_cmd, uint16_t, "%u",   parse_bin)
+GENERATE_UINT_CMD(bin32_cmd, uint32_t, "%lu",  parse_bin)
+GENERATE_UINT_CMD(bin64_cmd, uint64_t, "%llu", parse_bin)
 
-#define DEFINE_INT_CMD(command_name, var_type, print_format) \
-	void command_name(int argc, char * argv[]) {             \
-		var_type value;                                      \
-		if(parse_int(argv[1], &value)) return;               \
-		printf(print_format "\n", value);                    \
-	}                                                        \
+#define GENERATE_INT_CMD(command_name, var_type, print_format) \
+	void command_name(int argc, char * argv[]) {               \
+		var_type value;                                        \
+		if(parse_int(argv[1], &value)) return;                 \
+		printf(print_format "\n", value);                      \
+	}                                                          \
 
-DEFINE_INT_CMD(int8_cmd,  int8_t, "%d");
-DEFINE_INT_CMD(int16_cmd, int8_t, "%d");
-DEFINE_INT_CMD(int32_cmd, int8_t, "%ld");
-DEFINE_INT_CMD(int64_cmd, int8_t, "%lld");
+GENERATE_INT_CMD(int8_cmd,  int8_t,  "%d");
+GENERATE_INT_CMD(int16_cmd, int16_t, "%d");
+GENERATE_INT_CMD(int32_cmd, int32_t, "%ld");
+GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
 
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;
@@ -337,8 +337,8 @@ void timestr_cmd(int argc, char * argv[]) {
 	tm time_struct;
 	localtime_r(&time_seconds, &time_struct);
 	
-	printf("20%02u-%02u-%02u %02u:%02u:%02u\n",
-		time_struct.tm_year - 100,
+	printf("%04u-%02u-%02u %02u:%02u:%02u\n",
+		time_struct.tm_year + 1900,
 		time_struct.tm_mon + 1,
 		time_struct.tm_mday,
 		time_struct.tm_hour,
