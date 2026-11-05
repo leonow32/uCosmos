@@ -30,6 +30,7 @@ enum parse_res {
 	parse_expected_bin,
 	parse_expected_dec,
 	parse_expected_hex,
+	parse_expected_float,
 	parse_wrong_base,
 	parse_wrong_time,
 	parse_nullptr,
@@ -54,7 +55,7 @@ parse_res parse_bin(const char * arg, uint16_t * output, uint16_t max=UINT16_MAX
 parse_res parse_bin(const char * arg, uint32_t * output, uint32_t max=UINT32_MAX);
 parse_res parse_bin(const char * arg, uint64_t * output, uint64_t max=UINT64_MAX);
 
-parse_res parse_ascii_char(const char * arg, float * output);
+parse_res parse_float(const char * arg, float * output);
 
 parse_res parse_ascii_char(const char * arg, char * output);
 parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);

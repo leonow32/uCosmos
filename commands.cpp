@@ -295,32 +295,39 @@ GENERATE_INT_CMD(int32_cmd, int32_t, "%ld");
 GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
 
 void float_cmd(int argc, char * argv[]) {
+	float value = 0;
+	if(parse_float(argv[1], &value)) return;
+	printf("%.20f\n",  value);
+	printf("%1.20e\n", value);
+}
+
+void float_demo_cmd(int argc, char * argv[]) {
 	float numbers[] = {
-		1.0,
-		1.1,
-		1.01,
-		1.001,
-		1.0001,
-		1.00001,
-		1.000001,
-		1.0000001,
-		1.00000001,
-		1.000000001,
-		1.0000000001,
-		1.00000000001,
-		1.000000000001,
-		1.0000000000001,
-		1.00000000000001,
-		1.000000000000001,
-		1e0,
-		1e1,
-		1e2,
-		1e3,
-		1e4,
-		1e5,
-		1e6,
-		1e10,
-		1e20,
+		.0f,
+		1.1f,
+		1.01f,
+		1.001f,
+		1.0001f,
+		1.00001f,
+		1.000001f,
+		1.0000001f,
+		1.00000001f,
+		1.000000001f,
+		1.0000000001f,
+		1.00000000001f,
+		1.000000000001f,
+		1.0000000000001f,
+		1.00000000000001f,
+		1.000000000000001f,
+		1e0f,
+		1e1f,
+		1e2f,
+		1e3f,
+		1e4f,
+		1e5f,
+		1e6f,
+		1e10f,
+		1e20f,
 	};
 
 	for(int i=0; i<sizeof(numbers)/sizeof(numbers[0]); i++) {
@@ -328,7 +335,7 @@ void float_cmd(int argc, char * argv[]) {
 	}
 }
 
-void double_cmd(int argc, char * argv[]) {
+void double_demo_cmd(int argc, char * argv[]) {
 	double numbers[] = {
 		1.0,
 		1.1,

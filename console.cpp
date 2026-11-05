@@ -172,6 +172,7 @@ static parse_res debug(const parse_res res, const char * arg) {
 			case parse_expected_bin:		printf("Expected bin");		break;
 			case parse_expected_dec:		printf("Expected dec");		break;
 			case parse_expected_hex:		printf("Expected hex");		break;
+			case parse_expected_float:		printf("Expected float");	break;
 			case parse_nullptr:				printf("Null ptr");			break;
 			case parse_wrong_base:			printf("Wrong base");		break;
 			case parse_wrong_time:			printf("Wrong time");		break;
@@ -297,14 +298,70 @@ template<typename T> parse_res parse_int(const char * arg, T * output) {
 	return parse_ok;
 }
 
-parse_res parse_ascii_char(const char * arg, float * output) {
-	return parse_ok;
-}
-
 template parse_res parse_int<int8_t>(const char *, int8_t *);
 template parse_res parse_int<int16_t>(const char *, int16_t *);
 template parse_res parse_int<int32_t>(const char *, int32_t *);
 template parse_res parse_int<int64_t>(const char *, int64_t *);
+
+parse_res parse_float(const char * arg, float * output) {
+	if(arg == nullptr)		return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)		return debug(parse_missing_argument, arg);
+	if(output == nullptr)	return debug(parse_nullptr, arg);
+
+	float integer    = 0.0;
+	float fractional = 0.0;
+	float exponent   = 0.0;
+	bool  int_negative = false;
+	bool  exp_negative = false;
+	const char * arg_copy = arg;
+
+	// Znak części całkowitej
+	if(*arg == '-') {
+		int_negative = true;
+		arg++;
+		if(*arg == NUL)		return debug(parse_expected_float, arg_copy);
+	}
+	else if(*arg == '+') {
+		arg++;
+		if(*arg == NUL)		return debug(parse_expected_float, arg_copy);
+	}
+
+	printf("Sign: %c\n", int_negative ? '-' : '+');
+
+	// Część całkowita
+	while(true) {
+		// if(arg)
+		break;
+	}
+
+	// Część ułamkowa
+	if(*arg == '.' || *arg == ',') {
+
+	}
+
+	// Część wykładnicza
+	if(*arg == 'e' || *arg == 'E') {
+		arg++;
+
+		// Pierwszy znak za 'e' lub 'E' musi być znakiem +/- lub cyfrą
+		if(*arg == NUL) 		return debug(parse_expected_float, arg_copy);
+		else if(*arg == '-') {
+			exp_negative = true;
+			arg++;
+			if(*arg == NUL)		return debug(parse_expected_float, arg_copy);
+		}
+		else if(*arg == '+') {
+			arg++;
+			if(*arg == NUL)		return debug(parse_expected_float, arg_copy);
+		}
+
+		
+	}
+	
+	// Wyświetlenie debug
+
+	return parse_ok;
+}
 
 parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)		return debug(parse_missing_argument, arg);
