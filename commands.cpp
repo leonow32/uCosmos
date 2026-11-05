@@ -324,7 +324,7 @@ void float_cmd(int argc, char * argv[]) {
 	};
 
 	for(int i=0; i<sizeof(numbers)/sizeof(numbers[0]); i++) {
-		printf("%3u:   %.10f   %1.10e\n", i, numbers[i], numbers[i]);
+		printf("%3u:   %.20f   %1.20e\n", i, numbers[i], numbers[i]);
 	}
 }
 
@@ -358,7 +358,7 @@ void double_cmd(int argc, char * argv[]) {
 	};
 
 	for(int i=0; i<sizeof(numbers)/sizeof(numbers[0]); i++) {
-		printf("%3u:   %.10f   %1.10e\n", i, numbers[i], numbers[i]);
+		printf("%3u:   %.20f   %1.20e\n", i, numbers[i], numbers[i]);
 	}
 }
 
