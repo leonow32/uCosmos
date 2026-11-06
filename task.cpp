@@ -13,12 +13,14 @@
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
 	#include "hardware/sync.h"
+	static struct repeating_timer timer = {};
 	#define IRQ_DISABLE() uint32_t irq_status = save_and_disable_interrupts();
-	#define IRQ_ENABLE()  restore_interrupts(irq_status);
+	#define IRQ_ENABLE()  restore_interrupts_from_disabled(irq_status);
 #endif
 
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 const char * task_name = nullptr;
+bool exit_request = false;
 
 static const char * debug_res(os_t result) {
 	switch(result) {
@@ -39,6 +41,8 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 		printf("%s%c (%lu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#elif PICO_RP2040 || PICO_RP2350
 		printf("%s%c (%llu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
+	#else
+		#warning "Platform not supported"
 	#endif
 	return res;
 }
@@ -94,7 +98,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 
 // Przerwanie RTC używane do Tickera systemowego
 #if ESP_PLATFORM
-	void os_system_tick(void *pvParameter) {
+	void task_system_tick(void *pvParameter) {
 		for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {						// Sprawdzenie wszystkich procesów
 			if(task_table[i].task_ptr != nullptr) {						// Jeżeli w badanym slocie jest wpisany jakiś task
 				if(task_table[i].counter == 0) {						// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
@@ -108,7 +112,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 		}
 	}
 #elif PICO_RP2040 || PICO_RP2350
-	bool os_system_tick(struct repeating_timer *t) {
+	bool task_system_tick(struct repeating_timer *t) {
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {							// Sprawdzenie wszystkich procesów
 		if(task_table[i].task_ptr != nullptr) {							// Jeżeli w badanym slocie jest wpisany jakiś task
 			if(task_table[i].counter == 0) {							// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
@@ -130,6 +134,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 
 void task_init(void) {
 	LOGI("init");
+	exit_request = false;
 
 	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 		slot_erase(i);
@@ -137,7 +142,7 @@ void task_init(void) {
 
 	#if ESP_PLATFORM
 		const esp_timer_create_args_t timer_config = {
-			.callback 				= &os_system_tick,
+			.callback 				= &task_system_tick,
 			.arg 					= nullptr,
 			.dispatch_method 		= ESP_TIMER_TASK,
 			.name 					= "uCosmosTick",
@@ -147,35 +152,14 @@ void task_init(void) {
 		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &timer_handle));
 		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, OS_TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
-		static struct repeating_timer timer = {};
-		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, os_system_tick, nullptr, &timer);
+		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, task_system_tick, nullptr, &timer);
 	#else
 		#error "Platform not supported"
 	#endif
 }
 
 void task_deinit(void) {
-	#if ESP_PLATFORM
-		esp_timer_stop(timer_handle);
-		esp_timer_delete(timer_handle);
-	#elif PICO_RP2040 || PICO_RP2350
-		// 
-	#else
-		#error "Platform not supported"
-	#endif
-
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
-		task_table[i].task_ptr = nullptr;
-		task_table[i].counter  = 0;
-		task_table[i].period   = 0;
-		task_table[i].flag     = false;
-
-		if(task_ptr) {
-			task_ptr(os_destructor);
-			debug_print(os_ok, __func__, task_ptr, 0);
-		}
-	}
+	exit_request = true;
 }
 
 void task_scheduler(void) {
@@ -190,6 +174,31 @@ void task_scheduler(void) {
 			if(flag && task_ptr) {
 				task_ptr(os_run);				// Task execution
 			}
+		}
+
+		if(exit_request) {
+			LOGI("exit_request = true");
+
+			for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+				IRQ_DISABLE();
+				void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
+				IRQ_ENABLE();
+
+				if(task_ptr) {
+					task_close(task_ptr);
+				}
+			}
+
+			#if ESP_PLATFORM
+				esp_timer_stop(timer_handle);
+				esp_timer_delete(timer_handle);
+			#elif PICO_RP2040 || PICO_RP2350
+				cancel_repeating_timer(&timer);
+			#else
+				#error "Platform not supported"
+			#endif
+
+			return;
 		}
 
 		#if ESP_PLATFORM
