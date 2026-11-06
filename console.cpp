@@ -1,4 +1,5 @@
 #include "../_config/_config.h"
+#include <cmath>
 #include <iostream>
 #include <string.h>
 #include "log.h"
@@ -165,17 +166,17 @@ static parse_res debug(const parse_res res, const char * arg) {
 		}
 
 		switch(res) {
-			case parse_missing_argument:	printf("Missing arg");		break;
-			case parse_over_range:			printf("Over range");		break;
-			case parse_under_range:			printf("Under range");		break;
-			case parse_error:				printf("Parse error");		break;
-			case parse_expected_bin:		printf("Expected bin");		break;
-			case parse_expected_dec:		printf("Expected dec");		break;
-			case parse_expected_hex:		printf("Expected hex");		break;
-			case parse_expected_float:		printf("Expected float");	break;
-			case parse_nullptr:				printf("Null ptr");			break;
-			case parse_wrong_base:			printf("Wrong base");		break;
-			case parse_wrong_time:			printf("Wrong time");		break;
+			case parse_missing_argument:	printf("missing arg");		break;
+			case parse_over_range:			printf("over range");		break;
+			case parse_under_range:			printf("under range");		break;
+			case parse_error:				printf("parse error");		break;
+			case parse_expected_bin:		printf("expected bin");		break;
+			case parse_expected_dec:		printf("expected dec");		break;
+			case parse_expected_hex:		printf("expected hex");		break;
+			case parse_expected_float:		printf("expected float");	break;
+			case parse_nullptr:				printf("nullptr");			break;
+			case parse_wrong_base:			printf("wrong base");		break;
+			case parse_wrong_time:			printf("wrong time");		break;
 			default:						printf("?");				break;
 		}
 
