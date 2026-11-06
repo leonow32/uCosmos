@@ -43,6 +43,7 @@ extern volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 extern const char * task_name;
 
 void task_init(void);
+void task_deinit(void);
 void task_scheduler(void);
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 os_t task_close(void (*task_ptr)(run_mode_t));

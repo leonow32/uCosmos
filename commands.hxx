@@ -1,3 +1,7 @@
+#if USE_CMD_EXIT
+	{"exit",					exit_cmd},
+#endif
+
 #if USE_CMD_TASK_MONITOR
 	{"`",						task_monitor_cmd},
 	{"~`~",						task_monitor_cmd},

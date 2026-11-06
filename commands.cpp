@@ -5,6 +5,12 @@
 #include "console.h"
 #include "log.h"
 
+#if USE_CMD_EXIT
+void exit_cmd(int argc, char * argv[]) {
+	task_deinit();
+}
+#endif
+
 // ========================================
 // Task Monitor
 // ========================================

@@ -12,6 +12,7 @@
 #define UCOSMOS_VERSION_PATCH 0
 
 void uCosmos_init(void);				// Call this function at the beginning of main()
+void uCosmos_deinit(void);				// Call this function just before power down if needed
 void uCosmos_scheduler(void);			// Call this function at the end of main()
 
 #endif

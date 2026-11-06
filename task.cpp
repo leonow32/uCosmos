@@ -6,6 +6,7 @@
 #if ESP_PLATFORM
 	#include "esp_timer.h"
 	#include "freertos/task.h"
+	esp_timer_handle_t timer_handle;
 	static portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
 	#define IRQ_DISABLE() portENTER_CRITICAL(&mutex);
 	#define IRQ_ENABLE()  portEXIT_CRITICAL(&mutex);
@@ -143,15 +144,38 @@ void task_init(void) {
 			.skip_unhandled_events	= false,
 		};
 
-		esp_timer_handle_t handle;
-		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &handle));
-		ESP_ERROR_CHECK(esp_timer_start_periodic(handle, OS_TICK_PERIOD_MS * 1000));  // here time is in micro seconds
+		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &timer_handle));
+		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, OS_TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
 		static struct repeating_timer timer = {};
 		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, os_system_tick, nullptr, &timer);
 	#else
 		#error "Platform not supported"
 	#endif
+}
+
+void task_deinit(void) {
+	#if ESP_PLATFORM
+		esp_timer_stop(timer_handle);
+		esp_timer_delete(timer_handle);
+	#elif PICO_RP2040 || PICO_RP2350
+		// 
+	#else
+		#error "Platform not supported"
+	#endif
+
+	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+		void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
+		task_table[i].task_ptr = nullptr;
+		task_table[i].counter  = 0;
+		task_table[i].period   = 0;
+		task_table[i].flag     = false;
+
+		if(task_ptr) {
+			task_ptr(os_destructor);
+			debug_print(os_ok, __func__, task_ptr, 0);
+		}
+	}
 }
 
 void task_scheduler(void) {
