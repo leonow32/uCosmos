@@ -50,8 +50,7 @@
 	{"int64",					int64_cmd},
 
 	{"float",					float_cmd},
-	{"float_demo",				float_demo_cmd},
-	{"double_demo",				double_demo_cmd},
+	{"double",					double_cmd},
 
 	{"ascchr",					ascchr_cmd},
 	{"ascstr",					ascstr_cmd},

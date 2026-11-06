@@ -8,7 +8,7 @@
 #include "task.h"
 
 #define UCOSMOS_VERSION_MAJOR 5
-#define UCOSMOS_VERSION_MINOR 1
+#define UCOSMOS_VERSION_MINOR 2
 #define UCOSMOS_VERSION_PATCH 0
 
 void uCosmos_init(void);				// Call this function at the beginning of main()
