@@ -312,6 +312,14 @@ GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
 GENERATE_FLOAT_CMD(float_cmd,  float);
 GENERATE_FLOAT_CMD(double_cmd, double);
 
+void float2_cmd(int argc, char * argv[]) {
+	double value = 0;
+	if(parse_float2(argv[1], &value)) return;
+	printf("%f\n",     value);
+	printf("%.20f\n",  value);
+	printf("%1.20e\n", value);
+}
+
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;
 	if(parse_ascii_char(argv[1], &chr)) return;

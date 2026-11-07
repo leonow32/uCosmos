@@ -398,6 +398,162 @@ template<typename T> parse_res parse_float(const char * arg, T * output) {
 template parse_res parse_float<float>(const char *, float *);
 template parse_res parse_float<double>(const char *, double *);
 
+static const char * parse_float2_part(const char * arg, uint64_t * output) {
+	while(*arg >= '0' && *arg <= '9') {
+		uint8_t digit = *arg++ - '0';
+		if(*output > (UINT64_MAX - digit) / 10)		return nullptr;
+		*output = *output * 10 + digit;
+	}
+
+	return arg;
+}
+
+template<typename T> parse_res parse_float2(const char * arg, T * output) {
+	static_assert(std::is_floating_point_v<T>, "This function works with floating point types only.");
+	if(arg == nullptr)      return debug(parse_missing_argument, arg);
+	if(arg[0] == NUL)       return debug(parse_missing_argument, arg);
+	if(output == nullptr)   return debug(parse_nullptr, arg);
+	
+	const char *arg_copy = arg;
+	bool negative = false;
+	bool digit_found = false;
+	*output = 0;
+
+	// Sign
+	if(*arg == '-') {
+		arg++;
+		negative = true;
+	}
+	else if(*arg == '+') {
+		arg++;
+	}
+
+	// Single sign error
+	if(*arg == NUL)			return debug(parse_expected_float, arg_copy);
+
+	// Not a number
+	if(strcmp(arg, "nan") == 0) {
+		*output = negative ? -std::numeric_limits<T>::quiet_NaN() : std::numeric_limits<T>::quiet_NaN();
+		return parse_ok;
+	}
+
+	// Infinity
+	if(strcmp(arg, "inf") == 0) {
+		*output = negative ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
+		return parse_ok;
+	}
+
+	// Integer
+	uint64_t integer = 0;
+	const char * arg_new = parse_float2_part(arg, &integer);
+	uint8_t integer_len = uint8_t(arg_new - arg);
+	arg = arg_new;
+
+	printf("integer:      %llu\n", integer);
+	printf("integer_len:  %u\n", integer_len);
+	printf("integer_sign: %c\n", negative ? '-' : '+');
+
+	// Fractional
+	uint64_t fractional = 0;
+	uint8_t fractional_len = 0;
+
+	if(*arg == '.' || *arg == ',') {
+		arg++;
+		const char * fraction_end = parse_float2_part(arg, &fractional);
+		fractional_len = uint8_t(fraction_end - arg);
+		arg = fraction_end;
+	}
+
+	printf("fraction:     %llu\n", fractional);
+	printf("fraction_len: %u\n", fractional_len);
+
+	// Exponent
+	uint64_t exponent = 0;
+	uint8_t exponent_len = 0;
+	bool exp_negative = false;
+
+	if(*arg == 'e' || *arg == 'E') {
+		arg++;
+
+		if(*arg == '-') {
+			arg++;
+			exp_negative = true;
+		}
+		else if(*arg == '+') {
+			arg++;
+		}
+
+		const char * exp_end = parse_float2_part(arg, &exponent);
+		exponent_len = uint8_t(exp_end - arg);
+		arg = exp_end;
+	}
+
+	printf("exponent:     %llu\n", exponent);
+	printf("exponent_len: %u\n", exponent_len);
+	printf("exponent_sign: %c\n", exp_negative ? '-' : '+');
+
+	return parse_ok;
+
+	// while(*arg >= '0' && *arg <= '9') {
+	// 	*output = *output * 10 + *arg++ - '0';
+	// 	digit_found = true;
+	// }
+
+	// Fractional
+	if(*arg == '.' || *arg == ',') {
+		arg++;
+		T divider = 10;
+
+		while(*arg >= '0' && *arg <= '9') {
+			*output += (*arg++ - '0') / divider;
+			divider *= 10;
+			digit_found = true;
+		}
+	}
+
+	// Single dot error
+	if(digit_found == false) 		return debug(parse_expected_float, arg_copy);
+
+	// Exponent
+	if(*arg == 'e' || *arg == 'E') {
+		arg++;
+
+		T scale = 1;
+		int16_t exponent = 0;
+		bool exp_negative = false;
+
+		if(*arg == '-') {
+			arg++;
+			exp_negative = true;
+		}
+		else if(*arg == '+') {
+			arg++;
+		}
+
+		if(*arg < '0' || *arg > '9') 					return debug(parse_expected_float, arg_copy);
+
+		while(*arg >= '0' && *arg <= '9') {
+			uint8_t digit = *arg++ - '0';
+			if(exponent > (INT16_MAX - digit) / 10)		return debug(parse_over_range, arg_copy);
+			exponent = exponent * 10 + digit;
+		}
+
+		while(exponent--) {
+			scale *= 10;
+		}
+
+		*output = exp_negative ? (*output / scale) : (*output * scale);
+	}
+
+	if(negative) *output = -*output;
+	if(*arg != NUL) 				return debug(parse_expected_float, arg_copy);
+	if(std::isinf(*output)) 		return debug(parse_over_range, arg_copy);
+	return parse_ok;
+}
+
+template parse_res parse_float2<float>(const char *, float *);
+template parse_res parse_float2<double>(const char *, double *);
+
 parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
 	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);

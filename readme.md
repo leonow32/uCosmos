@@ -10,7 +10,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 ## 5.2.0 - 2026.11.07
 * Added float parser.
-* Added `uCosmos_deinit` to shut down the system before power off.
+* Added `uCosmos_deinit` to shut down the system before power is cut off.
 
 ## 5.1.0 - 2026.11.03
 * Added `parse_dec()`, `parse_hex()` and `parse_bin()` for greater convenience, eliminating the need to specify the numeral base each time.

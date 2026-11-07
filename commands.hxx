@@ -55,6 +55,7 @@
 
 	{"float",					float_cmd},
 	{"double",					double_cmd},
+	{"float2",					float2_cmd},
 
 	{"ascchr",					ascchr_cmd},
 	{"ascstr",					ascstr_cmd},

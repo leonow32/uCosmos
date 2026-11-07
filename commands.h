@@ -62,6 +62,7 @@
 
 	void float_cmd(int argc, char * argv[]);
 	void double_cmd(int argc, char * argv[]);
+	void float2_cmd(int argc, char * argv[]);
 
 	void ascstr_cmd(int argc, char * argv[]);
 	void ascchr_cmd(int argc, char * argv[]);
