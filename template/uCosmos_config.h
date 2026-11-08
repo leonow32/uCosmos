@@ -13,6 +13,7 @@
 	#define CONSOLE_TASK_PERIOD_MS			uint16_t(20)
 	#define CONSOLE_COMMAND_LENGTH			size_t(250)
 	#define CONSOLE_MAX_ARGC				11				// Max count of arguments, including command name
+	#define CONSOLE_USE_EXECUTION_TIME		true			// Print the execution time after each command is completed
 	#define CONSOLE_USE_HELP				true
 	#define CONSOLE_USE_CTRL_Z				true
 
