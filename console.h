@@ -39,6 +39,7 @@ enum parse_res {
 // Argument parsers
 template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10, T max = std::numeric_limits<T>::max());
 template<typename T> parse_res parse_int(const char * arg, T * output);
+template<typename T> parse_res parse_float(const char * arg, T * output);
 
 parse_res parse_dec(const char * arg, uint8_t  * output, uint8_t  max=UINT8_MAX);
 parse_res parse_dec(const char * arg, uint16_t * output, uint16_t max=UINT16_MAX);
@@ -54,9 +55,6 @@ parse_res parse_bin(const char * arg, uint8_t  * output, uint8_t  max=UINT8_MAX)
 parse_res parse_bin(const char * arg, uint16_t * output, uint16_t max=UINT16_MAX);
 parse_res parse_bin(const char * arg, uint32_t * output, uint32_t max=UINT32_MAX);
 parse_res parse_bin(const char * arg, uint64_t * output, uint64_t max=UINT64_MAX);
-
-template<typename T> parse_res parse_float(const char * arg, T * output);
-template<typename T> parse_res parse_float2(const char * arg, T * output);
 
 parse_res parse_ascii_char(const char * arg, char * output);
 parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);

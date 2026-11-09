@@ -177,7 +177,7 @@ void task_scheduler(void) {
 		}
 
 		if(exit_request) {
-			LOGI("exit_request = true");
+			LOGI("exit request");
 
 			for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
 				IRQ_DISABLE();
