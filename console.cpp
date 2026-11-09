@@ -526,6 +526,19 @@ void print_ok(void) {
 	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
 }
 
+void print_hexstr(uint8_t array[], size_t len, bool new_line, char separator) {
+	if(len) {
+		while(--len) {
+			printf("%02X", *array++);
+			if(separator) printf("%c", separator);
+		}
+
+		printf("%02X", *array++);
+	}
+
+	if(new_line) printf("\n");
+}
+
 // ========================================
 // Commands
 // ========================================
