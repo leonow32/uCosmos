@@ -4,7 +4,6 @@
 #include <string.h>
 #include "log.h"
 #include "console.h"
-#include "diagnostics.h"
 #include "../_config/_commands.h"
 
 static size_t	received_cnt;																// Number of characters in receive buffer
@@ -136,13 +135,7 @@ void console_task(run_mode_t run_mode) {
 
 					if(command_ptr) {														// If any command pointer has been found
 						printf("\n" FORMAT_RESET);											// New line and default text formatting
-						#if CONSOLE_USE_EXECUTION_TIME
-							ExecutionTimer timer = ExecutionTimer();
-						#endif
 						command_ptr(argc, argv);											// Execute the command pointer and pass argument count and argument values
-						#if CONSOLE_USE_EXECUTION_TIME
-							timer.print("Execution time");
-						#endif
 					}
 					else {
 						printf("\n" TEXT_RED "Unknown cmd" FORMAT_RESET "\n");				// If command not found
