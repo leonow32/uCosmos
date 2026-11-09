@@ -30,6 +30,7 @@ enum parse_res {
 	parse_expected_bin,
 	parse_expected_dec,
 	parse_expected_hex,
+	parse_expected_float,
 	parse_wrong_base,
 	parse_wrong_time,
 	parse_nullptr,
@@ -38,6 +39,7 @@ enum parse_res {
 // Argument parsers
 template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base = 10, T max = std::numeric_limits<T>::max());
 template<typename T> parse_res parse_int(const char * arg, T * output);
+template<typename T> parse_res parse_float(const char * arg, T * output);
 
 parse_res parse_dec(const char * arg, uint8_t  * output, uint8_t  max=UINT8_MAX);
 parse_res parse_dec(const char * arg, uint16_t * output, uint16_t max=UINT16_MAX);
@@ -60,6 +62,7 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * output_l
 parse_res parse_time(const char * arg, time_t * output);
 
 void print_ok(void);
+void print_hexstr(uint8_t array[], size_t len, bool new_line = false, char separator = 0);
 
 // Demo commands
 #if USE_CMD_ALL

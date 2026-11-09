@@ -1,3 +1,7 @@
+#if USE_CMD_EXIT
+	{"exit",					exit_cmd},
+#endif
+
 #if USE_CMD_TASK_MONITOR
 	{"`",						task_monitor_cmd},
 	{"~`~",						task_monitor_cmd},
@@ -48,6 +52,9 @@
 	{"int16",					int16_cmd},
 	{"int32",					int32_cmd},
 	{"int64",					int64_cmd},
+
+	{"float",					float_cmd},
+	{"double",					double_cmd},
 
 	{"ascchr",					ascchr_cmd},
 	{"ascstr",					ascstr_cmd},

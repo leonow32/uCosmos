@@ -5,6 +5,10 @@
 #include "../_config/uCosmos_config.h"
 #include "task.h"
 
+#if USE_CMD_EXIT
+	void exit_cmd(int argc, char * argv[]);
+#endif
+
 #if USE_CMD_TASK_MONITOR
 	void task_monitor_cmd(int argc, char * argv[]);
 #endif
@@ -55,6 +59,9 @@
 	void int16_cmd(int argc, char * argv[]);
 	void int32_cmd(int argc, char * argv[]);
 	void int64_cmd(int argc, char * argv[]);
+
+	void float_cmd(int argc, char * argv[]);
+	void double_cmd(int argc, char * argv[]);
 
 	void ascstr_cmd(int argc, char * argv[]);
 	void ascchr_cmd(int argc, char * argv[]);

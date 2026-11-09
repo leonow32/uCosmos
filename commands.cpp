@@ -5,6 +5,12 @@
 #include "console.h"
 #include "log.h"
 
+#if USE_CMD_EXIT
+void exit_cmd(int argc, char * argv[]) {
+	task_deinit();
+}
+#endif
+
 // ========================================
 // Task Monitor
 // ========================================
@@ -293,6 +299,18 @@ GENERATE_INT_CMD(int8_cmd,  int8_t,  "%d");
 GENERATE_INT_CMD(int16_cmd, int16_t, "%d");
 GENERATE_INT_CMD(int32_cmd, int32_t, "%ld");
 GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
+
+#define GENERATE_FLOAT_CMD(command_name, var_type) \
+	void command_name(int argc, char * argv[]) {   \
+		var_type value = 0;                        \
+		if(parse_float(argv[1], &value)) return;   \
+		printf("%f\n",     value);                 \
+		printf("%.20f\n",  value);                 \
+		printf("%1.20e\n", value);                 \
+	}
+
+GENERATE_FLOAT_CMD(float_cmd,  float);
+GENERATE_FLOAT_CMD(double_cmd, double);
 
 void ascchr_cmd(int argc, char * argv[]) {
 	char chr;

@@ -18,6 +18,7 @@
 
 	// Dostępne polecenia
 	#define USE_CMD_ALL						true			// Polecenie "?" do wyświetlania na konsoli wszystkich dostępnych komend
+	#define USE_CMD_EXIT					true			// Polecenie "exit" do zamykania systemu
 	#define USE_CMD_TIME					true			// Polecenie "time" do pokazywania czasu
 	#define USE_CMD_TASK_MONITOR			true			// Polecenie "`" do wyświetlania tablicy tasków
 	#define USE_CMD_TASK_COMMANDS			true			// Polecenia do ręcznego zarządzania taskami

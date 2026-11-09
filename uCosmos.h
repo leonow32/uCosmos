@@ -4,14 +4,16 @@
 #include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
 #include "console.h"
+#include "diagnostics.h"
 #include "log.h"
 #include "task.h"
 
 #define UCOSMOS_VERSION_MAJOR 5
-#define UCOSMOS_VERSION_MINOR 1
+#define UCOSMOS_VERSION_MINOR 2
 #define UCOSMOS_VERSION_PATCH 0
 
 void uCosmos_init(void);				// Call this function at the beginning of main()
+void uCosmos_deinit(void);				// Call this function just before power down if needed
 void uCosmos_scheduler(void);			// Call this function at the end of main()
 
 #endif

@@ -23,6 +23,10 @@ void uCosmos_init(void) {
 	#endif
 }
 
+void uCosmos_deinit(void) {
+	task_deinit();
+}
+
 void uCosmos_scheduler(void) {
 	task_scheduler();
 }
