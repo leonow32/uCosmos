@@ -36,14 +36,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	
 	// Add new task with requested period and phase shift
 	void task_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX] period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32 period:dec16");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -58,14 +53,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	
 	// close task with its destructor
 	void task_close_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -76,14 +66,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	
 	// Change task period
 	void task_period_change_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX] period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32 period:dec16");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -98,14 +83,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 	// Execute task manually
 	void task_exe_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -197,12 +177,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	}
 
 	void demo1_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("period:dec16");
 		
 		uint16_t period;
 		if(parse_uint(argv[1], &period)) return;
@@ -211,12 +186,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	}
 
 	void demo2_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("period:dec16");
 		
 		uint16_t period;
 		if(parse_uint(argv[1], &period)) return;

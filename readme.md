@@ -8,6 +8,9 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 # Change Log
 
+## 5.3.0 - 2026.11.
+* Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
+
 ## 5.2.0 - 2026.11.09
 * Added float parser.
 * Added `uCosmos_deinit` to shut down the system before power is cut off.

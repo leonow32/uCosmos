@@ -64,6 +64,16 @@ parse_res parse_time(const char * arg, time_t * output);
 void print_ok(void);
 void print_hexstr(uint8_t array[], size_t len, bool new_line = false, char separator = 0);
 
+#if CONSOLE_USE_HELP
+	#define CMD_HELP(text)          \
+		if(argc == 1) {             \
+			printf(text "\n");      \
+			return;                 \
+		}
+#else
+	#define CMD_HELP(text) ((void)0)
+#endif
+
 // Demo commands
 #if USE_CMD_ALL
 	void all_commands_cmd(int argc, char * argv[]);

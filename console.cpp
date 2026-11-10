@@ -408,7 +408,6 @@ parse_res parse_ascii_char(const char * arg, char * output) {
 
 parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	if(output_length == nullptr)	return debug(parse_nullptr, arg);
 	if(buffer_size == 0)			return debug(parse_error, arg);
@@ -438,7 +437,6 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * output_le
 
 parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	if(out_len == nullptr)			return debug(parse_nullptr, arg);
 	if(max_len < min_len)			return debug(parse_error, arg);
