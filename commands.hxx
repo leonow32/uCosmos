@@ -7,6 +7,11 @@
 	{"~`~",						task_monitor_cmd},
 #endif
 
+#if DIAG_USE
+	{"diag",					diag_cmd},
+	{"diag_clr",				diag_clr_cmd},
+#endif
+
 #if USE_CMD_TIME
 	{"time",					time_print_cmd},
 #endif	

@@ -19,7 +19,7 @@ enum run_mode_t {
 	os_id,
 };
 
-// Return value for task managemen functions
+// Return value for task management functions
 enum os_t {
 	os_ok = 0,
 	os_nullptr,
@@ -50,5 +50,24 @@ os_t task_close(void (*task_ptr)(run_mode_t));
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 bool task_is_running(void (*task_ptr)(run_mode_t));
 const char * task_get_name(void (*task_ptr)(run_mode_t));
+uint64_t get_time_us(void);
+
+// Task diagnostics
+#if DIAG_USE
+	// struct diag_t {
+	// 	void (*task_ptr)(run_mode_t);
+	// 	uint32_t run_count;
+	// 	uint64_t time_total;
+	// 	uint64_t time_max;
+	// };
+
+	// extern diag_t diag_table[DIAG_COUNT];
+
+	void diag_clear(void);
+	void diag_add(void (*task_ptr)(run_mode_t));
+	void diag_count(void (*task_ptr)(run_mode_t), uint64_t time);
+	void diag_cmd(int argc, char * argv[]);
+	void diag_clr_cmd(int agrc, char * argv[]);
+#endif
 
 #endif

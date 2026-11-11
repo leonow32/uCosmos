@@ -2,6 +2,7 @@
 #include "log.h"
 #include "task.h"
 #include "uCosmos.h"
+#include <string.h>
 
 #if ESP_PLATFORM
 	#include "esp_timer.h"
@@ -17,6 +18,17 @@
 	#define IRQ_DISABLE() uint32_t irq_status = save_and_disable_interrupts();
 	#define IRQ_ENABLE()  restore_interrupts_from_disabled(irq_status);
 #endif
+
+uint64_t get_time_us(void) {
+	#if ESP_PLATFORM
+		return uint64_t(esp_timer_get_time());
+	#elif PICO_RP2040 || PICO_RP2350
+		return time_us_64();
+	#else
+		#warning "Platform not supported"
+		return 0;
+	#endif
+}
 
 volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 const char * task_name = nullptr;
@@ -172,7 +184,15 @@ void task_scheduler(void) {
 			IRQ_ENABLE();
 
 			if(flag && task_ptr) {
+				#if DIAG_USE
+					ExecutionTimer execution_timer = ExecutionTimer();
+				#endif
+				
 				task_ptr(os_run);				// Task execution
+
+				#if DIAG_USE
+					diag_count(task_ptr, execution_timer.get());
+				#endif
 			}
 		}
 
@@ -217,6 +237,10 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 	if(task_is_running(task_ptr))								return debug_print(os_task_already_created, __func__, task_ptr, period_ms);
 	if(task_find_free_slot(&slot_number) == os_no_free_slot)	return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);
+
+	#if DIAG_USE
+		diag_add(task_ptr);
+	#endif
 	
 	IRQ_DISABLE();
 	task_table[slot_number].counter  = (period_ms / OS_TICK_PERIOD_MS)-1;
@@ -271,3 +295,87 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 		return "nullptr";
 	}
 }
+
+// ========================================
+// Task disgnostics
+// ========================================
+
+#if DIAG_USE
+	struct diag_t {
+		void (*task_ptr)(run_mode_t);
+		uint32_t run_count;
+		uint64_t time_total;
+		uint64_t time_max;
+	};
+
+	diag_t   diag_table[DIAG_COUNT] = {};
+	uint64_t diag_begin = 0;
+
+	void diag_clear(void) {
+		diag_begin = get_time_us();
+		memset(diag_table, 0, sizeof(diag_table));
+	}
+
+	void diag_add(void (*task_ptr)(run_mode_t)) {
+		for(int i=0; i<DIAG_COUNT; i++) {
+			if(diag_table[i].task_ptr == nullptr) {
+				diag_table[i].task_ptr = task_ptr;
+				return;
+			}
+		}
+
+		LOGE("%s(%s) - no free space", __func__, task_get_name(task_ptr));
+	}
+
+	void diag_count(void (*task_ptr)(run_mode_t), uint64_t time) {
+		for(int i=0; i<DIAG_COUNT; i++) {
+			if(diag_table[i].task_ptr == task_ptr) {
+				if(time > diag_table[i].time_max) diag_table[i].time_max = time;
+				if(diag_table[i].run_count == UINT64_MAX)			return;
+				if(diag_table[i].time_total > (UINT64_MAX - time))	return;
+				diag_table[i].run_count++;
+				diag_table[i].time_total += time;
+				return;
+			}
+		}
+	}
+
+	void diag_cmd(int argc, char * argv[]) {
+		uint64_t period = get_time_us() - diag_begin;
+
+		printf(TEXT_WHITE_BRIGHT " No Name                  Run count            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]\n" FORMAT_RESET);
+		for(uint8_t i=0; i<DIAG_COUNT; i++) {
+			uint32_t count   = diag_table[i].run_count;
+			uint64_t total   = diag_table[i].time_total;
+			uint64_t max     = diag_table[i].time_max;
+			uint64_t avg     = diag_table[i].time_total / diag_table[i].run_count;
+			double   procent = double(diag_table[i].time_total) * 100.0 / double(period);
+			uint64_t percent2 = (total * 100000000ul / period);
+
+			printf("%3u %-20s %10lu %17llu.%03u %17llu.%03u %17llu.%03u %3llu.%06u %03.6f\n", 
+				i, 
+				task_get_name(diag_table[i].task_ptr),
+				count,
+				total    / 1000,      total % 1000,
+				max      / 1000,      max % 1000,
+				avg      / 1000,      avg % 1000,
+				percent2 / 1000000ul, percent2 % 1000000ul,
+				procent
+			);
+		}
+
+		printf("Period: %llu.%06u s\n", period / 1000000, period % 1000000);
+	}
+
+	void diag_clr_cmd(int agrc, char * argv[]) {
+		for(int i=0; i<DIAG_COUNT; i++) {
+			diag_table[i].run_count  = 0;
+			diag_table[i].time_max   = 0;
+			diag_table[i].time_total = 0;
+		}
+		diag_begin = get_time_us();
+		print_ok();
+	}
+
+#endif
+

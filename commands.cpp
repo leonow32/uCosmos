@@ -29,6 +29,17 @@ void task_monitor_cmd(int argc, char * argv[]) {
 #endif
 
 // ========================================
+// Task Diagnostics
+// ========================================
+
+// uint32_t max 4294967295
+// uint64_t max 18446744073709551 615
+
+#if DIAG_USE
+
+#endif
+
+// ========================================
 // Task control commands (add, close, kill)
 // ========================================
 
@@ -129,7 +140,8 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				LOGI("%s %d", __func__, counter++);
+				// LOGI("%s %d", __func__, counter++);
+				sleep_ms(10);
 				break;
 			}
 
@@ -155,7 +167,8 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				LOGD("%s %d", __func__, counter++);
+				// LOGD("%s %d", __func__, counter++);
+				sleep_ms(100);
 				break;
 			}
 
