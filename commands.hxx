@@ -9,7 +9,6 @@
 
 #if DIAG_USE
 	{"diag",					diag_cmd},
-	{"diag_clr",				diag_clr_cmd},
 #endif
 
 #if USE_CMD_TIME

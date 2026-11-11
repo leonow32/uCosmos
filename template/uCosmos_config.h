@@ -3,12 +3,16 @@
 
 #if PRODUCT_DEMO
 
-	// Konfiguracja systemu
-	#define OS_TASK_MAXCOUNT				uint8_t(10)		// Od tego zalezy rozmiar tablicy tasków w RAM
-	#define OS_TICK_PERIOD_MS				uint16_t(10)	// Okres timera systemowego w ms, zakres 1-1000
-	#define OS_SHOW_SPLASH_SCREEN_AT_START	true			// Czy pokazywać logo systemu na starcie
+	// Task manager config
+	#define OS_TASK_MAXCOUNT				uint8_t(10)		// Maximum number of tasks running simultaneously
+	#define OS_TICK_PERIOD_MS				uint16_t(10)	// Period of the system timer in ms, range 1-1000
+	#define OS_SHOW_SPLASH_SCREEN_AT_START	true			// Should the system logo be displayed at startup?
 
-	// Konfiguracja konsoli
+	// Diagnostic tools for measuring task times
+	#define DIAG_USE						true
+	#define DIAG_COUNT						20
+	
+	// Console config
 	#define CONSOLE_USE						true
 	#define CONSOLE_TASK_PERIOD_MS			uint16_t(20)
 	#define CONSOLE_COMMAND_LENGTH			size_t(250)
@@ -16,14 +20,14 @@
 	#define CONSOLE_USE_HELP				true
 	#define CONSOLE_USE_CTRL_Z				true
 
-	// Dostępne polecenia
-	#define USE_CMD_ALL						true			// Polecenie "?" do wyświetlania na konsoli wszystkich dostępnych komend
-	#define USE_CMD_EXIT					true			// Polecenie "exit" do zamykania systemu
-	#define USE_CMD_TIME					true			// Polecenie "time" do pokazywania czasu
-	#define USE_CMD_TASK_MONITOR			true			// Polecenie "`" do wyświetlania tablicy tasków
-	#define USE_CMD_TASK_COMMANDS			true			// Polecenia do ręcznego zarządzania taskami
-	#define USE_CMD_PARSE_DEMO				true			// Demonstracje parserów argumentów
-	#define USE_CMD_TASK_DEMO				true			// Demonstracyjne taski
+	// Commands
+	#define USE_CMD_ALL						true			// Command "?" to display all the available commands
+	#define USE_CMD_EXIT					true			// Command "exit" to close the system
+	#define USE_CMD_TIME					true			// Command "time" to print the time
+	#define USE_CMD_TASK_MONITOR			true			// Command "`" to print all running tasks
+	#define USE_CMD_TASK_COMMANDS			true			// Commands for manual task management
+	#define USE_CMD_PARSE_DEMO				true			// Demo of argument parsers
+	#define USE_CMD_TASK_DEMO				true			// Demo of tasks
 
 	#define OS_CONFIG_DONE
 #endif

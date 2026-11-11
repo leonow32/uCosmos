@@ -3,6 +3,7 @@
 
 #include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
+#include <cstdio>
 
 #if ESP_PLATFORM
 	#include "esp_timer.h"
@@ -54,20 +55,49 @@ uint64_t get_time_us(void);
 
 // Task diagnostics
 #if DIAG_USE
-	// struct diag_t {
-	// 	void (*task_ptr)(run_mode_t);
-	// 	uint32_t run_count;
-	// 	uint64_t time_total;
-	// 	uint64_t time_max;
-	// };
-
-	// extern diag_t diag_table[DIAG_COUNT];
-
 	void diag_clear(void);
 	void diag_add(void (*task_ptr)(run_mode_t));
 	void diag_count(void (*task_ptr)(run_mode_t), uint64_t time);
 	void diag_cmd(int argc, char * argv[]);
-	void diag_clr_cmd(int agrc, char * argv[]);
 #endif
+
+class ExecutionTimer {
+	private:
+		uint64_t time_begin;
+		uint64_t time_end;
+
+	public:
+		ExecutionTimer() {
+			time_end   = 0;
+			time_begin = get_time_us();
+		}
+
+		void begin(void) {
+			time_end   = 0;
+			time_begin = get_time_us();
+		}
+
+		void end(void) {
+			time_end = get_time_us();
+		}
+
+		uint64_t get(void) {
+			uint64_t time_elapsed = time_end ? (time_end - time_begin) : (get_time_us() - time_begin);
+			return time_elapsed;
+		}
+
+		void print(const char * text = nullptr) {
+			uint64_t time_elapsed = get();
+			uint64_t milliseconds = time_elapsed / 1000;
+			uint16_t microseconds = time_elapsed % 1000;
+
+			printf("%s%s%llu.%03u ms\n", 
+				text ? text : "",
+				text ? ": " : "",
+				milliseconds,
+				microseconds
+			);
+		}
+};
 
 #endif
