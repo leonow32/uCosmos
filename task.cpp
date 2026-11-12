@@ -358,7 +358,7 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 			uint64_t period = get_time_us() - diag_begin;
 			double   percent_total = 0.0;
 
-			printf(TEXT_WHITE_BRIGHT " No Run count            Total [ms]              Max [ms]              Avg [ms]   Usage [%%]  Name\n" FORMAT_RESET);
+			printf(TEXT_WHITE_BRIGHT " No  Run count            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
 			for(uint8_t i=0; i<DIAG_COUNT; i++) {
 				uint32_t count   = diag_table[i].run_count;
 				uint64_t total   = diag_table[i].time_total;
