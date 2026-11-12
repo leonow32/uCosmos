@@ -318,6 +318,10 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 
 	void diag_add(void (*task_ptr)(run_mode_t)) {
 		for(int i=0; i<DIAG_COUNT; i++) {
+			if(diag_table[i].task_ptr == task_ptr) {
+				return;
+			}
+
 			if(diag_table[i].task_ptr == nullptr) {
 				diag_table[i].task_ptr = task_ptr;
 				return;
@@ -367,14 +371,14 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 					i, 
 					task_get_name(diag_table[i].task_ptr),
 					count,
-					total / 1000,    total % 1000,
-					max / 1000,      max % 1000,
-					avg / 1000,      avg % 1000,
+					total / 1000,    uint16_t(total % 1000),
+					max / 1000,      uint16_t(max % 1000),
+					avg / 1000,      uint16_t(avg % 1000),
 					percent
 				);
 			}
 
-			printf("Measurement time: %llu.%06u s\n", period / 1000000, period % 1000000);
+			printf("Measurement time: %llu.%06llu s\n", period / 1000000lu, period % 1000000lu);
 			printf("Total CPU usage:  %10.6f %%\n", percent_total);
 		}
 	}
