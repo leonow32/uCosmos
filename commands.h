@@ -9,14 +9,6 @@
 	void exit_cmd(int argc, char * argv[]);
 #endif
 
-#if DIAG_USE
-	
-#endif
-
-#if USE_CMD_TASK_MONITOR
-	void task_monitor_cmd(int argc, char * argv[]);
-#endif
-
 // Task control commands
 #if USE_CMD_TASK_COMMANDS
 	void task_add_cmd(int argc, char * argv[]);

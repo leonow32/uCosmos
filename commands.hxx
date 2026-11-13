@@ -4,11 +4,10 @@
 
 #if USE_CMD_TASK_MONITOR
 	{"`",						task_monitor_cmd},
-	{"~`~",						task_monitor_cmd},
 #endif
 
 #if DIAG_USE
-	{"diag",					diag_cmd},
+	{"``",						diag_clear_cmd},
 #endif
 
 #if USE_CMD_TIME

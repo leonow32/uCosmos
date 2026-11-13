@@ -12,34 +12,6 @@ void exit_cmd(int argc, char * argv[]) {
 #endif
 
 // ========================================
-// Task Monitor
-// ========================================
-
-// Print task table
-#if USE_CMD_TASK_MONITOR
-void task_monitor_cmd(int argc, char * argv[]) {
-	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tPer[ms]\tName\n" FORMAT_RESET);
-	
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%u\t%08lX\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));
-	}
-	
-	printf("TickTime:\t%u ms\n", OS_TICK_PERIOD_MS);
-}
-#endif
-
-// ========================================
-// Task Diagnostics
-// ========================================
-
-// uint32_t max 4294967295
-// uint64_t max 18446744073709551 615
-
-#if DIAG_USE
-
-#endif
-
-// ========================================
 // Task control commands (add, close, kill)
 // ========================================
 
@@ -62,7 +34,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		task_add(task_ptr, period);
 	}
 	
-	// close task with its destructor
+	// Close task with its destructor
 	void task_close_cmd(int argc, char * argv[]) {
 		CMD_HELP("ptr:hex32");
 		
@@ -140,8 +112,8 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				LOGI("%s %d", __func__, counter++);
-				// sleep_ms(10);
+				// LOGI("%s %d", __func__, counter++);
+				sleep_ms(10);
 				break;
 			}
 
@@ -167,8 +139,8 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				LOGD("%s %d", __func__, counter++);
-				// sleep_ms(100);
+				// LOGD("%s %d", __func__, counter++);
+				sleep_ms(100);
 				break;
 			}
 

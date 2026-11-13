@@ -31,18 +31,7 @@ enum os_t {
 	os_task_period_under_range,
 };
 
-// Task control structure
-struct task_control_t {
-	void (*task_ptr)(run_mode_t);
-	uint16_t counter;
-	uint16_t period;
-	bool flag;
-};
-
 // Task management
-extern volatile task_control_t task_table[OS_TASK_MAXCOUNT];
-extern const char * task_name;
-
 void task_init(void);
 void task_deinit(void);
 void task_scheduler(void);
@@ -51,11 +40,16 @@ os_t task_close(void (*task_ptr)(run_mode_t));
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 bool task_is_running(void (*task_ptr)(run_mode_t));
 const char * task_get_name(void (*task_ptr)(run_mode_t));
+extern const char * task_name;
+
 uint64_t get_time_us(void);
 
-// Task diagnostics
+#if USE_CMD_TASK_MONITOR
+	void task_monitor_cmd(int argc, char * argv[]);
+#endif
+
 #if DIAG_USE
-	void diag_cmd(int argc, char * argv[]);
+	void diag_clear_cmd(int argc, char * argv[]);
 #endif
 
 class ExecutionTimer {
@@ -65,8 +59,7 @@ class ExecutionTimer {
 
 	public:
 		ExecutionTimer() {
-			time_end   = 0;
-			time_begin = get_time_us();
+			begin();
 		}
 
 		void begin(void) {
@@ -79,21 +72,14 @@ class ExecutionTimer {
 		}
 
 		uint64_t get(void) {
-			uint64_t time_elapsed = time_end ? (time_end - time_begin) : (get_time_us() - time_begin);
-			return time_elapsed;
+			return time_end ? (time_end - time_begin) : (get_time_us() - time_begin);
 		}
 
 		void print(const char * text = nullptr) {
 			uint64_t time_elapsed = get();
 			uint64_t milliseconds = time_elapsed / 1000;
 			uint16_t microseconds = time_elapsed % 1000;
-
-			printf("%s%s%llu.%03u ms\n", 
-				text ? text : "",
-				text ? ": " : "",
-				milliseconds,
-				microseconds
-			);
+			printf("%s%s%llu.%03u ms\n", text ? text : "", text ? ": " : "", milliseconds, microseconds);
 		}
 };
 
