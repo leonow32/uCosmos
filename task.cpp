@@ -34,6 +34,107 @@ volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 const char * task_name = nullptr;
 bool exit_request = false;
 
+// ========================================
+// Task disgnostics
+// ========================================
+
+#if DIAG_USE
+	struct diag_t {
+		void (*task_ptr)(run_mode_t);
+		uint32_t run_count;
+		uint32_t overrun_count;
+		uint64_t time_total;
+		uint64_t time_max;
+	};
+
+	static diag_t   diag_table[DIAG_COUNT] = {};
+	static uint64_t diag_begin = 0;
+
+	static void diag_add(void (*task_ptr)(run_mode_t)) {
+		for(int i=0; i<DIAG_COUNT; i++) {
+			if(diag_table[i].task_ptr == task_ptr) {
+				return;
+			}
+
+			if(diag_table[i].task_ptr == nullptr) {
+				diag_table[i].task_ptr = task_ptr;
+				return;
+			}
+		}
+
+		LOGE("%s(%s) - no free space", __func__, task_get_name(task_ptr));
+	}
+
+	static void diag_count(void (*task_ptr)(run_mode_t), uint64_t time, uint16_t period) {
+		for(int i=0; i<DIAG_COUNT; i++) {
+			if(diag_table[i].task_ptr == task_ptr) {
+				if(time > diag_table[i].time_max) 					diag_table[i].time_max = time;
+				if(diag_table[i].run_count == UINT32_MAX)			return;
+				if(diag_table[i].overrun_count == UINT32_MAX)		return;
+				if(diag_table[i].time_total > (UINT64_MAX - time))	return;
+				diag_table[i].run_count++;
+				diag_table[i].time_total += time;
+				if(time > uint64_t(period)*1000)					diag_table[i].overrun_count++;
+				return;
+			}
+		}
+	}
+
+	void diag_cmd(int argc, char * argv[]) {
+		if(argc != 1) {
+			for(int i=0; i<DIAG_COUNT; i++) {
+				diag_table[i].run_count     = 0;
+				diag_table[i].overrun_count = 0;
+				diag_table[i].time_max      = 0;
+				diag_table[i].time_total    = 0;
+			}
+			diag_begin = get_time_us();
+			print_ok();
+		}
+		else {
+			uint64_t period = get_time_us() - diag_begin;
+			double   percent_total = 0.0;
+
+			printf(TEXT_WHITE_BRIGHT " No  Run count   Overruns            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
+			for(uint8_t i=0; i<DIAG_COUNT; i++) {
+				uint32_t count   = diag_table[i].run_count;
+				uint32_t over    = diag_table[i].overrun_count;
+				uint64_t total   = diag_table[i].time_total;
+				uint64_t max     = diag_table[i].time_max;
+				uint64_t avg     = count ? total / count : 0;
+				double   percent = double(total) * 100.0 / double(period);
+				percent_total   += percent;
+
+				printf("%3u %10lu %10lu %17llu.%03u %17llu.%03u %17llu.%03u %10.6f  %s\n", 
+					i, 
+					count,
+					over,
+					total / 1000,    uint16_t(total % 1000),
+					max / 1000,      uint16_t(max % 1000),
+					avg / 1000,      uint16_t(avg % 1000),
+					percent,
+					task_get_name(diag_table[i].task_ptr)
+				);
+			}
+
+			period = period / 1000000ul;
+			uint8_t seconds = period % 60;
+			period = period / 60;
+			uint8_t minutes = period % 60;
+			period = period / 60;
+			uint8_t hours = period % 24;
+			period = period / 24;
+			printf("Measurement time: %llu days %02u:%02u:%02u\n", period, hours, minutes, seconds);
+			printf("Total CPU usage:  %.6f %%\n", percent_total);
+		}
+	}
+
+#endif
+
+// ========================================
+// Debug
+// ========================================
+
 static const char * debug_res(os_t result) {
 	switch(result) {
 		case os_ok:							return("ok");
@@ -180,6 +281,9 @@ void task_scheduler(void) {
 			IRQ_DISABLE();
 			void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
 			bool flag = task_table[i].flag;
+			#if DIAG_USE
+				uint16_t period = task_table[i].period;
+			#endif
 			task_table[i].flag = false;
 			IRQ_ENABLE();
 
@@ -191,7 +295,7 @@ void task_scheduler(void) {
 				task_ptr(os_run);				// Task execution
 
 				#if DIAG_USE
-					diag_count(task_ptr, execution_timer.get());
+					diag_count(task_ptr, execution_timer.get(), period);
 				#endif
 			}
 		}
@@ -295,93 +399,3 @@ const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 		return "nullptr";
 	}
 }
-
-// ========================================
-// Task disgnostics
-// ========================================
-
-#if DIAG_USE
-	struct diag_t {
-		void (*task_ptr)(run_mode_t);
-		uint32_t run_count;
-		uint64_t time_total;
-		uint64_t time_max;
-	};
-
-	diag_t   diag_table[DIAG_COUNT] = {};
-	uint64_t diag_begin = 0;
-
-	void diag_clear(void) {
-		diag_begin = get_time_us();
-		memset(diag_table, 0, sizeof(diag_table));
-	}
-
-	void diag_add(void (*task_ptr)(run_mode_t)) {
-		for(int i=0; i<DIAG_COUNT; i++) {
-			if(diag_table[i].task_ptr == task_ptr) {
-				return;
-			}
-
-			if(diag_table[i].task_ptr == nullptr) {
-				diag_table[i].task_ptr = task_ptr;
-				return;
-			}
-		}
-
-		LOGE("%s(%s) - no free space", __func__, task_get_name(task_ptr));
-	}
-
-	void diag_count(void (*task_ptr)(run_mode_t), uint64_t time) {
-		for(int i=0; i<DIAG_COUNT; i++) {
-			if(diag_table[i].task_ptr == task_ptr) {
-				if(time > diag_table[i].time_max) diag_table[i].time_max = time;
-				if(diag_table[i].run_count == UINT32_MAX)			return;
-				if(diag_table[i].time_total > (UINT64_MAX - time))	return;
-				diag_table[i].run_count++;
-				diag_table[i].time_total += time;
-				return;
-			}
-		}
-	}
-
-	void diag_cmd(int argc, char * argv[]) {
-		if(argc != 1) {
-			for(int i=0; i<DIAG_COUNT; i++) {
-				diag_table[i].run_count  = 0;
-				diag_table[i].time_max   = 0;
-				diag_table[i].time_total = 0;
-			}
-			diag_begin = get_time_us();
-			print_ok();
-		}
-		else {
-			uint64_t period = get_time_us() - diag_begin;
-			double   percent_total = 0.0;
-
-			printf(TEXT_WHITE_BRIGHT " No  Run count            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
-			for(uint8_t i=0; i<DIAG_COUNT; i++) {
-				uint32_t count   = diag_table[i].run_count;
-				uint64_t total   = diag_table[i].time_total;
-				uint64_t max     = diag_table[i].time_max;
-				uint64_t avg     = diag_table[i].run_count ? diag_table[i].time_total / diag_table[i].run_count : 0;
-				double   percent = double(diag_table[i].time_total) * 100.0 / double(period);
-				percent_total   += percent;
-
-				printf("%3u %10lu %17llu.%03u %17llu.%03u %17llu.%03u %10.6f  %s\n", 
-					i, 
-					count,
-					total / 1000,    uint16_t(total % 1000),
-					max / 1000,      uint16_t(max % 1000),
-					avg / 1000,      uint16_t(avg % 1000),
-					percent,
-					task_get_name(diag_table[i].task_ptr)
-				);
-			}
-
-			printf("Measurement time: %llu.%06llu s\n", period / 1000000lu, period % 1000000lu);
-			printf("Total CPU usage:  %.6f %%\n", percent_total);
-		}
-	}
-
-#endif
-

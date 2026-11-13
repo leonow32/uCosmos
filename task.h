@@ -55,9 +55,6 @@ uint64_t get_time_us(void);
 
 // Task diagnostics
 #if DIAG_USE
-	void diag_clear(void);
-	void diag_add(void (*task_ptr)(run_mode_t));
-	void diag_count(void (*task_ptr)(run_mode_t), uint64_t time);
 	void diag_cmd(int argc, char * argv[]);
 #endif
 
