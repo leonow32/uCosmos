@@ -123,6 +123,64 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		uint64_t period = get_time_us() - diag_begin;
 		double   percent_total = 0.0;
 
+		// Bubble sort
+		#if DIAG_BUBBLE_SORT_BEFORE_PRINT
+			ExecutionTimer sort_timer = ExecutionTimer();
+
+			for(int i=0; i<DIAG_COUNT-1; i++) {
+				for(int j=0; j<DIAG_COUNT-1-i; j++) {
+					if(diag_table[j].time_total < diag_table[j+1].time_total) {
+						diag_t temp     = diag_table[j];
+						diag_table[j]   = diag_table[j+1];
+						diag_table[j+1] = temp;
+					}
+				}
+			}
+
+			sort_timer.print("Sort time");
+		#endif
+
+		// Insertion sort
+		#if DIAG_INSERTION_SORT_BEFORE_PRINT
+			ExecutionTimer sort_timer = ExecutionTimer();
+
+			// for(int i=1; i<DIAG_COUNT; ++i) {
+			// 	diag_t key = diag_table[i];
+			// 	int j = i-1;
+
+			// 	while(j >= 0 && diag_table[j].time_total < key.time_total) {
+			// 		diag_table[j+1] = diag_table[j];
+			// 		j = j-1;
+			// 	}
+
+			// 	diag_table[j+1] = key;
+			// }
+
+			// for(int i=1; i<DIAG_COUNT; i++) {
+			// 	diag_t key = diag_table[i];
+			// 	int j;
+
+			// 	for(j=i-1; j>=0 && diag_table[j].time_total < key.time_total; j--) {
+			// 		diag_table[j+1] = diag_table[j];
+			// 	}
+
+			// 	diag_table[j+1] = key;
+			// }
+
+			for(int i=1; i<DIAG_COUNT; i++) {
+				diag_t key = diag_table[i];
+				int j = i;
+
+				for(; j>0 && diag_table[j-1].time_total < key.time_total; j--) {
+					diag_table[j] = diag_table[j-1];
+				}
+
+				diag_table[j] = key;
+			}
+
+			sort_timer.print("Sort time");
+		#endif
+
 		printf("\n" TEXT_WHITE_BRIGHT " No  Run count   Overruns            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
 		for(uint8_t i=0; i<DIAG_COUNT; i++) {
 			if(diag_table[i].task_ptr) {
