@@ -4,7 +4,7 @@
 void uCosmos_init(void) {
 	LOGI("init");
 
-	#if OS_SHOW_SPLASH_SCREEN_AT_START
+	#if SHOW_SPLASH_SCREEN_AT_START
 		printf(TEXT_YELLOW);
 		printf("              __________  _____ __  _______  _____ \n");
 		printf("       __  __/ ____/ __ \\/ ___//  |/  / __ \\/ ___/ \n");

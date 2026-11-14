@@ -27,7 +27,6 @@ enum os_t {
 	os_no_free_slot,
 	os_not_found,
 	os_task_already_created,
-	os_slot_number_over_range,
 	os_task_period_under_range,
 };
 

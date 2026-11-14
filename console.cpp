@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <string.h>
+#include <type_traits>
 #include "log.h"
 #include "console.h"
 #include "../_config/_commands.h"
@@ -517,7 +518,7 @@ void print_ok(void) {
 	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
 }
 
-void print_hexstr(uint8_t array[], size_t len, bool new_line, char separator) {
+void print_hexstr(const uint8_t array[], size_t len, bool new_line, char separator) {
 	if(len) {
 		while(--len) {
 			printf("%02X", *array++);

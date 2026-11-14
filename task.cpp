@@ -7,7 +7,7 @@
 #if ESP_PLATFORM
 	#include "esp_timer.h"
 	#include "freertos/task.h"
-	esp_timer_handle_t timer_handle;
+	static esp_timer_handle_t timer_handle;
 	static portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
 	#define IRQ_DISABLE() portENTER_CRITICAL(&mutex);
 	#define IRQ_ENABLE()  portEXIT_CRITICAL(&mutex);
@@ -38,9 +38,9 @@ struct task_control_t {
 	bool flag;
 };
 
-volatile task_control_t task_table[OS_TASK_MAXCOUNT];
 const char * task_name = nullptr;
-bool exit_request = false;
+volatile bool exit_request = false;
+volatile task_control_t task_table[TASK_MAXCOUNT];
 
 // ========================================
 // Task disgnostics
@@ -73,20 +73,18 @@ static void diag_add(void (*task_ptr)(run_mode_t)) {
 	LOGE("%s(%s) - no free space", __func__, task_get_name(task_ptr));
 }
 
-static void diag_count(void (*task_ptr)(run_mode_t), uint64_t time, uint16_t period) {
-	if(time > uint64_t(period) * uint64_t(OS_TICK_PERIOD_MS) * 1000) {
-		LOGE("%s(%s, time=%llu, period=%llu)", __func__, task_get_name(task_ptr), time, uint64_t(period) * 1000);
-	}
+static void diag_update(void (*task_ptr)(run_mode_t), uint64_t time, uint16_t period) {
+	uint64_t period_us = uint64_t(period) * uint64_t(TICK_PERIOD_MS) * 1000;
 
 	for(int i=0; i<DIAG_COUNT; i++) {
 		if(diag_table[i].task_ptr == task_ptr) {
-			if(time > diag_table[i].time_max) 					diag_table[i].time_max = time;
 			if(diag_table[i].run_count == UINT32_MAX)			return;
 			if(diag_table[i].overrun_count == UINT32_MAX)		return;
 			if(diag_table[i].time_total > (UINT64_MAX - time))	return;
+			if(time > diag_table[i].time_max) 					diag_table[i].time_max = time;
+			if(time > period_us) 								diag_table[i].overrun_count++;
 			diag_table[i].run_count++;
 			diag_table[i].time_total += time;
-			if(time > uint64_t(period)*1000)					diag_table[i].overrun_count++;
 			return;
 		}
 	}
@@ -109,15 +107,17 @@ void diag_clear_cmd(int argc, char * argv[]) {
 void task_monitor_cmd(int argc, char * argv[]) {
 	printf(TEXT_WHITE_BRIGHT " No  Pointer   Per [ms] Name\n" FORMAT_RESET);
 	
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%3u %08lX %10lu %s\n", 
-			i, 
-			uint32_t(task_table[i].task_ptr), 
-			uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, 
-			task_get_name(task_table[i].task_ptr));
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+		if(task_table[i].task_ptr) {
+			printf("%3u %08lX %10lu %s\n", 
+				i, 
+				uint32_t(task_table[i].task_ptr), 
+				uint32_t(task_table[i].period) * TICK_PERIOD_MS, 
+				task_get_name(task_table[i].task_ptr));
+		}
 	}
 	
-	printf("TickTime: %u ms\n", OS_TICK_PERIOD_MS);
+	printf("TickTime: %u ms\n", TICK_PERIOD_MS);
 
 	#if DIAG_USE
 		uint64_t period = get_time_us() - diag_begin;
@@ -125,24 +125,26 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 		printf("\n" TEXT_WHITE_BRIGHT " No  Run count   Overruns            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
 		for(uint8_t i=0; i<DIAG_COUNT; i++) {
-			uint32_t count   = diag_table[i].run_count;
-			uint32_t over    = diag_table[i].overrun_count;
-			uint64_t total   = diag_table[i].time_total;
-			uint64_t max     = diag_table[i].time_max;
-			uint64_t avg     = count ? total / count : 0;
-			double   percent = double(total) * 100.0 / double(period);
-			percent_total   += percent;
+			if(diag_table[i].task_ptr) {
+				uint32_t count   = diag_table[i].run_count;
+				uint32_t over    = diag_table[i].overrun_count;
+				uint64_t total   = diag_table[i].time_total;
+				uint64_t max     = diag_table[i].time_max;
+				uint64_t avg     = count ? total / count : 0;
+				double   percent = period ? double(total) * 100.0 / double(period) : 0;
+				percent_total   += percent;
 
-			printf("%3u %10lu %10lu %17llu.%03u %17llu.%03u %17llu.%03u %10.6f  %s\n", 
-				i, 
-				count,
-				over,
-				total / 1000,    uint16_t(total % 1000),
-				max / 1000,      uint16_t(max % 1000),
-				avg / 1000,      uint16_t(avg % 1000),
-				percent,
-				task_get_name(diag_table[i].task_ptr)
-			);
+				printf("%3u %10lu %10lu %17llu.%03u %17llu.%03u %17llu.%03u %10.6f  %s\n", 
+					i, 
+					count,
+					over,
+					total / 1000,    uint16_t(total % 1000),
+					max / 1000,      uint16_t(max % 1000),
+					avg / 1000,      uint16_t(avg % 1000),
+					percent,
+					task_get_name(diag_table[i].task_ptr)
+				);
+			}
 		}
 
 		period = period / 1000000ul;
@@ -169,7 +171,6 @@ static const char * debug_res(os_t result) {
 		case os_no_free_slot:				return("no free slot");
 		case os_not_found:					return("not found");
 		case os_task_already_created:		return("already created");
-		case os_slot_number_over_range:		return("slot over range");
 		case os_task_period_under_range:	return("period under range");
 	}
 
@@ -191,28 +192,26 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 // Static functions
 // ========================================
 
-static void slot_erase(uint8_t slot_number) {
-	IRQ_DISABLE();
-	task_table[slot_number].task_ptr = nullptr;
-	task_table[slot_number].counter  = 0;
-	task_table[slot_number].period   = 0;
-	task_table[slot_number].flag     = false;
-	IRQ_ENABLE();
-}
-
 // Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik. Jeśli brak wolnych slotów to zwraca os_no_free_slot.
 static os_t task_find_free_slot(uint8_t * slot_number) {
-	IRQ_DISABLE();
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
 		if(task_table[i].task_ptr == nullptr) {			// Szukanie pierwszego wolnego slotu, w którym wskaźnik do tasku jest nullptr
 			*slot_number = i;
-			IRQ_ENABLE();
 			return os_ok;
 		}
 	}
 	
-	IRQ_ENABLE();
 	return os_no_free_slot;								// Jeżeli brak wolnych slotów
+}
+
+static bool task_check_running(void (*task_ptr)(run_mode_t)) {
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+		if(task_table[i].task_ptr == task_ptr) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // Szukanie slotu, w którym znajduje się funkcja o podanym wskaźniku task_ptr
@@ -221,18 +220,15 @@ static os_t task_find_free_slot(uint8_t * slot_number) {
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
 	if(task_ptr == nullptr)					return os_nullptr;
 	
-	IRQ_DISABLE();
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
 			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
 				*slot_number = i;
 			}
-			IRQ_ENABLE();
 			return os_ok;
 		}
 	}
 	
-	IRQ_ENABLE();
 	return os_not_found;
 }
 
@@ -243,7 +239,8 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 // Przerwanie RTC używane do Tickera systemowego
 #if ESP_PLATFORM
 	void task_system_tick(void *pvParameter) {
-		for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {						// Sprawdzenie wszystkich procesów
+		IRQ_DISABLE();
+		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {						// Sprawdzenie wszystkich procesów
 			if(task_table[i].task_ptr != nullptr) {						// Jeżeli w badanym slocie jest wpisany jakiś task
 				if(task_table[i].counter == 0) {						// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
 					task_table[i].flag = true;
@@ -254,10 +251,11 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 				}
 			}
 		}
+		IRQ_ENABLE();
 	}
 #elif PICO_RP2040 || PICO_RP2350
 	bool task_system_tick(struct repeating_timer *t) {
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {							// Sprawdzenie wszystkich procesów
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {							// Sprawdzenie wszystkich procesów
 		if(task_table[i].task_ptr != nullptr) {							// Jeżeli w badanym slocie jest wpisany jakiś task
 			if(task_table[i].counter == 0) {							// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
 				task_table[i].flag = true;
@@ -280,8 +278,11 @@ void task_init(void) {
 	LOGI("init");
 	exit_request = false;
 
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		slot_erase(i);
+	for(uint8_t slot_number=0; slot_number<TASK_MAXCOUNT; slot_number++) {
+		task_table[slot_number].task_ptr = nullptr;
+		task_table[slot_number].counter  = 0;
+		task_table[slot_number].period   = 0;
+		task_table[slot_number].flag     = false;
 	}
 
 	#if ESP_PLATFORM
@@ -294,9 +295,9 @@ void task_init(void) {
 		};
 
 		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &timer_handle));
-		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, OS_TICK_PERIOD_MS * 1000));  // here time is in micro seconds
+		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
-		add_repeating_timer_ms(-OS_TICK_PERIOD_MS, task_system_tick, nullptr, &timer);
+		add_repeating_timer_ms(-TICK_PERIOD_MS, task_system_tick, nullptr, &timer);
 	#else
 		#error "Platform not supported"
 	#endif
@@ -308,7 +309,7 @@ void task_deinit(void) {
 
 void task_scheduler(void) {
 	while(1) {
-		for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
 			IRQ_DISABLE();
 			void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
 			bool flag = task_table[i].flag;
@@ -326,7 +327,7 @@ void task_scheduler(void) {
 				task_ptr(os_run);				// Task execution
 
 				#if DIAG_USE
-					diag_count(task_ptr, execution_timer.get(), period);
+					diag_update(task_ptr, execution_timer.get(), period);
 				#endif
 			}
 		}
@@ -334,7 +335,7 @@ void task_scheduler(void) {
 		if(exit_request) {
 			LOGI("exit request");
 
-			for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
+			for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
 				IRQ_DISABLE();
 				void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
 				IRQ_ENABLE();
@@ -369,20 +370,21 @@ void task_scheduler(void) {
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
-	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
-	if(task_is_running(task_ptr))								return debug_print(os_task_already_created, __func__, task_ptr, period_ms);
-	if(task_find_free_slot(&slot_number) == os_no_free_slot)	return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);
+	if(period_ms < TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
+	IRQ_DISABLE();
+	if(task_check_running(task_ptr)) 							{IRQ_ENABLE(); return debug_print(os_task_already_created, __func__, task_ptr, period_ms);}
+	if(task_find_free_slot(&slot_number) == os_no_free_slot)	{IRQ_ENABLE(); return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);}
+
+	task_table[slot_number].counter  = (period_ms / TICK_PERIOD_MS)-1;
+	task_table[slot_number].period   = period_ms / TICK_PERIOD_MS;
+	task_table[slot_number].flag     = false;
+	task_table[slot_number].task_ptr = task_ptr;
+	IRQ_ENABLE();
 
 	#if DIAG_USE
 		diag_add(task_ptr);
 	#endif
-	
-	IRQ_DISABLE();
-	task_table[slot_number].counter  = (period_ms / OS_TICK_PERIOD_MS)-1;
-	task_table[slot_number].period   = period_ms / OS_TICK_PERIOD_MS;
-	task_table[slot_number].flag     = false;
-	task_table[slot_number].task_ptr = task_ptr;
-	IRQ_ENABLE();
+
 	task_ptr(os_constructor);
 	return debug_print(os_ok, __func__, task_ptr, period_ms);
 }
@@ -391,10 +393,16 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 os_t task_close(void (*task_ptr)(run_mode_t)) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
-	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, 0);
+	IRQ_DISABLE();
+	if(task_find(task_ptr, &slot_number)) 						{IRQ_ENABLE(); return debug_print(os_not_found, __func__, task_ptr, 0);}
 	
+	task_table[slot_number].counter  = 0;
+	task_table[slot_number].period   = 0;
+	task_table[slot_number].flag     = false;
+	task_table[slot_number].task_ptr = nullptr;									// Clear task from the array
+	IRQ_ENABLE();
+
 	task_ptr(os_destructor);													// Execute task destructor
-	slot_erase(slot_number);													// Clear task from the array
 	return debug_print(os_ok, __func__, task_ptr, 0);
 }
 
@@ -404,12 +412,12 @@ os_t task_close(void (*task_ptr)(run_mode_t)) {
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
-	if(task_find(task_ptr, &slot_number))						return debug_print(os_not_found, __func__, task_ptr, period_ms);
-	if(period_ms < OS_TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
-
+	if(period_ms < TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 	IRQ_DISABLE();
-	task_table[slot_number].counter	= (period_ms / OS_TICK_PERIOD_MS)-1;
-	task_table[slot_number].period	= period_ms / OS_TICK_PERIOD_MS;
+	if(task_find(task_ptr, &slot_number))						{IRQ_ENABLE(); return debug_print(os_not_found, __func__, task_ptr, period_ms);}
+	
+	task_table[slot_number].counter	= (period_ms / TICK_PERIOD_MS)-1;
+	task_table[slot_number].period	= period_ms / TICK_PERIOD_MS;
 	task_table[slot_number].flag	= 0;
 	IRQ_ENABLE();
 	return debug_print(os_ok, __func__, task_ptr, period_ms);
@@ -417,7 +425,10 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 
 // Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
-	return task_find(task_ptr) == os_ok;
+	IRQ_DISABLE();
+	bool result = task_check_running(task_ptr);
+	IRQ_ENABLE();
+	return result;
 }
 
 const char * task_get_name(void (*task_ptr)(run_mode_t)) {
