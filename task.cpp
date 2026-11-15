@@ -237,9 +237,9 @@ static const char * debug_res(os_t result) {
 
 static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	#if ESP_PLATFORM
-		printf("%s%c (%lu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
+		printf("%s%c (%lu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'D', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#elif PICO_RP2040 || PICO_RP2350
-		printf("%s%c (%llu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'I', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
+		printf("%s%c (%llu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'D', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
 	#else
 		#warning "Platform not supported"
 	#endif
@@ -333,7 +333,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 // ========================================
 
 void task_init(void) {
-	LOGI("init");
+	LOGD("init");
 	exit_request = false;
 
 	for(uint8_t slot_number=0; slot_number<TASK_MAXCOUNT; slot_number++) {

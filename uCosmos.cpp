@@ -2,7 +2,7 @@
 #include "uCosmos.h"
 
 void uCosmos_init(void) {
-	LOGI("init");
+	LOGD("init");
 
 	#if SHOW_SPLASH_SCREEN_AT_START
 		printf(TEXT_YELLOW);

@@ -4,17 +4,17 @@
 #if PRODUCT_DEMO
 
 	// Task manager config
-	#define TASK_MAXCOUNT				uint8_t(10)		// Maximum number of tasks running simultaneously
-	#define TICK_PERIOD_MS				uint16_t(10)	// Period of the system timer in ms, range 1-1000
-	#define SHOW_SPLASH_SCREEN_AT_START	true			// Should the system logo be displayed at startup?
+	#define TASK_MAXCOUNT					uint8_t(10)		// Maximum number of tasks running simultaneously
+	#define TICK_PERIOD_MS					uint16_t(10)	// Period of the system timer in ms, range 1-1000
+	#define SHOW_SPLASH_SCREEN_AT_START		true			// Should the system logo be displayed at startup?
 	
 	// Console config
-	#define CONSOLE_USE						true
-	#define CONSOLE_TASK_PERIOD_MS			uint16_t(20)
-	#define CONSOLE_COMMAND_LENGTH			size_t(250)
+	#define CONSOLE_USE						true			// Should a command-line task be launched automatically upon system startup
+	#define CONSOLE_TASK_PERIOD_MS			uint16_t(20)	// Time between console task execution
+	#define CONSOLE_COMMAND_LENGTH			size_t(250)		// Size of the command buffer in RAM
 	#define CONSOLE_MAX_ARGC				uint8_t(11)		// Max count of arguments, including command name
-	#define CONSOLE_USE_HELP				true
-	#define CONSOLE_USE_CTRL_Z				true
+	#define CONSOLE_USE_HELP				true			// Enable CMD_HELP macro in all commands whick support it
+	#define CONSOLE_USE_CTRL_Z				true			// CTRL-Z recalls the last used command
 
 	// Available console commands
 	#define USE_CMD_ALL						true			// Command "?" to display all the available commands
@@ -26,7 +26,7 @@
 	#define USE_CMD_TASK_DEMO				true			// Demo of tasks
 
 	// Diagnostic tools for measuring task times
-	#define DIAG_USE						true
+	#define DIAG_USE						true			// Include diagnostic functions to track the time spent by all the executed tasks
 	#define DIAG_COUNT						uint8_t(20)		// Maximum number of tasks to be tracked
 
 	#define OS_CONFIG_DONE

@@ -14,7 +14,7 @@ static char 	buffer[CONSOLE_COMMAND_LENGTH];												// Buffer for currently 
 #endif
 
 void console_init(void) {
-	LOGI("init");
+	LOGD("init");
 	task_add(console_task, CONSOLE_TASK_PERIOD_MS);
 }
 
