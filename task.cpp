@@ -30,12 +30,11 @@ uint64_t get_time_us(void) {
 	#endif
 }
 
-// Task control structure
-struct task_control_t {
-	void (*task_ptr)(run_mode_t);
+struct task_control_t {														// Task control structure
+	void (*task_ptr)(run_mode_t);											// Pointer to the task which has to be executed
 	uint16_t counter;
 	uint16_t period;
-	bool flag;
+	bool flag;																// True is the task has to be executed in the next loop of the scheduler
 };
 
 const char * task_name = nullptr;
@@ -250,18 +249,19 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 // Static functions
 // ========================================
 
-// Funkcja znajduje pierwszy wolny slot i zwraca jego numer przez wskaźnik. Jeśli brak wolnych slotów to zwraca os_no_free_slot.
+// The function finds the first available slot and returns its number via a pointer. If no slots are available, it returns os_no_free_slot.
 static os_t task_find_free_slot(uint8_t * slot_number) {
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {			// Przesukiwanie tablicy slotów
-		if(task_table[i].task_ptr == nullptr) {			// Szukanie pierwszego wolnego slotu, w którym wskaźnik do tasku jest nullptr
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+		if(task_table[i].task_ptr == nullptr) {
 			*slot_number = i;
 			return os_ok;
 		}
 	}
 	
-	return os_no_free_slot;								// Jeżeli brak wolnych slotów
+	return os_no_free_slot;
 }
 
+// Check whether the task provided as an argument is present in the task_table array.
 static bool task_check_running(void (*task_ptr)(run_mode_t)) {
 	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
@@ -272,15 +272,15 @@ static bool task_check_running(void (*task_ptr)(run_mode_t)) {
 	return false;
 }
 
-// Szukanie slotu, w którym znajduje się funkcja o podanym wskaźniku task_ptr
-// - task_ptr - wskaźnik do szukaniego tasku
-// - slot_number - wskaźnik do zmiennej w której będzie zwrócony wynik
+// Look for a slot that contains a function with the specified `task_ptr` value.
+// - task_ptr - task pointer to be found
+// - slot_number - a pointer to a variable in which the result will be returned, or nullptr if not used
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
 	if(task_ptr == nullptr)					return os_nullptr;
 	
 	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
-			if(slot_number != nullptr) {				// slot_number to argument opcjonalny, jeśli nie podano to nullptr
+			if(slot_number != nullptr) {
 				*slot_number = i;
 			}
 			return os_ok;
@@ -294,18 +294,18 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 // System tick
 // ========================================
 
-// Przerwanie RTC używane do Tickera systemowego
+// RTC interrupt used for the system timer
 #if ESP_PLATFORM
 	void task_system_tick(void *pvParameter) {
 		IRQ_DISABLE();
-		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {						// Sprawdzenie wszystkich procesów
-			if(task_table[i].task_ptr != nullptr) {						// Jeżeli w badanym slocie jest wpisany jakiś task
-				if(task_table[i].counter == 0) {						// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
+		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {						// Check all the items in task_table array
+			if(task_table[i].task_ptr != nullptr) {
+				if(task_table[i].counter == 0) {						// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
 					task_table[i].flag = true;
-					task_table[i].counter = task_table[i].period - 1;	// Ponowne wpisanie czasu do odmierzenia pomniejszonego o 1 (z tego powodu period_ms nie może być zainicjalizowany jako 0)
+					task_table[i].counter = task_table[i].period - 1;	// Re-entering the time to be counted down, decremented by 1 (for this reason, period_ms cannot be initialized to 0)
 				}
 				else {
-					task_table[i].counter--;							// Nic się nie dzieje - odliczamy czas
+					task_table[i].counter--;							// Nothing is happening – we are counting down the time
 				}
 			}
 		}
@@ -313,18 +313,18 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 	}
 #elif PICO_RP2040 || PICO_RP2350
 	bool task_system_tick(struct repeating_timer *t) {
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {							// Sprawdzenie wszystkich procesów
-		if(task_table[i].task_ptr != nullptr) {							// Jeżeli w badanym slocie jest wpisany jakiś task
-			if(task_table[i].counter == 0) {							// Jeżeli aktualnie teraz licznik ma wartość zero (task może być zainicjalizowany z licznikiem 0)
+	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {							// Check all the items in task_table array
+		if(task_table[i].task_ptr != nullptr) {
+			if(task_table[i].counter == 0) {							// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
 				task_table[i].flag = true;
-				task_table[i].counter = task_table[i].period - 1;		// Ponowne wpisanie czasu do odmierzenia pomniejszonego o 1 (z tego powodu period nie może być zainicjalizowany jako 0)				
+				task_table[i].counter = task_table[i].period - 1;		// Re-entering the time to be counted down, decremented by 1 (for this reason, period_ms cannot be initialized to 0)
 			}
 			else {
-				task_table[i].counter--;								// Nic się nie dzieje - odliczamy czas
+				task_table[i].counter--;								// Nothing is happening – we are counting down the time
 			}
 		}
 	}
-    return true;         												// Ma się wykonać ponownie zgodnie z harmonogramem
+    return true;
 }
 #endif
 
@@ -382,7 +382,7 @@ void task_scheduler(void) {
 					ExecutionTimer execution_timer = ExecutionTimer();
 				#endif
 				
-				task_ptr(os_run);				// Task execution
+				task_ptr(os_run);													// Task execution
 
 				#if DIAG_USE
 					diag_update(task_ptr, execution_timer.get(), period);
@@ -424,11 +424,11 @@ void task_scheduler(void) {
 	}
 }
 
-// Dodawanie tasku do tablicy tasków
+//Adding a task to the task array and invoking its constructor
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
-	if(period_ms < TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
+	if(period_ms < TICK_PERIOD_MS)								return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 	IRQ_DISABLE();
 	if(task_check_running(task_ptr)) 							{IRQ_ENABLE(); return debug_print(os_task_already_created, __func__, task_ptr, period_ms);}
 	if(task_find_free_slot(&slot_number) == os_no_free_slot)	{IRQ_ENABLE(); return debug_print(os_no_free_slot, __func__, task_ptr, period_ms);}
@@ -464,13 +464,11 @@ os_t task_close(void (*task_ptr)(run_mode_t)) {
 	return debug_print(os_ok, __func__, task_ptr, 0);
 }
 
-// Zmiana czasów
-// - task_ptr  - wskaźnik do procesu, który ma być zmieniony
-// - period_ms - nowy okres
+// Change the period of task execution
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, period_ms);
-	if(period_ms < TICK_PERIOD_MS)							return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
+	if(period_ms < TICK_PERIOD_MS)								return debug_print(os_task_period_under_range, __func__, task_ptr, period_ms);
 	IRQ_DISABLE();
 	if(task_find(task_ptr, &slot_number))						{IRQ_ENABLE(); return debug_print(os_not_found, __func__, task_ptr, period_ms);}
 	
@@ -481,7 +479,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	return debug_print(os_ok, __func__, task_ptr, period_ms);
 }
 
-// Sprawdzanie czy task jest dodany do tablicy tasków (a nie czy akcualnie jest w trakcie wykonywania)
+// Checking whether a task has been added to the array of tasks (rather than whether it is currently being executed)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
 	IRQ_DISABLE();
 	bool result = task_check_running(task_ptr);
@@ -489,6 +487,8 @@ bool task_is_running(void (*task_ptr)(run_mode_t)) {
 	return result;
 }
 
+// Retrieving the name of a task provided as an argument. IMPORTANT – this function is not re-entrant. 
+// It uses a global variable, `task_name`. Each task must store its name in flash memory; it cannot be an array that is dynamically created and destroyed.
 const char * task_get_name(void (*task_ptr)(run_mode_t)) {
 	if(task_ptr) {
 		task_name = "unknown";
