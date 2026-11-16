@@ -115,7 +115,6 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		uint64_t period = get_time_us() - diag_begin;
 		double   percent_total = 0.0;
 
-		// Bubble sort
 		#if DIAG_SORT_BEFORE_PRINT
 			ExecutionTimer sort_timer = ExecutionTimer();
 
