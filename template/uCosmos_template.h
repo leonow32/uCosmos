@@ -39,7 +39,7 @@ void template_task(run_mode_t run_mode) {
 	else if(run_mode == os_destructor) {	// Optional
 
 	}
-	else if(run_mode == os_destructor) {	// Mandatory
+	else if(run_mode == os_id) {			// Mandatory
 		task_name = __func__;				// Do not change this line
 	}
 }

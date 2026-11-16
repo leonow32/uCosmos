@@ -184,13 +184,13 @@ static const char * debug_res(os_t result) {
 }
 
 static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms) {
-	const char * task_name = task_get_name(task_ptr);
-	const char * debug_txt = debug_res(res);
+	const char * name = task_get_name(task_ptr);
+	const char * text = debug_res(res);
 
 	switch(res) {
-		case os_ok: 						LOGD("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);		break;
-		case os_period_rounded:				LOGW("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);		break;
-		default:							LOGE("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);	 	break;
+		case os_ok: 						LOGD("%s(%s, %u): %s", function_name, name, period_ms, text);		break;
+		case os_period_rounded:				LOGW("%s(%s, %u): %s", function_name, name, period_ms, text);		break;
+		default:							LOGE("%s(%s, %u): %s", function_name, name, period_ms, text);	 	break;
 	}
 
 	return res;
@@ -425,7 +425,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	
 	task_table[slot_number].counter	= (period_ms / TICK_PERIOD_MS)-1;
 	task_table[slot_number].period	= period_ms / TICK_PERIOD_MS;
-	task_table[slot_number].flag	= 0;
+	task_table[slot_number].flag	= false;
 	IRQ_ENABLE();
 	return debug_print(os_ok, __func__, task_ptr, period_ms);
 }

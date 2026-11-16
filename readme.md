@@ -7,9 +7,19 @@ What's all about it?
 
 This is a simple, single-threaded, single-core operating system and command-line interpreter designed for microcontrollers. It currently supports microcontrollers such as the Espressif ESP32, as well as the Raspberry Pi RP2040, RP2350, and RP2354; however, adding support for other devices is very straightforward. All that is required is a single timer that triggers an interrupt at regular intervals and an input stream for keyboard data, such as a UART or USB interface.
 
+## Features
+
+- Cooperative, non-preemptive scheduler driven by a single hardware timer.
+- Periodic tasks with configurable periods.
+- Full task lifecycle supported: constructor, destructor, run and identification.
+- A built-in command-line interpreter that generates standard `argc` and `argv` data.
+- CTRL-Z for Last command recall.
+- Rich, type-safe set of argument parsers for 8/16/32/64-bit signed integers, 8/16/32/64 bit unsigned integers, float/double values, ASCII characters, ASCII strings, HEX strings and timestamps.
+- Optional diagnostic subsystem measuring task execution time, overruns, total execution time and total CPU usage.
+- Portable and compact code: the hardware abstraction layer consists of a handful of macros, so porting to a new MCU is very easy.
+
 ## Table of contents
 
-- [Features](#features)
 - [Requirements and supported platforms](#requirements-and-supported-platforms)
 - [Folder tree](#folder-tree)
 - [Installation](#installation)
@@ -40,19 +50,6 @@ This is a simple, single-threaded, single-core operating system and command-line
   - [Help strings and utilities](#help-strings-and-utilities)
 - [Diagnostic tools](#diagnostic-tools)
 - [Change log](#change-log)
-
-## Features
-
-- Cooperative, non-preemptive scheduler driven by a single hardware timer.
-- Periodic tasks with configurable periods, expressed as multiples of the system tick.
-- Task lifecycle callbacks: constructor, destructor, run and identification.
-- Command-line interpreter with line editing, backspace, escape and CTRL-Z history recall.
-- Rich, type-safe set of argument parsers for unsigned/signed integers, floating point
-  numbers, ASCII characters, strings, hex strings and timestamps.
-- Optional diagnostic subsystem measuring per-task execution time, overruns, total
-  execution time and total CPU usage.
-- Portable and compact code: the hardware abstraction layer consists of a handful of
-  macros, so porting to a new MCU is trivial.
 
 ## Requirements and supported platforms
 
