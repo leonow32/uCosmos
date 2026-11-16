@@ -99,13 +99,14 @@ void diag_clear_cmd(int argc, char * argv[]) {
 void task_monitor_cmd(int argc, char * argv[]) {
 	printf(TEXT_WHITE_BRIGHT " No  Pointer   Per [ms] Name\n" FORMAT_RESET);
 	
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr) {
 			printf("%3u %08lX %10lu %s\n", 
 				i, 
 				uint32_t(task_table[i].task_ptr), 
 				uint32_t(task_table[i].period) * TICK_PERIOD_MS, 
-				task_get_name(task_table[i].task_ptr));
+				task_get_name(task_table[i].task_ptr)
+			);
 		}
 	}
 	
@@ -116,8 +117,6 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		double   percent_total = 0.0;
 
 		#if DIAG_SORT_BEFORE_PRINT
-			ExecutionTimer sort_timer = ExecutionTimer();
-
 			for(int i=0; i<DIAG_COUNT-1; i++) {
 				for(int j=0; j<DIAG_COUNT-1-i; j++) {
 					if(diag_table[j].time_total < diag_table[j+1].time_total) {
@@ -127,12 +126,10 @@ void task_monitor_cmd(int argc, char * argv[]) {
 					}
 				}
 			}
-
-			sort_timer.print("Sort time");
 		#endif
 
 		printf("\n" TEXT_WHITE_BRIGHT " No  Run count   Overruns            Total [ms]              Max [ms]              Avg [ms]  Usage [%%]  Name\n" FORMAT_RESET);
-		for(uint8_t i=0; i<DIAG_COUNT; i++) {
+		for(int i=0; i<DIAG_COUNT; i++) {
 			if(diag_table[i].task_ptr) {
 				uint32_t count   = diag_table[i].run_count;
 				uint32_t over    = diag_table[i].overrun_count;
@@ -202,7 +199,7 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 
 // The function finds the first available slot and returns its number via a pointer. If no slots are available, it returns os_no_free_slot.
 static os_t task_find_free_slot(uint8_t * slot_number) {
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == nullptr) {
 			*slot_number = i;
 			return os_ok;
@@ -214,7 +211,7 @@ static os_t task_find_free_slot(uint8_t * slot_number) {
 
 // Check whether the task provided as an argument is present in the task_table array.
 static bool task_check_running(void (*task_ptr)(run_mode_t)) {
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
 			return true;
 		}
@@ -229,7 +226,7 @@ static bool task_check_running(void (*task_ptr)(run_mode_t)) {
 static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = nullptr) {
 	if(task_ptr == nullptr)					return os_nullptr;
 	
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr == task_ptr) {
 			if(slot_number != nullptr) {
 				*slot_number = i;
@@ -249,7 +246,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 #if ESP_PLATFORM
 	void task_system_tick(void *pvParameter) {
 		IRQ_DISABLE();
-		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {						// Check all the items in task_table array
+		for(int i=0; i<TASK_MAXCOUNT; i++) {							// Check all the items in task_table array
 			if(task_table[i].task_ptr != nullptr) {
 				if(task_table[i].counter == 0) {						// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
 					task_table[i].flag = true;
@@ -264,7 +261,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 	}
 #elif PICO_RP2040 || PICO_RP2350
 	bool task_system_tick(struct repeating_timer *t) {
-	for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {							// Check all the items in task_table array
+	for(int i=0; i<TASK_MAXCOUNT; i++) {								// Check all the items in task_table array
 		if(task_table[i].task_ptr != nullptr) {
 			if(task_table[i].counter == 0) {							// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
 				task_table[i].flag = true;
@@ -287,7 +284,7 @@ void task_init(void) {
 	LOGD("init");
 	exit_request = false;
 
-	for(uint8_t slot_number=0; slot_number<TASK_MAXCOUNT; slot_number++) {
+	for(int slot_number=0; slot_number<TASK_MAXCOUNT; slot_number++) {
 		task_table[slot_number].task_ptr = nullptr;
 		task_table[slot_number].counter  = 0;
 		task_table[slot_number].period   = 0;
@@ -318,7 +315,7 @@ void task_deinit(void) {
 
 void task_scheduler(void) {
 	while(1) {
-		for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+		for(int i=0; i<TASK_MAXCOUNT; i++) {
 			IRQ_DISABLE();
 			void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
 			bool flag = task_table[i].flag;
@@ -344,7 +341,7 @@ void task_scheduler(void) {
 		if(exit_request) {
 			LOGI("exit request");
 
-			for(uint8_t i=0; i<TASK_MAXCOUNT; i++) {
+			for(int i=0; i<TASK_MAXCOUNT; i++) {
 				IRQ_DISABLE();
 				void (*task_ptr)(run_mode_t) = task_table[i].task_ptr;
 				IRQ_ENABLE();
