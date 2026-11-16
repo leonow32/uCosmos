@@ -702,7 +702,11 @@ arbitrary blocks of code outside the scheduler - see the `task.h` class for deta
 ## Change log
 
 ### 5.3.0 - 2026.11.
+* Added quite advanced task diagnostics, including task time measurement, maximum and average time, overrun control, CPU usage, etc.
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
+* Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
+* Added version control of config files.
+* All comments translated to English.
 
 ### 5.2.0 - 2026.11.09
 * Added float parser.
