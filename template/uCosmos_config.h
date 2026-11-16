@@ -28,6 +28,7 @@
 	// Diagnostic tools for measuring task times
 	#define DIAG_USE						true			// Include diagnostic functions to track the time spent by all the executed tasks
 	#define DIAG_COUNT						uint8_t(20)		// Maximum number of tasks to be tracked
+	#define DIAG_SORT_BEFORE_PRINT			true			// Display tasks in order from most time-consuming
 
 	#define OS_CONFIG_DONE
 #endif

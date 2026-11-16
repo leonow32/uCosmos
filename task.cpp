@@ -30,13 +30,6 @@ uint64_t get_time_us(void) {
 	#endif
 }
 
-struct task_control_t {														// Task control structure
-	void (*task_ptr)(run_mode_t);											// Pointer to the task which has to be executed
-	uint16_t counter;
-	uint16_t period;
-	bool flag;																// True is the task has to be executed in the next loop of the scheduler
-};
-
 const char * task_name = nullptr;
 volatile bool exit_request = false;
 volatile task_control_t task_table[TASK_MAXCOUNT];
@@ -123,7 +116,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		double   percent_total = 0.0;
 
 		// Bubble sort
-		#if DIAG_BUBBLE_SORT_BEFORE_PRINT
+		#if DIAG_SORT_BEFORE_PRINT
 			ExecutionTimer sort_timer = ExecutionTimer();
 
 			for(int i=0; i<DIAG_COUNT-1; i++) {
@@ -134,47 +127,6 @@ void task_monitor_cmd(int argc, char * argv[]) {
 						diag_table[j+1] = temp;
 					}
 				}
-			}
-
-			sort_timer.print("Sort time");
-		#endif
-
-		// Insertion sort
-		#if DIAG_INSERTION_SORT_BEFORE_PRINT
-			ExecutionTimer sort_timer = ExecutionTimer();
-
-			// for(int i=1; i<DIAG_COUNT; ++i) {
-			// 	diag_t key = diag_table[i];
-			// 	int j = i-1;
-
-			// 	while(j >= 0 && diag_table[j].time_total < key.time_total) {
-			// 		diag_table[j+1] = diag_table[j];
-			// 		j = j-1;
-			// 	}
-
-			// 	diag_table[j+1] = key;
-			// }
-
-			// for(int i=1; i<DIAG_COUNT; i++) {
-			// 	diag_t key = diag_table[i];
-			// 	int j;
-
-			// 	for(j=i-1; j>=0 && diag_table[j].time_total < key.time_total; j--) {
-			// 		diag_table[j+1] = diag_table[j];
-			// 	}
-
-			// 	diag_table[j+1] = key;
-			// }
-
-			for(int i=1; i<DIAG_COUNT; i++) {
-				diag_t key = diag_table[i];
-				int j = i;
-
-				for(; j>0 && diag_table[j-1].time_total < key.time_total; j--) {
-					diag_table[j] = diag_table[j-1];
-				}
-
-				diag_table[j] = key;
 			}
 
 			sort_timer.print("Sort time");

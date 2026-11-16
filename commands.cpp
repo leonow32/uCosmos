@@ -112,8 +112,7 @@ void exit_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				// LOGI("%s %d", __func__, counter++);
-				sleep_ms(10);
+				LOGI("%s %d", __func__, counter++);
 				break;
 			}
 
@@ -139,8 +138,7 @@ void exit_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				// LOGD("%s %d", __func__, counter++);
-				sleep_ms(100);
+				LOGD("%s %d", __func__, counter++);
 				break;
 			}
 

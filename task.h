@@ -30,6 +30,13 @@ enum os_t {
 	os_task_period_under_range,
 };
 
+struct task_control_t {														// Task control structure
+	void (*task_ptr)(run_mode_t);											// Pointer to the task which has to be executed
+	uint16_t counter;
+	uint16_t period;
+	bool flag;																// True is the task has to be executed in the next loop of the scheduler
+};
+
 // Task management
 void task_init(void);
 void task_deinit(void);
