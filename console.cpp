@@ -27,7 +27,7 @@ void console_task(run_mode_t run_mode) {
 		while(1) {																			// Process all the characters in the input stream
 
 			#if ESP_PLATFORM				
-				int chr = getchar();														// Read a character from console input
+				int chr = getchar();														// getchar() is non-blocking on ESP32
 				if(chr == EOF) {
 					return;
 				}

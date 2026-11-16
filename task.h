@@ -28,6 +28,7 @@ enum os_t {
 	os_not_found,
 	os_task_already_created,
 	os_task_period_under_range,
+	os_period_rounded,
 };
 
 struct task_control_t {														// Task control structure

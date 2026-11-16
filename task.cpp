@@ -177,19 +177,22 @@ static const char * debug_res(os_t result) {
 		case os_not_found:					return("not found");
 		case os_task_already_created:		return("already created");
 		case os_task_period_under_range:	return("period under range");
+		case os_period_rounded:				return("period rounded");
 	}
 
 	return "?";
 }
 
 static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(run_mode_t), uint16_t period_ms) {
-	#if ESP_PLATFORM
-		printf("%s%c (%lu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'D', esp_log_timestamp(), __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
-	#elif PICO_RP2040 || PICO_RP2350
-		printf("%s%c (%llu) %s: %s(%s, %u): %s" FORMAT_RESET "\n", res ? TEXT_RED : TEXT_GREEN, res ? 'E' : 'D', time_us_64() / 1000, __FILE_NAME__, function_name, task_get_name(task_ptr), period_ms, debug_res(res));
-	#else
-		#warning "Platform not supported"
-	#endif
+	const char * task_name = task_get_name(task_ptr);
+	const char * debug_txt = debug_res(res);
+
+	switch(res) {
+		case os_ok: 						LOGD("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);		break;
+		case os_period_rounded:				LOGW("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);		break;
+		default:							LOGE("%s(%s, %u): %s", function_name, task_name, period_ms, debug_txt);	 	break;
+	}
+
 	return res;
 }
 
@@ -392,7 +395,7 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	#endif
 
 	task_ptr(os_constructor);
-	return debug_print(os_ok, __func__, task_ptr, period_ms);
+	return debug_print(period_ms % TICK_PERIOD_MS ? os_period_rounded : os_ok, __func__, task_ptr, period_ms);
 }
 
 // Execute task destructor and then remove it from the array
