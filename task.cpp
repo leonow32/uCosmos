@@ -188,7 +188,7 @@ static os_t debug_print(os_t res, const char * function_name, void (*task_ptr)(r
 	const char * text = debug_res(res);
 
 	switch(res) {
-		case os_ok: 						LOGD("%s(%s, %u): %s", function_name, name, period_ms, text);		break;
+		case os_ok: 						LOGI("%s(%s, %u): %s", function_name, name, period_ms, text);		break;
 		case os_period_rounded:				LOGW("%s(%s, %u): %s", function_name, name, period_ms, text);		break;
 		default:							LOGE("%s(%s, %u): %s", function_name, name, period_ms, text);	 	break;
 	}
@@ -286,7 +286,7 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 // ========================================
 
 void task_init(void) {
-	LOGD("init");
+	LOGI("init");
 	exit_request = false;
 
 	for(int slot_number=0; slot_number<TASK_MAXCOUNT; slot_number++) {

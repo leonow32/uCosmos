@@ -138,17 +138,17 @@ void exit_cmd(int argc, char * argv[]) {
 
 		switch(run_mode) {
 			case os_run: {
-				LOGD("%s %d", __func__, counter++);
+				LOGI("%s %d", __func__, counter++);
 				break;
 			}
 
 			case os_constructor: {
-				LOGD("%s constructor", __func__);
+				LOGI("%s constructor", __func__);
 				break;
 			}
 
 			case os_destructor: {
-				LOGD("%s destructor", __func__);
+				LOGI("%s destructor", __func__);
 				break;
 			}
 
