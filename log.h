@@ -101,14 +101,14 @@
 	#include "esp_log.h"
 	#define LOGE(text, ...) ESP_LOGE(__FILE_NAME__, text, ##__VA_ARGS__)
 	#define LOGW(text, ...) ESP_LOGW(__FILE_NAME__, text, ##__VA_ARGS__)
-	#define LOGD(text, ...) ESP_LOGD(__FILE_NAME__, text, ##__VA_ARGS__)
 	#define LOGI(text, ...) ESP_LOGI(__FILE_NAME__, text, ##__VA_ARGS__)
+	#define LOGD(text, ...) ESP_LOGD(__FILE_NAME__, text, ##__VA_ARGS__)
 #elif PICO_RP2040 || PICO_RP2350
 	#include "pico/stdlib.h"
 	#define LOGE(text, ...) printf(TEXT_RED    "E (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
 	#define LOGW(text, ...) printf(TEXT_YELLOW "W (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
-	#define LOGD(text, ...) printf(TEXT_GREEN  "D (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
-	#define LOGI(text, ...) printf(TEXT_WHITE  "I (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
+	#define LOGD(text, ...) printf(TEXT_GREEN  "I (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
+	#define LOGI(text, ...) printf(TEXT_WHITE  "D (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
 #endif
 
 #endif

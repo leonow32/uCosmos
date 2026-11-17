@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <string.h>
+#include <type_traits>
 #include "log.h"
 #include "console.h"
 #include "../_config/_commands.h"
@@ -26,7 +27,7 @@ void console_task(run_mode_t run_mode) {
 		while(1) {																			// Process all the characters in the input stream
 
 			#if ESP_PLATFORM				
-				int chr = getchar();														// Read a character from console input
+				int chr = getchar();														// getchar() is non-blocking on ESP32
 				if(chr == EOF) {
 					return;
 				}
@@ -408,7 +409,6 @@ parse_res parse_ascii_char(const char * arg, char * output) {
 
 parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	if(output_length == nullptr)	return debug(parse_nullptr, arg);
 	if(buffer_size == 0)			return debug(parse_error, arg);
@@ -438,7 +438,6 @@ parse_res parse_ascii_string(const char * arg, char * output, size_t * output_le
 
 parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len, const size_t max_len, const size_t min_len) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
-	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	if(out_len == nullptr)			return debug(parse_nullptr, arg);
 	if(max_len < min_len)			return debug(parse_error, arg);
@@ -519,7 +518,7 @@ void print_ok(void) {
 	printf(TEXT_GREEN "OK" FORMAT_RESET "\n");
 }
 
-void print_hexstr(uint8_t array[], size_t len, bool new_line, char separator) {
+void print_hexstr(const uint8_t array[], size_t len, bool new_line, char separator) {
 	if(len) {
 		while(--len) {
 			printf("%02X", *array++);

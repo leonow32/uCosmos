@@ -4,12 +4,15 @@
 #include "../_config/_config.h"
 #include "../_config/uCosmos_config.h"
 #include "console.h"
-#include "diagnostics.h"
 #include "log.h"
 #include "task.h"
 
+#if UCOSMOS_CONFIG_VERSION < 261116
+	#error "The version of the configuration file stored in the repository is not supported.. Please copy `uCosmos/template/uCosmos_config.h` to your `_config` folder"
+#endif
+
 #define UCOSMOS_VERSION_MAJOR 5
-#define UCOSMOS_VERSION_MINOR 2
+#define UCOSMOS_VERSION_MINOR 3
 #define UCOSMOS_VERSION_PATCH 0
 
 void uCosmos_init(void);				// Call this function at the beginning of main()

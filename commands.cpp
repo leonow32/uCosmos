@@ -12,23 +12,6 @@ void exit_cmd(int argc, char * argv[]) {
 #endif
 
 // ========================================
-// Task Monitor
-// ========================================
-
-// Print task table
-#if USE_CMD_TASK_MONITOR
-void task_monitor_cmd(int argc, char * argv[]) {
-	printf(TEXT_WHITE_BRIGHT "No\tPtr\t\tPer[ms]\tName\n" FORMAT_RESET);
-	
-	for(uint8_t i=0; i<OS_TASK_MAXCOUNT; i++) {
-		printf("%u\t%08lX\t%lu\t%s\n", i, uint32_t(task_table[i].task_ptr), uint32_t(task_table[i].period) * OS_TICK_PERIOD_MS, task_get_name(task_table[i].task_ptr));
-	}
-	
-	printf("TickTime:\t%u ms\n", OS_TICK_PERIOD_MS);
-}
-#endif
-
-// ========================================
 // Task control commands (add, close, kill)
 // ========================================
 
@@ -36,14 +19,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	
 	// Add new task with requested period and phase shift
 	void task_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX] period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32 period:dec16");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -56,34 +34,24 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		task_add(task_ptr, period);
 	}
 	
-	// close task with its destructor
-	void task_close_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX]\n");
-			#endif
-			return;
-		}
+	// Close task with its destructor
+	void task_remove_cmd(int argc, char * argv[]) {
+		CMD_HELP("ptr:hex32");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
-		task_close(task_ptr);
+		task_remove(task_ptr);
 	}
 	
 	// Change task period
 	void task_period_change_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX] period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32 period:dec16");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -98,14 +66,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 
 	// Execute task manually
 	void task_exe_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("pointer[HEX]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("ptr:hex32");
 		
-		// Argument 1 - task pointer
+		// Argument 1 - task ptr
 		uint32_t ptr;
 		if(parse_uint(argv[1], &ptr, 16)) return;
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
@@ -173,36 +136,22 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	void demo2_task(run_mode_t run_mode) {
 		static int counter = 0;
 
-		switch(run_mode) {
-			case os_run: {
-				LOGD("%s %d", __func__, counter++);
-				break;
-			}
-
-			case os_constructor: {
-				LOGD("%s constructor", __func__);
-				break;
-			}
-
-			case os_destructor: {
-				LOGD("%s destructor", __func__);
-				break;
-			}
-
-			case os_id: {
-				task_name = __func__;
-				break;
-			}
+		if(run_mode == os_run) {
+			LOGI("%s %d", __func__, counter++);
+		}
+		else if(run_mode == os_constructor) {
+			LOGI("%s constructor", __func__);
+		}
+		else if(run_mode == os_destructor) {
+			LOGI("%s destructor", __func__);
+		}
+		else if(run_mode == os_id) {
+			task_name = __func__;
 		}
 	}
 
 	void demo1_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("period:dec16");
 		
 		uint16_t period;
 		if(parse_uint(argv[1], &period)) return;
@@ -211,12 +160,7 @@ void task_monitor_cmd(int argc, char * argv[]) {
 	}
 
 	void demo2_add_cmd(int argc, char * argv[]) {
-		if(argc == 1) {
-			#if CONSOLE_USE_HELP
-				printf("period[DEC]\n");
-			#endif
-			return;
-		}
+		CMD_HELP("period:dec16");
 		
 		uint16_t period;
 		if(parse_uint(argv[1], &period)) return;
@@ -224,12 +168,12 @@ void task_monitor_cmd(int argc, char * argv[]) {
 		task_add(demo2_task, period);
 	}
 
-	void demo1_cls_cmd(int argc, char * argv[]) {
-		task_close(demo1_task);
+	void demo1_remove_cmd(int argc, char * argv[]) {
+		task_remove(demo1_task);
 	}
 
-	void demo2_cls_cmd(int argc, char * argv[]) {
-		task_close(demo2_task);
+	void demo2_remove_cmd(int argc, char * argv[]) {
+		task_remove(demo2_task);
 	}
 #endif
 
