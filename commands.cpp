@@ -136,26 +136,17 @@ void exit_cmd(int argc, char * argv[]) {
 	void demo2_task(run_mode_t run_mode) {
 		static int counter = 0;
 
-		switch(run_mode) {
-			case os_run: {
-				LOGI("%s %d", __func__, counter++);
-				break;
-			}
-
-			case os_constructor: {
-				LOGI("%s constructor", __func__);
-				break;
-			}
-
-			case os_destructor: {
-				LOGI("%s destructor", __func__);
-				break;
-			}
-
-			case os_id: {
-				task_name = __func__;
-				break;
-			}
+		if(run_mode == os_run) {
+			LOGI("%s %d", __func__, counter++);
+		}
+		else if(run_mode == os_constructor) {
+			LOGI("%s constructor", __func__);
+		}
+		else if(run_mode == os_destructor) {
+			LOGI("%s destructor", __func__);
+		}
+		else if(run_mode == os_id) {
+			task_name = __func__;
 		}
 	}
 
