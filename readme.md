@@ -27,6 +27,8 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 ## Folder tree
 
+The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects.
+
 ```
 your_project
 │   .gitignore
@@ -36,33 +38,33 @@ your_project
 ├───_config                        - Folder for all configuration files, stored in your repo
 │       _commands.h                - Command list
 │       _config.h                  - General config for all your products and components included for each product
-│       component2_config.h        - Config file for example module 2
-│       component3_config.h        - Config file for example module 3
-│       uCosmos_config.h           - Config file for uCosmos
+│       eeprom_config.h            - Config file for EEPROM component
+│       lcd_display_config.h       - Config file for LCD Display component
+│       uCosmos_config.h           - Config file for uCosmos component
 │
-├───component1                     - Example of a very simple component: no config file, no commands
-│       component1.cpp
-│       component1.h
+├───clock                          - Example of a very simple component: no config file, no commands
+│       clock.cpp
+│       clock.h
 │
-├───component2                     - Example of a more advanced component: config file present and a command list
-│   │   component2.cpp
-│   │   component2.h
-│   │   component2.hxx             - File with command list used in this component to be included in `_config/_commands.h`
+├───eeprom                         - Example of a more advanced component: config file present and a command list
+│   │   eeprom.cpp
+│   │   eeprom.h
+│   │   eeprom.hxx                 - File with command list used in this component to be included in `_config/_commands.h`
 │   │
 │   └───template
-│           component2_config.h    - Copy this file to `_config` folder
+│           eeprom_config.h        - Copy this file to `_config` folder
 │
-├───component3                     - Example of a component where all the commands are placed in separate files
-│   │   component3.cpp
-│   │   component3.h
-│   │   component3_demo.cpp        - Commands for testing and debug only
-│   │   component3_demo.h
-│   │   component3_demo.hxx        - File with command list used in this component to be included in `_config/_commands.h`
+├───lcd_display                    - Example of a component where all the commands are placed in separate files
+│   │   lcd_display.cpp
+│   │   lcd_display.h
+│   │   lcd_display_demo.cpp       - Commands for testing and debug only
+│   │   lcd_display_demo.h
+│   │   lcd_display_demo.hxx       - File with command list used in this component to be included in `_config/_commands.h`
 │   │
 │   └───template
-│           component3_config.h    - Copy this file to `_config` folder
+│           lcd_display_config.h   - Copy this file to `_config` folder
 │
-└───uCosmos                        - This repo
+└───uCosmos                        - This repo (cloned as a submodule)
     │   commands.cpp
     │   commands.h
     │   commands.hxx
