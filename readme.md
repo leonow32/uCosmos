@@ -33,52 +33,52 @@ your_project
 │   .gitmodules
 │   main.cpp
 │
-├───_config                     - Folder for all configuration files, stored in your repo
-│       _commands.h             - Command list
-│       _config.h               - General config for all your products and components included for each product
-│       module2_config.h        - Config file for example module 2
-│       module3_config.h        - Config file for example module 3
-│       uCosmos_config.h        - Config file for uCosmos
+├───_config                        - Folder for all configuration files, stored in your repo
+│       _commands.h                - Command list
+│       _config.h                  - General config for all your products and components included for each product
+│       component2_config.h        - Config file for example module 2
+│       component3_config.h        - Config file for example module 3
+│       uCosmos_config.h           - Config file for uCosmos
 │
-├───module1                     - Example of a very simple submodule: no config file, no commands
-│       module1.cpp
-│       module1.h
+├───component1                     - Example of a very simple component: no config file, no commands
+│       component1.cpp
+│       component1.h
 │
-├───module2                     - Example of a more advanced submodule: config file present and a command list
-│   │   module2.cpp
-│   │   module2.h
-│   │   module2.hxx             - File with command list used in this submodule to be included in `_config/_commands.h`
+├───component2                     - Example of a more advanced component: config file present and a command list
+│   │   component2.cpp
+│   │   component2.h
+│   │   component2.hxx             - File with command list used in this component to be included in `_config/_commands.h`
 │   │
 │   └───template
-│           module2_config.h    - Copy this file to `_config` folder
+│           component2_config.h    - Copy this file to `_config` folder
 │
-├───module3                     - Example of a submodule where all the commands are placed in separate files
-│   │   module3.cpp
-│   │   module3.h
-│   │   module3_demo.cpp        - Commands for testing and debug only
-│   │   module3_demo.h
-│   │   module3_demo.hxx        - File with command list used in this submodule to be included in `_config/_commands.h`
+├───component3                     - Example of a component where all the commands are placed in separate files
+│   │   component3.cpp
+│   │   component3.h
+│   │   component3_demo.cpp        - Commands for testing and debug only
+│   │   component3_demo.h
+│   │   component3_demo.hxx        - File with command list used in this component to be included in `_config/_commands.h`
 │   │
 │   └───template
-│           module3_config.h    - Copy this file to `_config` folder
+│           component3_config.h    - Copy this file to `_config` folder
 │
-└───uCosmos                     - This repo
+└───uCosmos                        - This repo
     │   commands.cpp
     │   commands.h
     │   commands.hxx
     │   console.cpp
     │   console.h
     │   log.h
-    │   readme.md               - You are reading this file
+    │   readme.md                  - You are reading this file
     │   task.cpp
     │   task.h
     │   uCosmos.cpp
     │   uCosmos.h
     │
     └───template
-            uCosmos_config.h    - Copy this file to `_config` folder
+            uCosmos_config.h       - Copy this file to `_config` folder
             uCosmos_template.h
-            _commands.h         - Copy this file to `_config` folder
+            _commands.h            - Copy this file to `_config` folder
 ```
 
 ## Change log
