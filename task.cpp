@@ -264,17 +264,19 @@ static os_t task_find(void (*task_ptr)(run_mode_t), uint8_t * slot_number = null
 	}
 #elif PICO_RP2040 || PICO_RP2350
 	bool task_system_tick(struct repeating_timer *t) {
-	for(int i=0; i<TASK_MAXCOUNT; i++) {								// Check all the items in task_table array
-		if(task_table[i].task_ptr != nullptr) {
-			if(task_table[i].counter == 0) {							// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
-				task_table[i].flag = true;
-				task_table[i].counter = task_table[i].period - 1;		// Re-entering the time to be counted down, decremented by 1 (for this reason, period_ms cannot be initialized to 0)
-			}
-			else {
-				task_table[i].counter--;								// Nothing is happening – we are counting down the time
+		IRQ_DISABLE();
+		for(int i=0; i<TASK_MAXCOUNT; i++) {							// Check all the items in task_table array
+			if(task_table[i].task_ptr != nullptr) {
+				if(task_table[i].counter == 0) {						// If the counter is zero then set the flag to mark this task to be executed in the next scheduler's loop
+					task_table[i].flag = true;
+					task_table[i].counter = task_table[i].period - 1;	// Re-entering the time to be counted down, decremented by 1 (for this reason, period_ms cannot be initialized to 0)
+				}
+				else {
+					task_table[i].counter--;							// Nothing is happening – we are counting down the time
+				}
 			}
 		}
-	}
+		IRQ_ENABLE();
     return true;
 }
 #endif
@@ -350,7 +352,7 @@ void task_scheduler(void) {
 				IRQ_ENABLE();
 
 				if(task_ptr) {
-					task_close(task_ptr);
+					task_remove(task_ptr);
 				}
 			}
 
@@ -399,7 +401,7 @@ os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 }
 
 // Execute task destructor and then remove it from the array
-os_t task_close(void (*task_ptr)(run_mode_t)) {
+os_t task_remove(void (*task_ptr)(run_mode_t)) {
 	uint8_t slot_number;
 	if(task_ptr == nullptr)										return debug_print(os_nullptr, __func__, task_ptr, 0);
 	IRQ_DISABLE();

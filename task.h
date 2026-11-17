@@ -43,7 +43,7 @@ void task_init(void);
 void task_deinit(void);
 void task_scheduler(void);
 os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms);
-os_t task_close(void (*task_ptr)(run_mode_t));
+os_t task_remove(void (*task_ptr)(run_mode_t));
 os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms);
 bool task_is_running(void (*task_ptr)(run_mode_t));
 const char * task_get_name(void (*task_ptr)(run_mode_t));

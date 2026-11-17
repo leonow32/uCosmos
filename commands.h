@@ -12,7 +12,7 @@
 // Task control commands
 #if USE_CMD_TASK_COMMANDS
 	void task_add_cmd(int argc, char * argv[]);
-	void task_close_cmd(int argc, char * argv[]);
+	void task_remove_cmd(int argc, char * argv[]);
 	void task_period_change_cmd(int argc, char * argv[]);
 	void task_exe_cmd(int argc, char * argv[]);
 #endif
@@ -28,8 +28,8 @@
 	void demo2_task(run_mode_t run_mode);
 	void demo1_add_cmd(int argc, char * argv[]);
 	void demo2_add_cmd(int argc, char * argv[]);
-	void demo1_cls_cmd(int argc, char * argv[]);
-	void demo2_cls_cmd(int argc, char * argv[]);
+	void demo1_remove_cmd(int argc, char * argv[]);
+	void demo2_remove_cmd(int argc, char * argv[]);
 #endif
 
 #if USE_CMD_PARSE_DEMO

@@ -16,7 +16,7 @@
 
 #if USE_CMD_TASK_COMMANDS
 	{"add",						task_add_cmd},
-	{"close",					task_close_cmd},
+	{"rem",						task_remove_cmd},
 	{"per",						task_period_change_cmd},
 	{"exe",						task_exe_cmd},
 #endif
@@ -24,8 +24,8 @@
 #if USE_CMD_TASK_DEMO
 	{"demo1_add",				demo1_add_cmd},
 	{"demo2_add",				demo2_add_cmd},
-	{"demo1_cls",				demo1_cls_cmd},
-	{"demo2_cls",				demo2_cls_cmd},
+	{"demo1_rem",				demo1_remove_cmd},
+	{"demo2_rem",				demo2_remove_cmd},
 #endif
 
 #if USE_CMD_ALL

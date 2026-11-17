@@ -35,7 +35,7 @@ void exit_cmd(int argc, char * argv[]) {
 	}
 	
 	// Close task with its destructor
-	void task_close_cmd(int argc, char * argv[]) {
+	void task_remove_cmd(int argc, char * argv[]) {
 		CMD_HELP("ptr:hex32");
 		
 		// Argument 1 - task ptr
@@ -44,7 +44,7 @@ void exit_cmd(int argc, char * argv[]) {
 		void (*task_ptr)(run_mode_t) = (void (*)(run_mode_t))(ptr);
 		
 		// Execute command
-		task_close(task_ptr);
+		task_remove(task_ptr);
 	}
 	
 	// Change task period
@@ -177,12 +177,12 @@ void exit_cmd(int argc, char * argv[]) {
 		task_add(demo2_task, period);
 	}
 
-	void demo1_cls_cmd(int argc, char * argv[]) {
-		task_close(demo1_task);
+	void demo1_remove_cmd(int argc, char * argv[]) {
+		task_remove(demo1_task);
 	}
 
-	void demo2_cls_cmd(int argc, char * argv[]) {
-		task_close(demo2_task);
+	void demo2_remove_cmd(int argc, char * argv[]) {
+		task_remove(demo2_task);
 	}
 #endif
 

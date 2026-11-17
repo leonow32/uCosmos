@@ -266,7 +266,7 @@ might want to adjust are listed there, grouped by functionality:
 |                   | `USE_CMD_EXIT`              | `exit` command that shuts down the system.      |
 |                   | `USE_CMD_TIME`              | `time` command printing the current time.       |
 |                   | `USE_CMD_TASK_MONITOR`      | `` ` `` command showing all running tasks.      |
-|                   | `USE_CMD_TASK_COMMANDS`     | `add`, `close`, `per`, `exe` commands.          |
+|                   | `USE_CMD_TASK_COMMANDS`     | `add`, `rem`, `per`, `exe` commands.            |
 |                   | `USE_CMD_PARSE_DEMO`        | Demonstrations of every parser.                 |
 |                   | `USE_CMD_TASK_DEMO`         | Demonstrations of the task API.                 |
 | Diagnostics       | `DIAG_USE`                  | Enable per-task timing diagnostics.             |
@@ -366,7 +366,7 @@ Each call of the task function passes one of the following `run_mode_t` values:
 |------------------|-----------------------------------------------------------|
 | `os_run`         | Every time the task's period elapses.                     |
 | `os_constructor` | Right after `task_add()` registers the task.              |
-| `os_destructor`  | Right after `task_close()` unregisters the task.          |
+| `os_destructor`  | Right after `task_remove()` unregisters the task.          |
 | `os_id`          | Only from `task_get_name()` to let the task report its name. |
 
 Tasks must always handle all four modes, even if only `os_run` contains real work. A
@@ -407,13 +407,13 @@ next period has already elapsed (this is how overruns are produced).
 ### Removing a task
 
 ```cpp
-os_t result = task_close(my_task);
+os_t result = task_remove(my_task);
 ```
 
-`task_close` clears the corresponding table entry, then calls `my_task(os_destructor)`.
+`task_remove` clears the corresponding table entry, then calls `my_task(os_destructor)`.
 Use the destructor callback to release resources that were acquired by the constructor.
-A task can also be closed from within itself - for example, a task that runs only once
-can call `task_close(my_task)` at the end of its `os_run` branch.
+A task can also be removed from within itself - for example, a task that runs only once
+can call `task_remove(my_task)` at the end of its `os_run` branch.
 
 ### Changing the period of a task
 
@@ -450,7 +450,7 @@ uCosmos_deinit();          // equivalent to task_deinit()
 ```
 
 Calling `task_deinit()` sets the `exit_request` flag. On its next pass through the
-scheduler loop, every registered task is closed (running its destructor) and then the
+scheduler loop, every registered task is removed (running its destructor) and then the
 system timer is stopped, so `uCosmos_scheduler()` returns to `main()`. This is what the
 built-in `exit` command does.
 
@@ -512,7 +512,7 @@ enabled by one of the `USE_CMD_*` macros in `uCosmos_config.h`.
 | `time`   | `USE_CMD_TIME`           | Print the current system time in `YYYY-MM-DD hh:mm:ss`.        |
 | `` ` ``  | `USE_CMD_TASK_MONITOR`   | Show all running tasks (period, name) plus diagnostics.        |
 | `add`    | `USE_CMD_TASK_COMMANDS`  | `add <ptr:hex32> <period:dec16>` - register a task.            |
-| `close`  | `USE_CMD_TASK_COMMANDS`  | `close <ptr:hex32>` - unregister a task.                       |
+| `rem`    | `USE_CMD_TASK_COMMANDS`  | `rem <ptr:hex32>` - unregister a task.                         |
 | `per`    | `USE_CMD_TASK_COMMANDS`  | `per <ptr:hex32> <period:dec16>` - change a task's period.     |
 | `exe`    | `USE_CMD_TASK_COMMANDS`  | `exe <ptr:hex32>` - execute a task's `os_run` immediately.     |
 | `demo1_add` / `demo2_add` | `USE_CMD_TASK_DEMO` | Add the demo tasks with a given period.              |
@@ -703,6 +703,7 @@ arbitrary blocks of code outside the scheduler - see the `task.h` class for deta
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Added version control of config files.
+* Changed `task_close` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
 * All comments translated to English.
 
 ### 5.2.0 - 2026.11.09
