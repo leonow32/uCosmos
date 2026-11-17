@@ -29,58 +29,56 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 ```
 your_project
-│   .editorconfig
 │   .gitignore
 │   .gitmodules
-│   CMakeLists.txt
 │   main.cpp
-│   terminal.py
 │
-├───module1
+├───_config                     - Folder for all configuration files, stored in your repo
+│       _commands.h             - Command list
+│       _config.h               - General config for all your products and components included for each product
+│       module2_config.h        - Config file for example module 2
+│       module3_config.h        - Config file for example module 3
+│       uCosmos_config.h        - Config file for uCosmos
+│
+├───module1                     - Example of a very simple submodule: no config file, no commands
 │       module1.cpp
 │       module1.h
-│       module1.hxx
 │
-├───module2
-│       module2.cpp
-│       module2.h
-│       module2.hxx
+├───module2                     - Example of a more advanced submodule: config file present and a command list
+│   │   module2.cpp
+│   │   module2.h
+│   │   module2.hxx             - File with command list used in this submodule to be included in `_config/_commands.h`
+│   │
+│   └───template
+│           module2_config.h    - Copy this file to `_config` folder
 │
-├───module3
+├───module3                     - Example of a submodule where all the commands are placed in separate files
 │   │   module3.cpp
 │   │   module3.h
-│   │   module3_demo.cpp
+│   │   module3_demo.cpp        - Commands for testing and debug only
 │   │   module3_demo.h
-│   │   module3_demo.hxx
+│   │   module3_demo.hxx        - File with command list used in this submodule to be included in `_config/_commands.h`
 │   │
 │   └───template
-│           module3_config.h
+│           module3_config.h    - Copy this file to `_config` folder
 │
-├───uCosmos
-│   │   commands.cpp
-│   │   commands.h
-│   │   commands.hxx
-│   │   console.cpp
-│   │   console.h
-│   │   log.h
-│   │   readme.md
-│   │   task.cpp
-│   │   task.h
-│   │   uCosmos.cpp
-│   │   uCosmos.h
-│   │
-│   └───template
-│           uCosmos_config.h
-│           uCosmos_template.h
-│           _commands.h
-│
-└───_config
-        module1_config.h        - Config file for example module 1
-        module2_config.h        - Config file for example module 2
-        module3_config.h        - Config file for example module 3
-        uCosmos_config.h        - Config file for uCosmos
-        _commands.h             - Command list
-        _config.h               - General config for all your products and components included for each product
+└───uCosmos                     - This repo
+    │   commands.cpp
+    │   commands.h
+    │   commands.hxx
+    │   console.cpp
+    │   console.h
+    │   log.h
+    │   readme.md               - You are reading this file
+    │   task.cpp
+    │   task.h
+    │   uCosmos.cpp
+    │   uCosmos.h
+    │
+    └───template
+            uCosmos_config.h    - Copy this file to `_config` folder
+            uCosmos_template.h
+            _commands.h         - Copy this file to `_config` folder
 ```
 
 ## Change log
