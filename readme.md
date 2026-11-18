@@ -83,6 +83,54 @@ your_project
             _commands.h            - Copy this file to `_config` folder
 ```
 
+
+Example of main.cpp.
+
+```c++
+
+#include "_config/_config.h"
+#include "uCosmos/uCosmos.h"
+
+#if COMPONENT_CLOCK
+	#include "clock/clock.h"
+#endif
+
+#if COMPONENT_EEPROM
+	#include "eeprom/eeprom.h"
+#endif
+
+#if COMPONENT_LCD_DISPLAY
+	#include "lcd_display/lcd_display.h"
+#endif
+
+int main() {
+	// Hardware init here
+    // ...
+
+    // Initialize the system before any tasks are added
+	uCosmos_init();
+
+    #if COMPONENT_CLOCK
+        clock_init();
+    #endif
+
+    #if COMPONENT_EEPROM
+        eeprom_init();
+    #endif
+
+    #if COMPONENT_LCD_DISPLAY
+        lcd_display_init();
+    #endif
+
+	// Infinite loop is here
+    uCosmos_scheduler();
+
+	// Return from uCosmos_scheduler is possible to power down the product
+    LOGW("End of main()");
+}
+
+```
+
 ## Change log
 
 ### 5.3.0 - 2026.11.17
