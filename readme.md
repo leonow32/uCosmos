@@ -27,7 +27,9 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 ## Folder tree
 
-The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects.
+The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
+
+This is how the project tree should look. The repository consists of four components: `uCosmos`, `clock`, `eeprom`, and `lcd_display`. Each component has its own folder, which stores the **shared** code used across all products. Each component can be set up as a separate submodule with its own repository, allowing the code to be shared among different projects. Furthermore, each component can be adjusted to the specific requirements of your project through configuration files; these are stored in a `_config` folder and belong to your project's repository, rather than to the submodules themselves.
 
 ```
 your_project
@@ -82,6 +84,11 @@ your_project
             uCosmos_template.h
             _commands.h            - Copy this file to `_config` folder
 ```
+
+Let's have a look what's inside `_config/_config.h` file. There is a general configuration of all products 
+
+#define PRODUCT_BASIC       0
+#define PRODUCT_PREMIUM     1	// This will be built
 
 
 Example of main.cpp.
