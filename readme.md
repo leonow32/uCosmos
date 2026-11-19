@@ -25,7 +25,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 | Espressif ESP32          | ESP-IDF   |
 | Raspberry Pi Pico RP2xxx | Pico SDK  |
 
-## Folder tree
+## TLDR tutorial
 
 The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
 
@@ -85,16 +85,30 @@ your_project
             _commands.h            - Copy this file to `_config` folder
 ```
 
-Let's have a look what's inside `_config/_config.h` file. There is a general configuration of all products 
+Let’s examine the contents of the `_config/_config.h` file. It contains the general configuration for all products that can be compiled using the code in this repository. We can see two products defined here, represented by `PRODUCT_BASIC` and `PRODUCT_PREMIUM`. Each product consists of several components, which are included via `define COMPONENT_XXX` directives; a value greater than 0 indicates that a component is present (and this value may represent the component's version number, if the component supports it). The absence of a definition, or a setting of `define COMPONENT_XXX 0`, means that the specified component should not be included in the given product.
 
-#define PRODUCT_BASIC       0
-#define PRODUCT_PREMIUM     1	// This will be built
+```c++
+// File _config/_config.h
+#define PRODUCT_BASIC               0
+#define PRODUCT_PREMIUM             1  // This will be built
 
+#if PRODUCT_BASIC
+	#define COMPONENT_CLOCK         1
+	#define COMPONENT_EEPROM        1
+
+#endif
+
+#if PRODUCT_PREMIUM
+	#define COMPONENT_CLOCK         1
+	#define COMPONENT_EEPROM        1
+	#define COMPONENT_LCD_DISPLAY   1   // Please note this component is not present in PRODUCT_BASIC
+#endif
+```
 
 Example of main.cpp.
 
 ```c++
-
+// File main.cpp
 #include "_config/_config.h"
 #include "uCosmos/uCosmos.h"
 
