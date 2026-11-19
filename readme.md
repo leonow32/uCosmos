@@ -29,6 +29,8 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
 
+### Folder tree
+
 This is how the project tree should look. The repository consists of four components: `uCosmos`, `clock`, `eeprom`, and `lcd_display`. Each component has its own folder, which stores the **shared** code used across all products. Each component can be set up as a separate submodule with its own repository, allowing the code to be shared among different projects. Furthermore, each component can be adjusted to the specific requirements of your project through configuration files; these are stored in a `_config` folder and belong to your project's repository, rather than to the submodules themselves.
 
 ```
@@ -85,6 +87,8 @@ your_project
             _commands.h            - Copy this file to `_config` folder
 ```
 
+### Main config
+
 Let’s examine the contents of the `_config/_config.h` file. It contains the general configuration for all products that can be compiled using the code in this repository. We can see two products defined here, represented by `PRODUCT_BASIC` and `PRODUCT_PREMIUM`. Each product consists of several components, which are included via `define COMPONENT_XXX` directives; a value greater than 0 indicates that a component is present (and this value may represent the component's version number, if the component supports it). The absence of a definition, or a setting of `define COMPONENT_XXX 0`, means that the specified component should not be included in the given product.
 
 ```c++
@@ -105,7 +109,15 @@ Let’s examine the contents of the `_config/_config.h` file. It contains the ge
 #endif
 ```
 
-Example of main.cpp.
+### Startup
+
+Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file—located at `_config/_config.h`—are included.
+
+The `main()` function can begin with the initialization of hardware peripherals (excluding those already handled by the system itself). If this is not required, you may skip this step. Next, initialize the system by calling `uCosmos_init()`. From this point on, you can add tasks to be executed by the task scheduler.
+
+Components typically require initialization during the application's startup. To achieve this, you must call the `component_init()` function for each component; as with the `#include` directives, each initialization call must be enclosed within an `#if COMPONENT_XXX` conditional block.
+
+The task manager is launched by calling the `uCosmos_scheduler()` function. This function contains an infinite `while(true)` loop, meaning the program never exits it—unless a system shutdown request is issued. Such a scenario might occur, for example, prior to powering down the device.
 
 ```c++
 // File main.cpp
@@ -151,6 +163,22 @@ int main() {
 }
 
 ```
+
+### Component config
+
+qwerty
+
+## TODO Logs
+
+To be completed...
+
+## TODO Console
+
+To be completed...
+
+## TODO Task management
+
+To be completed...
 
 ## Change log
 
