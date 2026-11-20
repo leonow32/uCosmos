@@ -76,6 +76,8 @@ void console_task(run_mode_t run_mode) {
 			}
 				
 			else if((received_cnt > 0) && (chr == CR || chr == LF)) {						// If the received char is ENTER and the buffer is not empty - try to execute the command				
+				printf("\n" FORMAT_RESET);													// New line and default text formatting
+				
 				#if CONSOLE_USE_CTRL_Z
 				memcpy(buffer2, buffer, CONSOLE_COMMAND_LENGTH);							// Copy the buffer to CTRL-Z buffer
 				#endif
@@ -95,7 +97,7 @@ void console_task(run_mode_t run_mode) {
 						}
 						else {
 							if(argc >= CONSOLE_MAX_ARGC) {									// Check if there is free space in argv array
-								printf("\n" TEXT_RED "Too many args" FORMAT_RESET "\n");
+								printf(TEXT_RED "Too many args" FORMAT_RESET "\n");
 								argv[0] = nullptr;											// Clear 0th argument (command name) to prevent it from execution
 								break;
 							}
@@ -135,11 +137,10 @@ void console_task(run_mode_t run_mode) {
 					}
 
 					if(command_ptr) {														// If any command pointer has been found
-						printf("\n" FORMAT_RESET);											// New line and default text formatting
 						command_ptr(argc, argv);											// Execute the command pointer and pass argument count and argument values
 					}
 					else {
-						printf("\n" TEXT_RED "Unknown cmd" FORMAT_RESET "\n");				// If command not found
+						printf(TEXT_RED "Unknown cmd" FORMAT_RESET "\n");					// If command not found
 					}
 				}
 				

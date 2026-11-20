@@ -1,6 +1,6 @@
 # μCOSMOS
 
-What's all about it?
+What is uCosmos?
 * **μC** - Microcontroller
 * **OS** - Operating System
 * **MOS** - Metal Oxide Semiconductor (yeah, that's dumb...)
@@ -18,6 +18,16 @@ This is a simple, single-threaded, single-core operating system and command-line
 - Optional diagnostic subsystem measuring task execution time, overruns, total execution time and total CPU usage.
 - Portable and compact code: the hardware abstraction layer consists of a handful of macros, so porting to a new MCU is very easy.
 
+## Why use uCosmos??
+
+- Architecture based on periodic tasks.
+- Deterministic execution.
+- Ideal for small MCU applications.
+- No context switching.
+- Very low RAM usage.
+- Easier debugging.
+- Powerful command line interpreter to facilitate testing and development.
+
 ## Supported platforms
 
 | Platform                 | Toolchain |
@@ -25,7 +35,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 | Espressif ESP32          | ESP-IDF   |
 | Raspberry Pi Pico RP2xxx | Pico SDK  |
 
-## TLDR tutorial
+## Architecture overview
 
 The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
 
@@ -39,36 +49,36 @@ your_project
 │   .gitmodules
 │   main.cpp
 │
-├───_config                        - Folder for all configuration files, stored in your repo
+├── _config                        - Folder for all configuration files, stored in your repo
 │       _commands.h                - Command list
 │       _config.h                  - General config for all your products and components included for each product
 │       eeprom_config.h            - Config file for EEPROM component
 │       lcd_display_config.h       - Config file for LCD Display component
 │       uCosmos_config.h           - Config file for uCosmos component
 │
-├───clock                          - Example of a very simple component: no config file, no commands
+├── clock                          - Example of a very simple component: no config file, no commands
 │       clock.cpp
 │       clock.h
 │
-├───eeprom                         - Example of a more advanced component: config file present and a command list
+├── eeprom                         - Example of a more advanced component: config file present and a command list
 │   │   eeprom.cpp
 │   │   eeprom.h
 │   │   eeprom.hxx                 - File with command list used in this component to be included in `_config/_commands.h`
 │   │
-│   └───template
+│   └── template
 │           eeprom_config.h        - Copy this file to `_config` folder
 │
-├───lcd_display                    - Example of a component where all the commands are placed in separate files
+├── lcd_display                    - Example of a component where all the commands are placed in separate files
 │   │   lcd_display.cpp
 │   │   lcd_display.h
 │   │   lcd_display_demo.cpp       - Commands for testing and debug only
 │   │   lcd_display_demo.h
 │   │   lcd_display_demo.hxx       - File with command list used in this component to be included in `_config/_commands.h`
 │   │
-│   └───template
+│   └── template
 │           lcd_display_config.h   - Copy this file to `_config` folder
 │
-└───uCosmos                        - This repo (cloned as a submodule)
+└── uCosmos                        - This repo (cloned as a submodule)
     │   commands.cpp
     │   commands.h
     │   commands.hxx
@@ -81,10 +91,18 @@ your_project
     │   uCosmos.cpp
     │   uCosmos.h
     │
-    └───template
+    └── template
             uCosmos_config.h       - Copy this file to `_config` folder
             uCosmos_template.h
             _commands.h            - Copy this file to `_config` folder
+```
+
+### Cloning the repository
+
+uCosmos is designed to work as a submodule within an existing GIT repository. Navigate to the folder containing your repository—or create a new one—and then clone uCosmos as a submodule using the following command:
+
+```bash
+git submodule add git@github.com:leonow32/uCosmos.git uCosmos
 ```
 
 ### Main config
@@ -97,15 +115,15 @@ Let’s examine the contents of the `_config/_config.h` file. It contains the ge
 #define PRODUCT_PREMIUM             1  // This will be built
 
 #if PRODUCT_BASIC
-	#define COMPONENT_CLOCK         1
-	#define COMPONENT_EEPROM        1
+    #define COMPONENT_CLOCK         1
+    #define COMPONENT_EEPROM        1
 
 #endif
 
 #if PRODUCT_PREMIUM
-	#define COMPONENT_CLOCK         1
-	#define COMPONENT_EEPROM        1
-	#define COMPONENT_LCD_DISPLAY   1   // Please note this component is not present in PRODUCT_BASIC
+    #define COMPONENT_CLOCK         1
+    #define COMPONENT_EEPROM        1
+    #define COMPONENT_LCD_DISPLAY   1   // Please note this component is not present in PRODUCT_BASIC
 #endif
 ```
 
@@ -125,23 +143,23 @@ The task manager is launched by calling the `uCosmos_scheduler()` function. This
 #include "uCosmos/uCosmos.h"
 
 #if COMPONENT_CLOCK
-	#include "clock/clock.h"
+    #include "clock/clock.h"
 #endif
 
 #if COMPONENT_EEPROM
-	#include "eeprom/eeprom.h"
+    #include "eeprom/eeprom.h"
 #endif
 
 #if COMPONENT_LCD_DISPLAY
-	#include "lcd_display/lcd_display.h"
+    #include "lcd_display/lcd_display.h"
 #endif
 
 int main() {
-	// Hardware init here
+    // Hardware init here
     // ...
 
     // Initialize the system before any tasks are added
-	uCosmos_init();
+    uCosmos_init();
 
     #if COMPONENT_CLOCK
         clock_init();
@@ -155,10 +173,10 @@ int main() {
         lcd_display_init();
     #endif
 
-	// Infinite loop is here
+    // Infinite loop is here
     uCosmos_scheduler();
 
-	// Return from uCosmos_scheduler is possible to power down the product
+    // Return from uCosmos_scheduler is possible to power down the product
     LOGW("End of main()");
 }
 
@@ -166,21 +184,124 @@ int main() {
 
 ### Component config
 
-qwerty
+Let’s look at how component configuration files work, using the `clock` component as an example. Once you have downloaded the component submodule, you must copy its configuration template from `component/template/component_config.h` to `_config/component_config.h`.
 
-## TODO Logs
+Next, copy the default configuration as many times as you have products; for instance, the example below shows two configurations — one for `PRODUCT_BASIC` and one for `PRODUCT_PREMIUM`. If several products share an identical configuration, you can group them using the `||` operator, like this: `PRODUCT_BASIC || PRODUCT_PREMIUM`. In our example, the configuration for these two products differs slightly.
 
-To be completed...
+Note two important details. At the end of the configuration for each product, we define `#define CLOCK_CONFIG_DONE`. This helps identify errors that might occur if you add a new product to the main configuration but forget to include a specific component. In such a case, the compilation process will trigger an `#error "Missing config"` rather than a flood of messages reporting that certain variables could not be found. Secondly, there is `#define CLOCK_CONFIG_VERSION 261116`, which records the date the configuration template was last updated, in `YYMMDD` format. Keep in mind that the component code resides in the submodule, while the configuration file belongs to your own repository. If you update the submodule, the new version may include configuration changes that you will need to transfer from the template to your file in the `_config` folder. If it turns out that a component submodule requires an update to its configuration file, you will receive the following message: `#error "The version of the configuration file stored in the repository is not supported.. Please copy clock/template/clock_config.h to your _config folder"`.
 
-## TODO Console
+```c++
+#ifndef CLOCK_CONFIG_H_
+#define CLOCK_CONFIG_H_
 
-To be completed...
+#define CLOCK_CONFIG_VERSION            261116
+
+#if PRODUCT_BASIC
+    #define CLOCK_GPIO					10
+    #define CLOCK_FREQUENCY				32768
+    #define CLOCK_USE_DEMO_COMMANDS     true
+    #define CLOCK_CONFIG_DONE
+#endif
+
+#if PRODUCT_PREMIUM
+    #define CLOCK_GPIO					11
+    #define CLOCK_FREQUENCY				32768
+    #define CLOCK_USE_DEMO_COMMANDS     false
+    #define CLOCK_CONFIG_DONE
+#endif
+
+// ========================================
+// Error handling
+// ========================================
+
+#ifndef CLOCK_CONFIG_DONE
+    #error "Missing config"
+#endif
+
+#endif /* CLOCK_CONFIG_H_ */
+```
 
 ## TODO Task management
 
-To be completed...
+A task is, in essence, a C++ function written in a specific way. This function is invoked by the system scheduler at a configured period (or, more precisely, no more frequently than at a configured period) and continues to run until it completes its execution and returns via `return` instruction. There are no mechanisms for task preemption, nor are there separate stacks for each task—unlike in FreeRTOS. This solution is simple and effective, but it is important to note that **if a single task hangs, the entire system will hang**.
+
+A task function always returns `void` and accepts a single argument, `run_mode`, which defines the mode in which the task is called. Possible values ​​include:
+- `os_run` – a standard, periodic execution.
+- `os_constructor` – the task constructor, called immediately after the task is added to the scheduler’s task array.
+- `os_destructor` – the task destructor, called after the task is removed from the scheduler’s task array.
+- `os_id` – an identification call, used solely to retrieve the task's name for diagnostic purposes.
+
+There is an important detail regarding the task destructor when a task removes itself. In such a case, the task is invoked by the scheduler with the `os_run` argument. To initiate its own removal, the task calls the `task_close()` function, passing itself as an argument. `task_close()` then triggers the task's destructor; however, once the destructor finishes, execution returns to the main body of the task function. This means that a task that has initiated its own removal continues to execute for a short period until it reaches its own `return` statement. Therefore, **it is good practice for the removal of a task to be the last instruction that the task executes, immediately followed by a `return` statement**.
+
+Dodawanie tasków
+
+Usuwanie tasków
+
+Zmiana okresu
+
+Jak działa scheduler
+
+## TODO Console
+
+To be ~~completed~~...
+
+C~2~H~5~OH
+
+C<sub>2</sub>H<sub>5</sub>OH
+
+a^2^ + b^2^ = c^2^
+
+a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>
+
+## Logs
+
+The uCosmos system provides a convenient library for displaying logs. There are four types of messages, distinguished by color and a prefix at the beginning of the line:
+
+| Log  | Prefix | Color  | Purpose     |
+|------|--------|--------|-------------|
+|`LOGE`| E      | Red    | Error       |
+|`LOGW`| W      | Yellow | Warning     |
+|`LOGI`| I      | Green  | Information |
+|`LOGD`| D      | White  | Debug       |
+
+The code below presents basic examples of all four types of log messages:
+
+```c++
+LOGE("Error (red)");
+LOGW("Warning (yellow)");
+LOGI("Information (green)");
+LOGD("Debug (White)");
+```
+
+Here is the result:
+
+```bash
+E (1369) main.cpp: Error (red)
+W (1373) main.cpp: Warning (yellow)
+I (1377) main.cpp: Information (green)
+```
+
+The number in parentheses represents the time in milliseconds, measured from system startup. The *.cpp filename is added automatically to make it easier to locate the source of these log entries. There is no need to add "\n", as a newline character is added automatically.
+
+Within logs, you can display variables in exactly the same way as you would using the `printf()` function. Here are a few examples.
+
+```c++
+char character = 'a';
+int  integer   = 123;
+uint8_t  u8    = 255;
+uint16_t u16   = 65535;
+uint32_t u32   = 4294967295UL;
+
+LOGI("character = %c", character);
+LOGI("integer = %d", integer);
+LOGI("u8 = %u", u8);
+LOGI("u16 = %u", u16);
+LOGI("u32 = %lu", u32);
+```
 
 ## Change log
+
+The project has been under continuous development since 2011.
 
 ### 5.3.0 - 2026.11.17
 * Added quite advanced task diagnostics, including task time measurement, maximum and average time, overrun control, CPU usage, etc.
