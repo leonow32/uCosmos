@@ -18,7 +18,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 - Optional diagnostic subsystem measuring task execution time, overruns, total execution time and total CPU usage.
 - Portable and compact code: the hardware abstraction layer consists of a handful of macros, so porting to a new MCU is very easy.
 
-## Why use uCosmos??
+## Why use uCosmos?
 
 - Architecture based on periodic tasks.
 - Deterministic execution.
@@ -103,6 +103,7 @@ uCosmos is designed to work as a submodule within an existing GIT repository. Na
 
 ```bash
 git submodule add git@github.com:leonow32/uCosmos.git uCosmos
+git submodule update --init --recursive
 ```
 
 ### Main config
@@ -221,7 +222,7 @@ Note two important details. At the end of the configuration for each product, we
 #endif /* CLOCK_CONFIG_H_ */
 ```
 
-## TODO Task management
+## Task management
 
 A task is, in essence, a C++ function written in a specific way. This function is invoked by the system scheduler at a configured period (or, more precisely, no more frequently than at a configured period) and continues to run until it completes its execution and returns via `return` instruction. There are no mechanisms for task preemption, nor are there separate stacks for each task—unlike in FreeRTOS. This solution is simple and effective, but it is important to note that **if a single task hangs, the entire system will hang**.
 
@@ -231,15 +232,149 @@ A task function always returns `void` and accepts a single argument, `run_mode`,
 - `os_destructor` – the task destructor, called after the task is removed from the scheduler’s task array.
 - `os_id` – an identification call, used solely to retrieve the task's name for diagnostic purposes.
 
-There is an important detail regarding the task destructor when a task removes itself. In such a case, the task is invoked by the scheduler with the `os_run` argument. To initiate its own removal, the task calls the `task_close()` function, passing itself as an argument. `task_close()` then triggers the task's destructor; however, once the destructor finishes, execution returns to the main body of the task function. This means that a task that has initiated its own removal continues to execute for a short period until it reaches its own `return` statement. Therefore, **it is good practice for the removal of a task to be the last instruction that the task executes, immediately followed by a `return` statement**.
+There is an important detail regarding the task destructor when a task removes itself. In such a case, the task is invoked by the scheduler with the `os_run` argument. To initiate its own removal, the task calls the `task_remove()` function, passing itself as an argument. `task_remove()` then triggers the task's destructor; however, once the destructor finishes, execution returns to the main body of the task function. This means that a task that has initiated its own removal continues to execute for a short period until it reaches its own `return` statement. Therefore, **it is good practice for the removal of a task to be the last instruction that the task executes, immediately followed by a `return` statement**.
 
-Dodawanie tasków
+### Task template
 
-Usuwanie tasków
+Below are two task templates that are equivalent; the choice between them depends solely on your preference. One uses a `switch-case` statement, while the other uses `if-else`.
 
-Zmiana okresu
+Each task must support being called with the arguments `os_run` and `os_id`. Identification is performed by assigning the task name in the form of a C-string to the global variable `const char * task_name`. It is important that this string must remain in memory after the task function has returned. Therefore, it is best to store it in Flash memory and not to use RAM for this purpose. The `__func__` identifier is useful here, as it automatically inserts the name of the function in which it is used. Handling the `os_constructor` and `os_destructor` arguments is optional. If your task needs to store variables between calls, it is good practice to define them as static variables at the beginning of the task.
 
-Jak działa scheduler
+```c++
+void template_task(run_mode_t run_mode) {
+    // Declare static variables here
+
+    switch(run_mode) {
+        case os_run: {						// Mandatory
+
+            break;
+        }
+
+        case os_constructor: {				// Optional
+
+            break;
+        }
+
+        case os_destructor: {				// Optional
+
+            break;
+        }
+
+        case os_id: {						// Mandatory
+            task_name = __func__;			// Do not change this line
+            break;
+        }
+    }
+}
+```
+
+```c++
+void template_task(run_mode_t run_mode) {
+    // Declare static variables here
+
+    if(run_mode == os_run) {				// Mandatory
+
+    }
+    else if(run_mode == os_constructor) {	// Optional
+
+    }
+    else if(run_mode == os_destructor) {	// Optional
+
+    }
+    else if(run_mode == os_id) {			// Mandatory
+        task_name = __func__;				// Do not change this line
+    }
+}
+```
+
+### Adding a task
+
+To add a task to the scheduler's task table, call the function `os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's execution period given in milliseconds. After adding the task, it is called with the `os_constructor` argument. The constructor is called immediately and synchronously from `task_add()`.
+
+Examples:
+
+```c++
+task_add(some_task, 1000);
+task_add(other_task, 500);
+task_add(another_task, 200);
+```
+
+This function can return one of the following values:
+
+- `os_ok` – success.
+- `os_nullptr` – the `task_ptr` argument is `nullptr`.
+- `os_task_period_under_range` – the task was not added because its execution period is shorter than the system tick period, defined by the `TICK_PERIOD_MS` parameter in the configuration file.
+- `os_task_already_created` – the specified task has already been added; duplicate tasks cannot be added.
+- `os_no_free_slot` – no space available in the task array; consider increasing the `TASK_MAXCOUNT` parameter in the configuration file.
+- `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
+
+### Removing a tasks
+
+To remove a task from the scheduler's task array, use the function `os_t task_remove(void (*task_ptr)(run_mode_t))`, where `task_ptr` is a pointer to the task.
+
+Examples:
+
+```c++
+task_remove(some_task);
+task_remove(other_task);
+task_remove(another_task);
+```
+
+This function can return one of the following values:
+
+- `os_ok` – success.
+- `os_nullptr` – the `task_ptr` argument is `nullptr`.
+- `os_not_found` - the specified task is not present in the scheduler's task array.
+
+### Changing the period of a task
+
+To change the execution period of a task, call the function `os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's execution period given in milliseconds.
+
+Examples:
+
+```c++
+task_period_change(some_task, 1234);
+task_period_change(other_task, 5678);
+task_period_change(another_task, 31415);
+```
+
+This function can return one of the following values:
+
+- `os_ok` – success.
+- `os_nullptr` – the `task_ptr` argument is `nullptr`.
+- `os_not_found` - the specified task is not present in the scheduler's task array.
+- `os_task_period_under_range` – the task was not added because its execution period is shorter than the system tick period, defined by the `TICK_PERIOD_MS` parameter in the configuration file.
+- `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
+
+### Checking whether a task is added
+
+To check whether a task has been added to the scheduler's task array, use the function `bool task_is_running(void (*task_ptr)(run_mode_t))`. Important: this function does not check whether the specified task is currently being executed; rather, it checks whether the task is scheduled for execution within the schedule.
+
+Example:
+
+```c++
+if(task_is_running(my_task)) {
+    LOGI("The task has been added");
+}
+else {
+    LOGI("The task has been removed");
+}
+```
+
+This function can return one of the following values:
+
+- `true`
+- `false`
+
+### Getting the Task Name
+
+To get the task name, use the const char * task_get_name(void (*task_ptr)(run_mode_t)) function. This function returns a pointer to a C-string containing the task's name. If the task does not support identification, the function returns the string `"unknown"`; if it is called with a null pointer, it returns `"nullptr"`.
+
+Example
+
+```c++
+printf("My task is called %s.\n", get_task_name(my_task));
+```
 
 ## TODO Console
 
@@ -279,6 +414,7 @@ Here is the result:
 E (1369) main.cpp: Error (red)
 W (1373) main.cpp: Warning (yellow)
 I (1377) main.cpp: Information (green)
+I (1389) main.cpp: Debug (White)
 ```
 
 The number in parentheses represents the time in milliseconds, measured from system startup. The *.cpp filename is added automatically to make it easier to locate the source of these log entries. There is no need to add "\n", as a newline character is added automatically.
@@ -299,6 +435,10 @@ LOGI("u16 = %u", u16);
 LOGI("u32 = %lu", u32);
 ```
 
+### Formatting and color
+
+
+
 ## Change log
 
 The project has been under continuous development since 2011.
@@ -308,7 +448,7 @@ The project has been under continuous development since 2011.
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Added version control of config files.
-* Changed `task_close` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
+* Changed `task_remove` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
 * All comments translated to English.
 
 ### 5.2.0 - 2026.11.09

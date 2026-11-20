@@ -64,3 +64,7 @@
 	{"hexstr",					hexstr_cmd},
 	{"timestr",					timestr_cmd},
 #endif
+
+#if USE_CMD_COLORS
+	{"colors",					colors_cmd},
+#endif

@@ -333,3 +333,36 @@ void wrong4_cmd(int argc, char * argv[]) {
 }
 
 #endif
+
+#if USE_CMD_COLORS
+void colors_cmd(int argc, char * argv[]) {
+	printf("Formatting:\n");
+	printf("- "                   "Default"		FORMAT_RESET "\n");
+	printf("- " FORMAT_BOLD       "Bold"		FORMAT_RESET "\n");
+	printf("- " FORMAT_FAINT      "Faint"		FORMAT_RESET "\n");
+	printf("- " FORMAT_ITALIC     "Italic"		FORMAT_RESET "\n");
+	printf("- " FORMAT_UNDERLINE  "Underline"	FORMAT_RESET "\n");
+	printf("- " FORMAT_BLINK_SLOW "Blink slow"	FORMAT_RESET "\n");
+	printf("- " FORMAT_BLINK_FAST "Blink fast"	FORMAT_RESET "\n");
+
+	printf("Text color:\n");
+	printf("- Black   "	TEXT_BLACK		"abcdefghijklmnopqrstuvwxyz "	TEXT_BLACK_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Red     "	TEXT_RED		"abcdefghijklmnopqrstuvwxyz "	TEXT_RED_BRIGHT			"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Yellow  "	TEXT_YELLOW		"abcdefghijklmnopqrstuvwxyz "	TEXT_YELLOW_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Green   "	TEXT_GREEN		"abcdefghijklmnopqrstuvwxyz "	TEXT_GREEN_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Cyan    "	TEXT_CYAN		"abcdefghijklmnopqrstuvwxyz "	TEXT_CYAN_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Blue    "	TEXT_BLUE		"abcdefghijklmnopqrstuvwxyz "	TEXT_BLUE_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Magenta "	TEXT_MAGENTA	"abcdefghijklmnopqrstuvwxyz "	TEXT_MAGENTA_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- White   "	TEXT_WHITE		"abcdefghijklmnopqrstuvwxyz "	TEXT_WHITE_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+
+	printf("Background color:\n");
+	printf("- Black   "	BACK_BLACK		"abcdefghijklmnopqrstuvwxyz "	BACK_BLACK_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Red     "	BACK_RED		"abcdefghijklmnopqrstuvwxyz "	BACK_RED_BRIGHT			"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Yellow  "	BACK_YELLOW		"abcdefghijklmnopqrstuvwxyz "	BACK_YELLOW_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Green   "	BACK_GREEN		"abcdefghijklmnopqrstuvwxyz "	BACK_GREEN_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Cyan    "	BACK_CYAN		"abcdefghijklmnopqrstuvwxyz "	BACK_CYAN_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Blue    "	BACK_BLUE		"abcdefghijklmnopqrstuvwxyz "	BACK_BLUE_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- Magenta "	BACK_MAGENTA	"abcdefghijklmnopqrstuvwxyz "	BACK_MAGENTA_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+	printf("- White   "	BACK_WHITE		"abcdefghijklmnopqrstuvwxyz "	BACK_WHITE_BRIGHT		"abcdefghijklmnopqrstuvwxyz" FORMAT_RESET "\n");
+}
+#endif

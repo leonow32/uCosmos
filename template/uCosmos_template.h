@@ -3,6 +3,7 @@
 
 // Task template 1: using switch-case
 void template_task(run_mode_t run_mode) {
+	// Declare static variables here
 	
 	switch(run_mode) {
 		case os_run: {						// Mandatory
@@ -29,6 +30,7 @@ void template_task(run_mode_t run_mode) {
 
 // Task template 2: using if-else
 void template_task(run_mode_t run_mode) {
+	// Declare static variables here
 	
 	if(run_mode == os_run) {				// Mandatory
 

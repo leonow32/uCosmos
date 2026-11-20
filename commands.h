@@ -71,4 +71,8 @@
 	void wrong4_cmd(int argc, char * argv[]);
 #endif
 
+#if USE_CMD_COLORS
+	void colors_cmd(int argc, char * argv[]);
+#endif
+
 #endif

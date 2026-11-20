@@ -429,7 +429,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 	task_table[slot_number].period	= period_ms / TICK_PERIOD_MS;
 	task_table[slot_number].flag	= false;
 	IRQ_ENABLE();
-	return debug_print(os_ok, __func__, task_ptr, period_ms);
+	return debug_print(period_ms % TICK_PERIOD_MS ? os_period_rounded : os_ok, __func__, task_ptr, period_ms);
 }
 
 // Checking whether a task has been added to the array of tasks (rather than whether it is currently being executed)
