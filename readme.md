@@ -376,17 +376,41 @@ Example
 printf("My task is called %s.\n", get_task_name(my_task));
 ```
 
-## TODO Console
+## Command Line
 
-To be ~~completed~~...
+uCosmos features a console with a command-line interpreter that allows you to execute custom-defined commands and pass various types of arguments to them. This console is extremely useful for testing and diagnostics, as it provides access to data and operations that are not typically available to the end user. The command line uses the same UART interface employed for printing logs—specifically, the one assigned to the standard input and output streams.
 
-C~2~H~5~OH
+### Command line basics
 
-C<sub>2</sub>H<sub>5</sub>OH
+During normal operation, the command prompt is hidden to ensure that the potentially large volume of logs remains readable. To bring up the prompt, simply start typing; the `/>` symbol will appear, followed by the characters you enter. If any logs appear while you are typing, do not worry—just keep typing. Everything you have typed so far remains in the buffer. You can delete the last character entered by pressing the BACKSPACE key. To clear the entire buffer and display the prompt, press the ESCAPE key. The ENTER key executes the command. The CTRL-Z key combination recalls the last entered command, which you can then edit or execute by pressing ENTER.
 
-a^2^ + b^2^ = c^2^
+Your commands can accept arguments. There must be at least one SPACE between arguments. If an argument is a string of characters that contains spaces, it should be enclosed in double quotation marks. Two consecutive double quotation marks result in an argument of zero length.
 
-a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>
+Lista poleceń
+
+Algorytm parsowania
+
+Budowa własnego polecenia
+
+Pomoc polecenia
+
+Parsery danych
+
+Liczby całkowite bez znaku
+
+Liczby całkowite ze znakiem
+
+Liczby zmiennoprzecinkowe
+
+Znak ASCII
+
+String ASCII
+
+HEX String
+
+Timestamp
+
+
 
 ## Logs
 
@@ -442,7 +466,7 @@ Example:
 
 ```c++
 printf("This text is " TEXT_YELLOW "yellow on " BACK_BLUE "blue background" FORMAT_RESET "\n");
-printf("Now let's try" FORMAT_BOLD "bold with " FORMAT_UNDERLINE "underline" FORMAT_RESET "\n")l
+printf("Now let's try " FORMAT_BOLD "bold with " FORMAT_UNDERLINE "underline" FORMAT_RESET "\n");
 ```
 
 You can try the command `colors` on the console. It is available if `USE_CMD_COLORS` is set to `true`.
