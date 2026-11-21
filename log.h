@@ -62,6 +62,7 @@
 #define FORMAT_UNDERLINE   	"\x1B[4m"
 #define FORMAT_BLINK_SLOW   "\x1B[5m"
 #define FORMAT_BLINK_FAST   "\x1B[6m"
+
 #define TEXT_BLACK			"\x1B[30m"
 #define TEXT_RED			"\x1B[31m"
 #define TEXT_GREEN			"\x1B[32m"

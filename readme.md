@@ -410,12 +410,7 @@ LOGD("Debug (White)");
 
 Here is the result:
 
-```bash
-E (1369) main.cpp: Error (red)
-W (1373) main.cpp: Warning (yellow)
-I (1377) main.cpp: Information (green)
-I (1389) main.cpp: Debug (White)
-```
+![logs demo](readme/logs.png)
 
 The number in parentheses represents the time in milliseconds, measured from system startup. The *.cpp filename is added automatically to make it easier to locate the source of these log entries. There is no need to add "\n", as a newline character is added automatically.
 
@@ -437,7 +432,22 @@ LOGI("u32 = %lu", u32);
 
 ### Formatting and color
 
+uCosmos provides a wide range of definitions to facilitate text formatting in accordance with the ANSI standard. Below is a list of definitions that you can use and combine to achieve various effects. Please note, however, that not all terminals support every one of them.
 
+* Text format: `FORMAT_RESET`, `FORMAT_BOLD`, `FORMAT_FAINT`, `FORMAT_ITALIC`, `FORMAT_UNDERLINE`, `FORMAT_BLINK_SLOW`, `FORMAT_BLINK_FAST`.
+* Foreground color: `TEXT_BLACK`, `TEXT_RED`, `TEXT_GREEN`, `TEXT_YELLOW`, `TEXT_BLUE`, `TEXT_MAGENTA`, `TEXT_CYAN`, `TEXT_WHITE`, `TEXT_BLACK_BRIGHT`, `TEXT_RED_BRIGHT`, `TEXT_GREEN_BRIGHT`, `TEXT_YELLOW_BRIGHT`, `TEXT_BLUE_BRIGHT`, `TEXT_MAGENTA_BRIGHT`, `TEXT_CYAN_BRIGHT`, `TEXT_WHITE_BRIGHT`.
+* Background color: `BACK_BLACK`, `BACK_RED`, `BACK_GREEN`, `BACK_YELLOW`, `BACK_BLUE`, `BACK_MAGENTA`, `BACK_CYAN`, `BACK_WHITE`, `BACK_BLACK_BRIGHT`, `BACK_RED_BRIGHT`, `BACK_GREEN_BRIGHT`, `BACK_YELLOW_BRIGHT`, `BACK_BLUE_BRIGHT`, `BACK_MAGENTA_BRIGHT`, `BACK_CYAN_BRIGHT`, `BACK_WHITE_BRIGHT`.
+
+Example:
+
+```c++
+printf("This text is " TEXT_YELLOW "yellow on " BACK_BLUE "blue background" FORMAT_RESET "\n");
+printf("Now let's try" FORMAT_BOLD "bold with " FORMAT_UNDERLINE "underline" FORMAT_RESET "\n")l
+```
+
+You can try the command `colors` on the console. It is available if `USE_CMD_COLORS` is set to `true`.
+
+![colors command](readme/colors.png)
 
 ## Change log
 
