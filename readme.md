@@ -28,6 +28,41 @@ This is a simple, single-threaded, single-core operating system and command-line
 - Easier debugging.
 - Powerful command line interpreter to facilitate testing and development.
 
+## Table of contents
+
+- [Supported platforms](#supported-platforms)
+- [Hello World!](#hello-world)
+- [Architecture overview](#architecture-overview)
+  - [Folder tree](#folder-tree)
+  - [Cloning the repository](#cloning-the-repository)
+  - [Main config](#main-config)
+  - [Startup](#startup)
+  - [Component config](#component-config)
+- [Task management](#task-management)
+  - [Task template](#task-template)
+  - [Adding a task](#adding-a-task)
+  - [Removing a task](#removing-a-tasks)
+  - [Changing a task period](#changing-a-task-period)
+  - [Checking whether a task is added](#checking-whether-a-task-is-added)
+  - [Getting the task name](#getting-the-task-name)
+- [Command line](#command-line)
+  - [Command line basics](#command-line-basics)
+  - [Command list](#command-list)
+  - [Creating custom commands](#creating-custom-commands)
+  - [Command help](#command-help)
+  - [Argument parsers](#argument-parsers)
+    - [Unsigned integer](#unsigned-integer)
+    - [Signed integer](#signed-integer)
+    - [Floating point](#floating-point)
+    - [ASCII character](#ascii-character)
+    - [ASCII string](#ascii-string)
+    - [HEX string](#hex-string)
+    - [Time](#time)
+- TODO Diagnostics
+- [Logs](#logs)
+  - [Formatting and colors](#formatting-and-colors)
+- [Change log](#change-log)
+
 ## Supported platforms
 
 | Platform                 | Toolchain |
@@ -55,11 +90,11 @@ void hello_task(run_mode_t run_mode) {
         }
     }
     else if(run_mode == os_constructor) {
-        LOGW("Hello from task constructor");
+        LOGW("Hello from the task constructor");
         counter = 0;
     }
     else if(run_mode == os_destructor) {
-        LOGW("Hello from task destructor");
+        LOGW("Hello from the task destructor");
     }
     else if(run_mode == os_id) {
         task_name = __func__;
@@ -168,7 +203,7 @@ Let’s examine the contents of the `_config/_config.h` file. It contains the ge
 
 ### Startup
 
-Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file—located at `_config/_config.h`—are included.
+Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file—located at `_config/_config.h` are included.
 
 The `main()` function can begin with the initialization of hardware peripherals (excluding those already handled by the system itself). If this is not required, you may skip this step. Next, initialize the system by calling `uCosmos_init()`. From this point on, you can add tasks to be executed by the task scheduler.
 
@@ -347,7 +382,7 @@ This function can return one of the following values:
 - `os_no_free_slot` – no space available in the task array; consider increasing the `TASK_MAXCOUNT` parameter in the configuration file.
 - `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
 
-### Removing a tasks
+### Removing a task
 
 To remove a task from the scheduler's task array, use the function `os_t task_remove(void (*task_ptr)(run_mode_t))`, where `task_ptr` is a pointer to the task.
 
@@ -365,7 +400,7 @@ This function can return one of the following values:
 - `os_nullptr` – the `task_ptr` argument is `nullptr`.
 - `os_not_found` - the specified task is not present in the scheduler's task array.
 
-### Changing the period of a task
+### Changing a task period
 
 To change the execution period of a task, call the function `os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's execution period given in milliseconds.
 
@@ -405,7 +440,7 @@ This function can return one of the following values:
 - `true`
 - `false`
 
-### Getting the Task Name
+### Getting the task name
 
 To get the task name, use the const char * task_get_name(void (*task_ptr)(run_mode_t)) function. This function returns a pointer to a C-string containing the task's name. If the task does not support identification, the function returns the string `"unknown"`; if it is called with a null pointer, it returns `"nullptr"`.
 
@@ -415,9 +450,9 @@ Example
 printf("My task is called %s.\n", get_task_name(my_task));
 ```
 
-## Command Line
+## Command line
 
-uCosmos features a console with a command-line interpreter that allows you to execute custom-defined commands and pass various types of arguments to them. This console is extremely useful for testing and diagnostics, as it provides access to data and operations that are not typically available to the end user. The command line uses the same UART interface employed for printing logs—specifically, the one assigned to the standard input and output streams.
+uCosmos features a console with a command-line interpreter that allows you to execute custom-defined commands and pass various types of arguments to them. This console is extremely useful for testing and diagnostics, as it provides access to data and operations that are not typically available to the end user. The command line uses the same UART interface that is used for logging, the one assigned to the standard input and output streams.
 
 It is important to understand that the console in the uCosmos is a task, just like any other. All rules that apply to tasks also apply to the console task. Every command invoked by the console is executed within the context of the console's own execution, as managed by the scheduler. In other words: the scheduler executes the console, the console executes a command, and the command may execute argument parsers.
 
@@ -509,23 +544,69 @@ void template_cmd(int argc, char * argv[]) {
 
 ### Command help
 
+It is possible to add help text to each command. To do this, place the `CMD_HELP("text")` macro definition at the beginning of the function that handles the command. A newline character (`\n`) will be automatically appended to the end. The help text can also span multiple lines. Help text can consume a significant amount of flash memory. For this reason, you can quickly and easily disable the help feature by changing the `CONSOLE_USE_HELP` definition from `true` to `false` in the configuration file `_config/uCosmos_config.h`.
 
+It is recommended that you list the argument names and, if useful, their types in the help text, as shown in the example below:
 
-### TODO Parsery danych
+```c++
+void task_period_change_cmd(int argc, char * argv[]) {
+	CMD_HELP("ptr:hex32 period:dec16");
+    // do something...
+}
 
-### TODO Liczby całkowite bez znaku
+void gpio_dir_cmd(int argc, char * argv[]) {
+	CMD_HELP("num:dec dir:dec(0=in, 1=out)");
+    // do something...
+}
+```
 
-### TODO Liczby całkowite ze znakiem
+### Argument parsers
 
-### TODO Liczby zmiennoprzecinkowe
+TODO
 
-### TODO Znak ASCII
+#### Unsigned integer
 
-### TODO String ASCII
+TODO
 
-### TODO HEX String
+#### Signed integer
 
-### TODO Timestamp
+TODO
+
+#### Floating point
+
+TODO
+
+#### ASCII character
+
+TODO
+
+#### ASCII string
+
+TODO
+
+#### HEX string
+
+TODO
+
+#### Time
+
+TODO
+
+## TODO Diagnostyka
+
+TODO
+
+### Task monitor
+
+TODO
+
+### Czas pracy tasków
+
+TODO
+
+### Pomiar czasu
+
+TODO
 
 ## Logs
 
@@ -569,7 +650,7 @@ LOGI("u16 = %u", u16);
 LOGI("u32 = %lu", u32);
 ```
 
-### Formatting and color
+### Formatting and colors
 
 uCosmos provides a wide range of definitions to facilitate text formatting in accordance with the ANSI standard. Below is a list of definitions that you can use and combine to achieve various effects. Please note, however, that not all terminals support every one of them.
 
