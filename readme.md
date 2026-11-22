@@ -192,6 +192,7 @@ Next, copy the default configuration as many times as you have products; for ins
 Note two important details. At the end of the configuration for each product, we define `#define CLOCK_CONFIG_DONE`. This helps identify errors that might occur if you add a new product to the main configuration but forget to include a specific component. In such a case, the compilation process will trigger an `#error "Missing config"` rather than a flood of messages reporting that certain variables could not be found. Secondly, there is `#define CLOCK_CONFIG_VERSION 261116`, which records the date the configuration template was last updated, in `YYMMDD` format. Keep in mind that the component code resides in the submodule, while the configuration file belongs to your own repository. If you update the submodule, the new version may include configuration changes that you will need to transfer from the template to your file in the `_config` folder. If it turns out that a component submodule requires an update to its configuration file, you will receive the following message: `#error "The version of the configuration file stored in the repository is not supported.. Please copy clock/template/clock_config.h to your _config folder"`.
 
 ```c++
+// File _config/clock_config.h
 #ifndef CLOCK_CONFIG_H_
 #define CLOCK_CONFIG_H_
 
@@ -289,7 +290,7 @@ void template_task(run_mode_t run_mode) {
 
 ### Adding a task
 
-To add a task to the scheduler's task table, call the function `os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's execution period given in milliseconds. After adding the task, it is called with the `os_constructor` argument. The constructor is called immediately and synchronously from `task_add()`.
+To add a task to the scheduler's task table, call the function `os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's requested execution period given in milliseconds. After adding the task, it is called with the `os_constructor` argument. The constructor is called immediately and synchronously from `task_add()`.
 
 Examples:
 
@@ -380,37 +381,111 @@ printf("My task is called %s.\n", get_task_name(my_task));
 
 uCosmos features a console with a command-line interpreter that allows you to execute custom-defined commands and pass various types of arguments to them. This console is extremely useful for testing and diagnostics, as it provides access to data and operations that are not typically available to the end user. The command line uses the same UART interface employed for printing logs—specifically, the one assigned to the standard input and output streams.
 
+It is important to understand that the console in the uCosmos is a task, just like any other. All rules that apply to tasks also apply to the console task. Every command invoked by the console is executed within the context of the console's own execution, as managed by the scheduler. In other words: the scheduler executes the console, the console executes a command, and the command may execute argument parsers.
+
 ### Command line basics
 
 During normal operation, the command prompt is hidden to ensure that the potentially large volume of logs remains readable. To bring up the prompt, simply start typing; the `/>` symbol will appear, followed by the characters you enter. If any logs appear while you are typing, do not worry—just keep typing. Everything you have typed so far remains in the buffer. You can delete the last character entered by pressing the BACKSPACE key. To clear the entire buffer and display the prompt, press the ESCAPE key. The ENTER key executes the command. The CTRL-Z key combination recalls the last entered command, which you can then edit or execute by pressing ENTER.
 
 Your commands can accept arguments. There must be at least one SPACE between arguments. If an argument is a string of characters that contains spaces, it should be enclosed in double quotation marks. Two consecutive double quotation marks result in an argument of zero length.
 
-Lista poleceń
+You can experiment with the `args` command, which displays all the arguments that have been passed.
 
-Algorytm parsowania
+![args demo](readme/args.png)
 
-Budowa własnego polecenia
+### Command list
 
-Pomoc polecenia
+In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components — which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
 
-Parsery danych
+In essence, the command list is an array of `command_struct` elements. Each structure consists of a command name (defined as `const char * name`) and a function pointer (defined as `void (*ptr)(int argc, char * argv[])`) that points to the function to be executed when that command name is entered. I recommend placing the command name and the function pointer on the same line, as shown in the example below. This improves code readability, which is particularly helpful given that the command list can become quite long.
 
-Liczby całkowite bez znaku
+In component configuration files, you will often encounter the variable `COMPONENT_USE_DEMO_COMMANDS`. This provides an easy way to enable or disable commands designed to demonstrate a component's capabilities. This is achieved using the preprocessor directive `#if CLOCK_USE_DEMO_COMMANDS`.
 
-Liczby całkowite ze znakiem
+```c++
+// File _config/_commands.h
+#include "_config/_config.h"
+#ifndef INTERPRETER_COMMANDS_H_
+#define INTERPRETER_COMMANDS_H_
 
-Liczby zmiennoprzecinkowe
+#include "uCosmos/console.h"
+#include "uCosmos/commands.h"
 
-Znak ASCII
+#if COMPONENT_CLOCK
+    #include "clock/clock.h"
+#endif
 
-String ASCII
+#if COMPONENT_EEPROM
+    #include "eeprom/eeprom.h"
+#endif
 
-HEX String
+#if COMPONENT_LCD_DISPLAY
+    #include "lcd_display/lcd_display_demo.h"
+#endif
 
-Timestamp
+const command_struct command_list[] = {
+    #include "uCosmos/commands.hxx"
+    #include "lcd_display/lcd_display_demo.hxx"
 
+    #if CLOCK_USE_DEMO_COMMANDS
+        {"clock_get",                   clock::get_cmd},
+        {"clock_set",                   clock::set_cmd},
+    #endif
 
+    #if EEPROM_USE_DEMO_COMMANDS
+        {"ee_read",                     eeprom::read_cmd},
+        {"ee_write",                    eeprom::write_cmd},
+        {"ee_dump",                     eeprom::dump_cmd},
+        {"ee_info",                     eeprom::info_cmd},
+    #endif
+};
+
+#endif
+```
+
+### Creating custom commands
+
+The code for a simple example command is presented below. Every function that can be invoked via the command-line interpreter must accept two arguments:
+- `int argc` – the number of arguments passed; this is always >= 1.
+- `char * argv[]` – an array of pointers to the beginning of each argument, provided as a C-string. The value `argv[0]` is the name of the command entered by the user.
+
+A command-handling function can perform any type of operation. Parsers are used to read argument values, and these will be discussed in subsequent chapters. Ensure that any data printed by this function ends with a newline character (`\n`). You may use the `print_ok()` function, which prints the text "OK" in green, followed by a newline.
+
+```c++
+void template_cmd(int argc, char * argv[]) {
+    CMD_HELP("arg1:dec8 arg2:dec16 arg3:hex16");
+    
+    uint8_t arg1;
+    if(parse_dec(argv[1], &arg1)) return;
+
+    uint16_t arg2;
+    if(parse_dec(argv[2], &arg2)) return;
+
+    uint16_t arg3;
+    if(parse_hex(argv[3], &arg3)) return;
+    
+    // do something
+
+    print_ok();
+}
+```
+
+### TODO Pomoc polecenia
+
+### TODO Parsery danych
+
+### TODO Liczby całkowite bez znaku
+
+### TODO Liczby całkowite ze znakiem
+
+### TODO Liczby zmiennoprzecinkowe
+
+### TODO Znak ASCII
+
+### TODO String ASCII
+
+### TODO HEX String
+
+### TODO Timestamp
 
 ## Logs
 
@@ -482,7 +557,7 @@ The project has been under continuous development since 2011.
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Added version control of config files.
-* Changed `task_remove` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
+* Changed `task_close` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
 * All comments translated to English.
 
 ### 5.2.0 - 2026.11.09
