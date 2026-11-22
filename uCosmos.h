@@ -12,7 +12,7 @@
 #endif
 
 #define UCOSMOS_VERSION_MAJOR 5
-#define UCOSMOS_VERSION_MINOR 3
+#define UCOSMOS_VERSION_MINOR 4
 #define UCOSMOS_VERSION_PATCH 0
 
 void uCosmos_init(void);				// Call this function at the beginning of main()

@@ -35,6 +35,44 @@ This is a simple, single-threaded, single-core operating system and command-line
 | Espressif ESP32          | ESP-IDF   |
 | Raspberry Pi Pico RP2xxx | Pico SDK  |
 
+## Hello World!
+
+Here is an example of a very simple program. It demonstrates system initialization and the starting of the scheduler. Between these steps, we add a single task configured to be executed every 1000 ms. The task displays a greeting when it is created (within its constructor), then five greetings during its regular execution, and a final greeting when it is removed (within its destructor).
+
+```c++
+#include "_config/_config.h"
+#include "uCosmos/uCosmos.h"
+
+void hello_task(run_mode_t run_mode) {
+    static int counter = 0;
+    
+    if(run_mode == os_run) {
+        if(counter < 5) {
+            LOGI("Hello %d", counter++);
+        }
+        else {
+            task_remove(hello_task);
+        }
+    }
+    else if(run_mode == os_constructor) {
+        LOGW("Hello from task constructor");
+        counter = 0;
+    }
+    else if(run_mode == os_destructor) {
+        LOGW("Hello from task destructor");
+    }
+    else if(run_mode == os_id) {
+        task_name = __func__;
+    }
+}
+
+int main() {
+    uCosmos_init();
+    task_add(hello_task, 1000);
+    uCosmos_scheduler();
+}
+```
+
 ## Architecture overview
 
 The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
@@ -469,7 +507,9 @@ void template_cmd(int argc, char * argv[]) {
 }
 ```
 
-### TODO Pomoc polecenia
+### Command help
+
+
 
 ### TODO Parsery danych
 
@@ -552,10 +592,16 @@ You can try the command `colors` on the console. It is available if `USE_CMD_COL
 
 The project has been under continuous development since 2011.
 
+### 5.4.0 - 2026.xx.xx
+* Added very long `readme.md`.
+* Added `colors` command.
+* Added `USE_CMD_COLORS` to condig file (version 261120).
+* Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
+* Changed `CMD_HELP()` to show help for a command when the only argument passed to the command is the `?` character.
+
 ### 5.3.0 - 2026.11.17
 * Added quite advanced task diagnostics, including task time measurement, maximum and average time, overrun control, CPU usage, etc.
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
-* Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Added version control of config files.
 * Changed `task_close` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
 * All comments translated to English.

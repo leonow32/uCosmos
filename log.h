@@ -54,7 +54,7 @@
 #define BACKSPACE2			uint8_t(127)
 #define CTRL_Z				uint8_t(26)
 
-// ANSI color codes
+// ANSI text format and color codes
 #define FORMAT_RESET		"\x1B[0m"
 #define FORMAT_BOLD   		"\x1B[1m"
 #define FORMAT_FAINT   		"\x1B[2m"
@@ -63,6 +63,7 @@
 #define FORMAT_BLINK_SLOW   "\x1B[5m"
 #define FORMAT_BLINK_FAST   "\x1B[6m"
 
+// Foreground colors
 #define TEXT_BLACK			"\x1B[30m"
 #define TEXT_RED			"\x1B[31m"
 #define TEXT_GREEN			"\x1B[32m"
@@ -80,6 +81,7 @@
 #define TEXT_CYAN_BRIGHT	"\x1B[96m"
 #define TEXT_WHITE_BRIGHT	"\x1B[97m"
 
+// Background colors
 #define BACK_BLACK			"\x1B[40m"
 #define BACK_RED			"\x1B[41m"
 #define BACK_GREEN			"\x1B[42m"

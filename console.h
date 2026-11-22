@@ -65,11 +65,15 @@ void print_ok(void);
 void print_hexstr(const uint8_t array[], size_t len, bool new_line = false, char separator = 0);
 
 #if CONSOLE_USE_HELP
-	#define CMD_HELP(text)          \
-		if(argc == 1) {             \
-			printf(text "\n");      \
-			return;                 \
-		}
+	#define CMD_HELP(text)                                              \
+		do {                                                            \
+			if(argc == 2) {                                             \
+				if(argv[1] && argv[1][0] == '?' && argv[1][1] == NUL) { \
+					printf(text "\n");                                  \
+					return;                                             \
+				}                                                       \
+			}                                                           \
+		} while(0)
 #else
 	#define CMD_HELP(text) ((void)0)
 #endif
