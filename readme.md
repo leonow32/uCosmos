@@ -562,7 +562,35 @@ void gpio_dir_cmd(int argc, char * argv[]) {
 
 ## Argument parsers
 
-TODO
+Command-handling functions receive an argument count, `argc`, and an array of character strings, `argv[]`. The data in this array is stored as C-style strings. To convert this text into values ​​of the desired type, an appropriate parser must be used.
+
+In this chapter, we will discuss the rules that apply to all argument parsers. Below is a general example demonstrating the use of a parser for a hypothetical data type. Every parser takes at least two arguments: the first is a pointer to a specific element in the `argv[]` array, and the second is a pointer to a variable where the parsed result should be stored. Each parser returns a value of type `parse_res`. If the parsing is successful, the parser returns `parse_ok`, which is equal to 0.
+
+If a parsing function encounters an error, it displays an error message on the console and returns an error code. This can be used to exit the command-handling function immediately; simply wrap the parser call in an `if` statement and include a `return` statement.
+
+```c++
+xxxxx_t value;
+if(parse_yyyyy(argv[1], &value)) return;
+```
+
+These are examples of messages you might see in the console in case of a parsing error.
+
+![Examples of correct and incorrect parse operations](readme/parse_res.png)
+
+Here is a list of all possible values ​​returned by the parsers.
+
+- `parse_ok` - success.
+- `parse_missing_argument` - 
+- `parse_over_range` - 
+- `parse_under_range` - 
+- `parse_error` - 
+- `parse_expected_bin` - the input should be binary value.
+- `parse_expected_dec` - the input should be decimal value.
+- `parse_expected_hex` - the input should be hexadecimal value.
+- `parse_expected_float` - the input should be floating point value.
+- `parse_wrong_base` - base of the input number must be inb the range from 2 to 16.
+- `parse_wrong_time` - 
+- `parse_nullptr` - 
 
 ### Unsigned integer
 
