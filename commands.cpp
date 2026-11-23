@@ -202,19 +202,17 @@ void echo_cmd(int argc, char * argv[]) {
 
 #define GENERATE_UINT_CMD(command_name, var_type, print_format, parse_function) \
 	void command_name(int argc, char *argv[]) {                                 \
-		if(argc == 2) {                                                         \
-			var_type value;                                                     \
-			if (parse_function(argv[1], &value)) return;                        \
-			printf("Result: " print_format "\n", value);                        \
-		} else if(argc == 3) {                                                  \
-			var_type max;                                                       \
-			if (parse_dec(argv[2], &max)) return;                               \
-			var_type value;                                                     \
-			if (parse_function(argv[1], &value, max)) return;                   \
-			printf("Result: " print_format "\n", value);                        \
-		} else {                                                                \
-			printf("val (max)\n");                                              \
+		CMD_HELP("value:dec/hex/bin (max:dec)");                                \
+		var_type max = std::numeric_limits<var_type>::max();                    \
+		                                                                        \
+		if(argc == 3) {                                                         \
+			if(parse_dec(argv[2], &max)) return;                                \
 		}                                                                       \
+		                                                                        \
+		var_type value;                                                         \
+		if (parse_function(argv[1], &value, max)) return;                       \
+		                                                                        \
+		printf("Result: " print_format "\n", value);                            \
 	}
 
 GENERATE_UINT_CMD(dec8_cmd,  uint8_t,  "%u",   parse_dec)
@@ -234,6 +232,7 @@ GENERATE_UINT_CMD(bin64_cmd, uint64_t, "%llu", parse_bin)
 
 #define GENERATE_INT_CMD(command_name, var_type, print_format) \
 	void command_name(int argc, char * argv[]) {               \
+		CMD_HELP("value:dec");                                 \
 		var_type value;                                        \
 		if(parse_int(argv[1], &value)) return;                 \
 		printf(print_format "\n", value);                      \
@@ -246,6 +245,7 @@ GENERATE_INT_CMD(int64_cmd, int64_t, "%lld");
 
 #define GENERATE_FLOAT_CMD(command_name, var_type) \
 	void command_name(int argc, char * argv[]) {   \
+		CMD_HELP("value:float");                   \
 		var_type value = 0;                        \
 		if(parse_float(argv[1], &value)) return;   \
 		printf("%f\n",     value);                 \
@@ -257,12 +257,15 @@ GENERATE_FLOAT_CMD(float_cmd,  float);
 GENERATE_FLOAT_CMD(double_cmd, double);
 
 void ascchr_cmd(int argc, char * argv[]) {
+	CMD_HELP("char:hexstr");
 	char chr;
 	if(parse_ascii_char(argv[1], &chr)) return;
 	printf("%c\n", chr);
 }
 
 void ascstr_cmd(int argc, char * argv[]) {
+	CMD_HELP("array:ascii");
+
 	char buffer[16] = {0};
 	size_t length;
 	if(parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
@@ -277,6 +280,8 @@ void ascstr_cmd(int argc, char * argv[]) {
 }
 
 void hexstr_cmd(int argc, char * argv[]) {
+	CMD_HELP("array:hexstr");
+
 	uint8_t buffer[16];
 	size_t length;
 	if(parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
@@ -293,6 +298,8 @@ void hexstr_cmd(int argc, char * argv[]) {
 }
 
 void timestr_cmd(int argc, char * argv[]) {
+	CMD_HELP("time:YYMMDDhhmmss");
+
 	time_t time_seconds;
 	if(parse_time(argv[1], &time_seconds)) return;
 

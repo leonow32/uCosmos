@@ -194,7 +194,7 @@ static parse_res parse_numeric_char(const char chr, uint8_t * output, uint8_t ba
 	if(chr >= '0' && chr <= '9')		value = chr - '0';
 	else if(chr >= 'A' && chr <= 'F')	value = chr - 'A' + 10;
 	else if(chr >= 'a' && chr <= 'f')	value = chr - 'a' + 10;
-	else								return parse_error;
+	else								value = UINT8_MAX;
 
 	if(value >= base) {
 		switch(base) {
