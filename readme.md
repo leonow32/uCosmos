@@ -70,7 +70,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 | Espressif ESP32          | ESP-IDF   |
 | Raspberry Pi Pico RP2xxx | Pico SDK  |
 
-## Hello World!
+# Hello World!
 
 Here is an example of a very simple program. It demonstrates system initialization and the starting of the scheduler. Between these steps, we add a single task configured to be executed every 1000 ms. The task displays a greeting when it is created (within its constructor), then five greetings during its regular execution, and a final greeting when it is removed (within its destructor).
 
@@ -108,11 +108,11 @@ int main() {
 }
 ```
 
-## Architecture overview
+# Architecture overview
 
 The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
 
-### Folder tree
+## Folder tree
 
 This is how the project tree should look. The repository consists of four components: `uCosmos`, `clock`, `eeprom`, and `lcd_display`. Each component has its own folder, which stores the **shared** code used across all products. Each component can be set up as a separate submodule with its own repository, allowing the code to be shared among different projects. Furthermore, each component can be adjusted to the specific requirements of your project through configuration files; these are stored in a `_config` folder and belong to your project's repository, rather than to the submodules themselves.
 
@@ -170,7 +170,7 @@ your_project
             _commands.h            - Copy this file to `_config` folder
 ```
 
-### Cloning the repository
+## Cloning the repository
 
 uCosmos is designed to work as a submodule within an existing GIT repository. Navigate to the folder containing your repository—or create a new one—and then clone uCosmos as a submodule using the following command:
 
@@ -179,7 +179,7 @@ git submodule add git@github.com:leonow32/uCosmos.git uCosmos
 git submodule update --init --recursive
 ```
 
-### Main config
+## Main config
 
 Let’s examine the contents of the `_config/_config.h` file. It contains the general configuration for all products that can be compiled using the code in this repository. We can see two products defined here, represented by `PRODUCT_BASIC` and `PRODUCT_PREMIUM`. Each product consists of several components, which are included via `define COMPONENT_XXX` directives; a value greater than 0 indicates that a component is present (and this value may represent the component's version number, if the component supports it). The absence of a definition, or a setting of `define COMPONENT_XXX 0`, means that the specified component should not be included in the given product.
 
@@ -201,7 +201,7 @@ Let’s examine the contents of the `_config/_config.h` file. It contains the ge
 #endif
 ```
 
-### Startup
+## Startup
 
 Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file—located at `_config/_config.h` are included.
 
@@ -256,7 +256,7 @@ int main() {
 
 ```
 
-### Component config
+## Component config
 
 Let’s look at how component configuration files work, using the `clock` component as an example. Once you have downloaded the component submodule, you must copy its configuration template from `component/template/component_config.h` to `_config/component_config.h`.
 
@@ -296,7 +296,7 @@ Note two important details. At the end of the configuration for each product, we
 #endif /* CLOCK_CONFIG_H_ */
 ```
 
-## Task management
+# Task management
 
 A task is, in essence, a C++ function written in a specific way. This function is invoked by the system scheduler at a configured period (or, more precisely, no more frequently than at a configured period) and continues to run until it completes its execution and returns via `return` instruction. There are no mechanisms for task preemption, nor are there separate stacks for each task—unlike in FreeRTOS. This solution is simple and effective, but it is important to note that **if a single task hangs, the entire system will hang**.
 
@@ -308,7 +308,7 @@ A task function always returns `void` and accepts a single argument, `run_mode`,
 
 There is an important detail regarding the task destructor when a task removes itself. In such a case, the task is invoked by the scheduler with the `os_run` argument. To initiate its own removal, the task calls the `task_remove()` function, passing itself as an argument. `task_remove()` then triggers the task's destructor; however, once the destructor finishes, execution returns to the main body of the task function. This means that a task that has initiated its own removal continues to execute for a short period until it reaches its own `return` statement. Therefore, **it is good practice for the removal of a task to be the last instruction that the task executes, immediately followed by a `return` statement**.
 
-### Task template
+## Task template
 
 Below are two task templates that are equivalent; the choice between them depends solely on your preference. One uses a `switch-case` statement, while the other uses `if-else`.
 
@@ -361,7 +361,7 @@ void template_task(run_mode_t run_mode) {
 }
 ```
 
-### Adding a task
+## Adding a task
 
 To add a task to the scheduler's task table, call the function `os_t task_add(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's requested execution period given in milliseconds. After adding the task, it is called with the `os_constructor` argument. The constructor is called immediately and synchronously from `task_add()`.
 
@@ -382,7 +382,7 @@ This function can return one of the following values:
 - `os_no_free_slot` – no space available in the task array; consider increasing the `TASK_MAXCOUNT` parameter in the configuration file.
 - `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
 
-### Removing a task
+## Removing a task
 
 To remove a task from the scheduler's task array, use the function `os_t task_remove(void (*task_ptr)(run_mode_t))`, where `task_ptr` is a pointer to the task.
 
@@ -400,7 +400,7 @@ This function can return one of the following values:
 - `os_nullptr` – the `task_ptr` argument is `nullptr`.
 - `os_not_found` - the specified task is not present in the scheduler's task array.
 
-### Changing a task period
+## Changing a task period
 
 To change the execution period of a task, call the function `os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms)`, where `task_ptr` is a pointer to the task and `period_ms` is the task's execution period given in milliseconds.
 
@@ -420,7 +420,7 @@ This function can return one of the following values:
 - `os_task_period_under_range` – the task was not added because its execution period is shorter than the system tick period, defined by the `TICK_PERIOD_MS` parameter in the configuration file.
 - `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
 
-### Checking whether a task is added
+## Checking whether a task is added
 
 To check whether a task has been added to the scheduler's task array, use the function `bool task_is_running(void (*task_ptr)(run_mode_t))`. Important: this function does not check whether the specified task is currently being executed; rather, it checks whether the task is scheduled for execution within the schedule.
 
@@ -440,7 +440,7 @@ This function can return one of the following values:
 - `true`
 - `false`
 
-### Getting the task name
+## Getting the task name
 
 To get the task name, use the const char * task_get_name(void (*task_ptr)(run_mode_t)) function. This function returns a pointer to a C-string containing the task's name. If the task does not support identification, the function returns the string `"unknown"`; if it is called with a null pointer, it returns `"nullptr"`.
 
@@ -450,13 +450,13 @@ Example
 printf("My task is called %s.\n", get_task_name(my_task));
 ```
 
-## Command line
+# Command line
 
 uCosmos features a console with a command-line interpreter that allows you to execute custom-defined commands and pass various types of arguments to them. This console is extremely useful for testing and diagnostics, as it provides access to data and operations that are not typically available to the end user. The command line uses the same UART interface that is used for logging, the one assigned to the standard input and output streams.
 
 It is important to understand that the console in the uCosmos is a task, just like any other. All rules that apply to tasks also apply to the console task. Every command invoked by the console is executed within the context of the console's own execution, as managed by the scheduler. In other words: the scheduler executes the console, the console executes a command, and the command may execute argument parsers.
 
-### Command line basics
+## Command line basics
 
 During normal operation, the command prompt is hidden to ensure that the potentially large volume of logs remains readable. To bring up the prompt, simply start typing; the `/>` symbol will appear, followed by the characters you enter. If any logs appear while you are typing, do not worry—just keep typing. Everything you have typed so far remains in the buffer. You can delete the last character entered by pressing the BACKSPACE key. To clear the entire buffer and display the prompt, press the ESCAPE key. The ENTER key executes the command. The CTRL-Z key combination recalls the last entered command, which you can then edit or execute by pressing ENTER.
 
@@ -466,7 +466,7 @@ You can experiment with the `args` command, which displays all the arguments tha
 
 ![args demo](readme/args.png)
 
-### Command list
+## Command list
 
 In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components — which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
 
@@ -515,7 +515,7 @@ const command_struct command_list[] = {
 #endif
 ```
 
-### Creating custom commands
+## Creating custom commands
 
 The code for a simple example command is presented below. Every function that can be invoked via the command-line interpreter must accept two arguments:
 - `int argc` – the number of arguments passed; this is always >= 1.
@@ -542,7 +542,7 @@ void template_cmd(int argc, char * argv[]) {
 }
 ```
 
-### Command help
+## Command help
 
 It is possible to add help text to each command. To do this, place the `CMD_HELP("text")` macro definition at the beginning of the function that handles the command. A newline character (`\n`) will be automatically appended to the end. The help text can also span multiple lines. Help text can consume a significant amount of flash memory. For this reason, you can quickly and easily disable the help feature by changing the `CONSOLE_USE_HELP` definition from `true` to `false` in the configuration file `_config/uCosmos_config.h`.
 
@@ -560,55 +560,55 @@ void gpio_dir_cmd(int argc, char * argv[]) {
 }
 ```
 
-### Argument parsers
+## Argument parsers
 
 TODO
 
-#### Unsigned integer
+### Unsigned integer
 
 TODO
 
-#### Signed integer
+### Signed integer
 
 TODO
 
-#### Floating point
+### Floating point
 
 TODO
 
-#### ASCII character
+### ASCII character
 
 TODO
 
-#### ASCII string
+### ASCII string
 
 TODO
 
-#### HEX string
+### HEX string
 
 TODO
 
-#### Time
+### Time
 
 TODO
 
-## TODO Diagnostyka
+# TODO Diagnostyka
 
 TODO
 
-### Task monitor
+## Task monitor
 
 TODO
 
-### Czas pracy tasków
+## Czas pracy tasków
 
 TODO
 
-### Pomiar czasu
+## Pomiar czasu
 
 TODO
 
-## Logs
+# Logs
 
 The uCosmos system provides a convenient library for displaying logs. There are four types of messages, distinguished by color and a prefix at the beginning of the line:
 
@@ -650,7 +650,7 @@ LOGI("u16 = %u", u16);
 LOGI("u32 = %lu", u32);
 ```
 
-### Formatting and colors
+## Formatting and colors
 
 uCosmos provides a wide range of definitions to facilitate text formatting in accordance with the ANSI standard. Below is a list of definitions that you can use and combine to achieve various effects. Please note, however, that not all terminals support every one of them.
 
@@ -669,47 +669,47 @@ You can try the command `colors` on the console. It is available if `USE_CMD_COL
 
 ![colors command](readme/colors.png)
 
-## Change log
+# Change log
 
 The project has been under continuous development since 2011.
 
-### 5.4.0 - 2026.xx.xx
+## 5.4.0 - 2026.xx.xx
 * Added very long `readme.md`.
 * Added `colors` command.
 * Added `USE_CMD_COLORS` to condig file (version 261120).
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Changed `CMD_HELP()` to show help for a command when the only argument passed to the command is the `?` character.
 
-### 5.3.0 - 2026.11.17
+## 5.3.0 - 2026.11.17
 * Added quite advanced task diagnostics, including task time measurement, maximum and average time, overrun control, CPU usage, etc.
 * Added `CMD_HELP` macro to facilitate the creation of user guides for console commands.
 * Added version control of config files.
 * Changed `task_close` to `task_remove` because this function in fact doesn't close the task (it may be currently running) but only removes it from `task_table` so it will not be called anymore unless it is added again.
 * All comments translated to English.
 
-### 5.2.0 - 2026.11.09
+## 5.2.0 - 2026.11.09
 * Added float parser.
 * Added `uCosmos_deinit` to shut down the system before power is cut off.
 * Added `print_hexstr` function to make it easier to print arrays in HEX format.
 
-### 5.1.0 - 2026.11.03
+## 5.1.0 - 2026.11.03
 * Added `parse_dec()`, `parse_hex()` and `parse_bin()` for greater convenience, eliminating the need to specify the numeral base each time.
 * Key `'` can be used as a digit separator in numeric parsers.
 * Fixed bug in verification of the max value given to `parse_uint()`.
 * Demos of argument parsers have been optimized.
 
-### 5.0.0 - 2026.10.04
+## 5.0.0 - 2026.10.04
 * Initial release to GitHub.
 * Ported to Raspberry Pi Pico RP2040, RP2350, RP2354.
 
-### 4.0.0 - 2024
+## 4.0.0 - 2024
 * Ported to Espressif ESP32.
 
-### 3.0.0 - 2018
+## 3.0.0 - 2018
 * Redesigned the entire task management system and command interpreter to provide a robust foundation for various projects using AVR microcontrollers.
 
-### 2.0.0 - 2013
+## 2.0.0 - 2013
 * I developed the second version for my master's thesis, which was a system for monitoring building tilt. It consisted of a central unit that communicated with sensor modules, which in turn collected data from various inclinometers.
 
-### 1.0.0 - 2011
+## 1.0.0 - 2011
 * The first version was developed as part of my engineering thesis. At the time, it served as an HPGL language interpreter running on an ATmega128 microcontroller, designed to control a pen plotter.
