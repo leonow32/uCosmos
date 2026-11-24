@@ -14,7 +14,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 - Full task lifecycle supported: constructor, destructor, run and identification.
 - A built-in command-line interpreter that generates standard `argc` and `argv` data.
 - CTRL-Z to recall the last command.
-- Rich, type-safe set of argument parsers for 8/16/32/64-bit signed integers, 8/16/32/64 bit unsigned integers, float/double values, ASCII characters, ASCII strings, HEX strings and timestamps.
+- Rich, type-safe set of argument parsers for 8/16/32/64-bit signed integers, 8/16/32/64-bit unsigned integers, float/double values, ASCII characters, ASCII strings, HEX strings and timestamps.
 - Optional diagnostic subsystem measuring task execution time, overruns, total execution time and total CPU usage.
 - Portable and compact code: the hardware abstraction layer consists of a handful of macros, so porting to a new MCU is very easy.
 
@@ -83,7 +83,7 @@ void hello_task(run_mode_t run_mode) {
     
     if(run_mode == os_run) {
         if(counter < 5) {
-            LOGI("Hello %d", counter++);
+            LOGW("Hello %d", counter++);
         }
         else {
             task_remove(hello_task);
@@ -107,6 +107,10 @@ int main() {
     uCosmos_scheduler();
 }
 ```
+
+Result:
+
+![Hello world demo output](readme/hello.png)
 
 # Architecture overview
 
@@ -447,7 +451,7 @@ To get the task name, use the const char * task_get_name(void (*task_ptr)(run_mo
 Example
 
 ```c++
-printf("My task is called %s.\n", get_task_name(my_task));
+printf("My task is called %s.\n", task_get_name(my_task));
 ```
 
 # Command line
@@ -550,12 +554,12 @@ It is recommended that you list the argument names and, if useful, their types i
 
 ```c++
 void task_period_change_cmd(int argc, char * argv[]) {
-	CMD_HELP("ptr:hex32 period:dec16");
+    CMD_HELP("ptr:hex32 period:dec16");
     // do something...
 }
 
 void gpio_dir_cmd(int argc, char * argv[]) {
-	CMD_HELP("num:dec dir:dec(0=in, 1=out)");
+    CMD_HELP("num:dec dir:dec(0=in, 1=out)");
     // do something...
 }
 ```
@@ -580,45 +584,165 @@ These are examples of messages you might see in the console in case of a parsing
 Here is a list of all possible values ​​returned by the parsers.
 
 - `parse_ok` - success.
-- `parse_missing_argument` - 
-- `parse_over_range` - 
-- `parse_under_range` - 
-- `parse_error` - 
+- `parse_missing_argument` - argument pointer is `nullptr` or first character of the string is NUL.
+- `parse_over_range` - value of the variable exceeds the maximum size, either as determined by the variable's type or by a user-specified constraint.
+- `parse_under_range` - the value of the variable is under than the minimum size determined by the variable's type.
+- `parse_error` - other error.
 - `parse_expected_bin` - the input should be binary value.
 - `parse_expected_dec` - the input should be decimal value.
 - `parse_expected_hex` - the input should be hexadecimal value.
 - `parse_expected_float` - the input should be floating point value.
-- `parse_wrong_base` - base of the input number must be inb the range from 2 to 16.
-- `parse_wrong_time` - 
-- `parse_nullptr` - 
+- `parse_wrong_base` - base of the input number must be in the range from 2 to 16.
+- `parse_wrong_time` - time value is not given in YYMMDDhhmmss format or the date/time is incorrect.
+- `parse_nullptr` - output pointer is `nullptr`.
 
 ### Unsigned integer
 
-TODO
+Converts an argument that is an unsigned integer of 8, 16, 32, or 64 bits. For long numbers, the `'` character can be used as a separator. A universal parser, `parse_uint`, is available and can be used to parse numbers with various bases ranging from 2 to 16. For convenience, there are wrappers—`parse_bin`, `parse_dec`, and `parse_hex`—that specify whether the input number should be treated as binary, decimal, or hexadecimal, respectively. In every parser, you can additionally enable a maximum value check by setting the `max` argument. By default, it is set to the maximum value for a variable of the specified type.
+
+```c++
+template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base, T max);
+parse_res parse_dec(const char * arg, uint8_t  * output, uint8_t  max);
+parse_res parse_dec(const char * arg, uint16_t * output, uint16_t max);
+parse_res parse_dec(const char * arg, uint32_t * output, uint32_t max);
+parse_res parse_dec(const char * arg, uint64_t * output, uint64_t max);
+
+parse_res parse_hex(const char * arg, uint8_t  * output, uint8_t  max);
+parse_res parse_hex(const char * arg, uint16_t * output, uint16_t max);
+parse_res parse_hex(const char * arg, uint32_t * output, uint32_t max);
+parse_res parse_hex(const char * arg, uint64_t * output, uint64_t max);
+
+parse_res parse_bin(const char * arg, uint8_t  * output, uint8_t  max);
+parse_res parse_bin(const char * arg, uint16_t * output, uint16_t max);
+parse_res parse_bin(const char * arg, uint32_t * output, uint32_t max);
+parse_res parse_bin(const char * arg, uint64_t * output, uint64_t max);
+```
+
+Example:
+
+```c++
+uint32_t value;
+if(parse_dec(argv[1], &value, 1234)) return;
+printf("Result: %lu", value);         
+```
 
 ### Signed integer
 
-TODO
+Converts an argument that is a signed integer with a length of 8, 16, 32, or 64 bits. For long numbers, the `'` character can be used as a separator.
+
+```c++
+template<typename T> parse_res parse_int(const char * arg, T * output);
+parse_res parse_int(const char * arg, int8_t * output);
+parse_res parse_int(const char * arg, int16_t * output);
+parse_res parse_int(const char * arg, int32_t * output);
+parse_res parse_int(const char * arg, int64_t * output);
+```
+
+Example:
+
+```c++
+int16_t value;
+if(parse_int(argv[1], &value)) return;
+printf("%d", value);
+```
 
 ### Floating point
 
-TODO
+Converts an argument that is a floating-point number of type `float` or `double`. The decimal separator can be either `.` or `,`, and the exponent character can be `e` or `E`. Examples of data that the parser can accept include: `123`, `+123`, `-123`, `123,456`, `123.456`, `123.456e78`, and `123,456E-78`.
+
+```c++
+template<typename T> parse_res parse_float(const char * arg, T * output);
+parse_res parse_float(const char * arg, float * output);
+parse_res parse_float(const char * arg, double * output);
+```
+
+Example:
+
+```c++
+float value;
+if(parse_float(argv[1], &value)) return;
+printf("%f", value);
+```
 
 ### ASCII character
 
-TODO
+Converts an argument that is a single ASCII character into a variable of type `char`.
+
+```c++
+parse_res parse_ascii_char(const char * arg, char * output);
+```
+
+Example:
+
+```c++
+char character;
+if(parse_ascii_char(argv[1], &character)) return;
+printf("%c", character);
+```
 
 ### ASCII string
 
-TODO
+Converts an ASCII string argument into a `char[]` array. It returns the array via the `output` pointer and the number of characters in that array via the `output_length` pointer. You must specify the size of the destination buffer using the `buffer_size` argument to ensure the function does not write more data than the buffer can hold. You may also include an optional check for the minimum length of the input data; if the provided string is shorter than `min_length`, the function will return `parse_under_range`.
+
+```c++
+parse_res parse_ascii_string(const char * arg, char * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+```
+
+Example:
+
+```c++
+char buffer[16];
+size_t length;
+if(parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
+printf("length: %u\n", length);
+printf("buffer: %s\n", buffer);
+```
 
 ### HEX string
 
-TODO
+Converts the argument, which is a HEX string (characters 0...9 and A...F or a...f), to a byte array `uint8_t[]`. The input string may contain spaces as byte separators; in such cases, the string must be enclosed in double quotation marks (e.g., `"AA BB CC DD EE FF"`). The function returns the array via the `output` pointer and the number of bytes in that array via the `output_length` pointer. You must specify the size of the destination buffer using the `buffer_size` argument to ensure the function does not write more data than the buffer can hold. An optional check for the minimum length of the input data is also available; if the provided string is shorter than `min_length`, the function will return `parse_under_range`.
+
+```c++
+parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * output_length, const size_t buffer_size, const size_t min_length = 0);
+```
+
+Example:
+
+```c++
+uint8_t buffer[16];
+size_t length;
+if(parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
+printf("length: %u\n", length);
+printf("HEX: ");
+print_hexstr(buffer, length, true, ' ');
+```
 
 ### Time
 
-TODO
+Converts an argument representing a date and time in the format YYMMDDhhmmss. The parser strictly validates the ranges of all date and time components, as well as leap years.
+
+```c++
+parse_res parse_time(const char * arg, time_t * output);
+```
+
+Example:
+
+```c++
+time_t time_seconds;
+if(parse_time(argv[1], &time_seconds)) return;
+
+tm time_struct;
+localtime_r(&time_seconds, &time_struct);
+
+printf("%04u-%02u-%02u %02u:%02u:%02u\n",
+    time_struct.tm_year + 1900,
+    time_struct.tm_mon + 1,
+    time_struct.tm_mday,
+    time_struct.tm_hour,
+    time_struct.tm_min,
+    time_struct.tm_sec
+);
+```
 
 # TODO Diagnostyka
 

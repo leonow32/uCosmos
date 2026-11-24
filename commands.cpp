@@ -210,7 +210,7 @@ void echo_cmd(int argc, char * argv[]) {
 		}                                                                       \
 		                                                                        \
 		var_type value;                                                         \
-		if (parse_function(argv[1], &value, max)) return;                       \
+		if(parse_function(argv[1], &value, max)) return;                        \
 		                                                                        \
 		printf("Result: " print_format "\n", value);                            \
 	}
@@ -270,13 +270,9 @@ void ascstr_cmd(int argc, char * argv[]) {
 	size_t length;
 	if(parse_ascii_string(argv[1], buffer, &length, sizeof(buffer), 0)) return;
 	printf("length: %u\n", length);
-	printf("strlen: %u\n", strlen(buffer));
 	printf("ASC: %s\n", buffer);
 	printf("HEX: ");
-	for(uint8_t i=0; i<length; i++) {
-		printf("%02X ", buffer[i]);
-	}
-	printf("\n");
+	print_hexstr((const uint8_t*)buffer, length, true, ' ');
 }
 
 void hexstr_cmd(int argc, char * argv[]) {
@@ -286,15 +282,8 @@ void hexstr_cmd(int argc, char * argv[]) {
 	size_t length;
 	if(parse_hex_string(argv[1], buffer, &length, sizeof(buffer))) return;
 	printf("length: %u\n", length);
-	printf("ASC: ");
-	for(uint8_t i=0; i<length; i++) {
-		printf("%c", buffer[i]);
-	}
-	printf("\nHEX: ");
-	for(uint8_t i=0; i<length; i++) {
-		printf("%02X ", buffer[i]);
-	}
-	printf("\n");
+	printf("HEX: ");
+	print_hexstr(buffer, length, true, ' ');
 }
 
 void timestr_cmd(int argc, char * argv[]) {
