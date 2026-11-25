@@ -58,7 +58,9 @@ This is a simple, single-threaded, single-core operating system and command-line
     - [ASCII string](#ascii-string)
     - [HEX string](#hex-string)
     - [Time](#time)
-- TODO Diagnostics
+- [Diagnostic tools](#diagnostic-tools)
+    - [Task monitor](#task-monitor)
+	- TODO
 - [Logs](#logs)
   - [Formatting and colors](#formatting-and-colors)
 - [Change log](#change-log)
@@ -744,7 +746,7 @@ printf("%04u-%02u-%02u %02u:%02u:%02u\n",
 );
 ```
 
-# TODO Diagnostyka
+# Diagnostic tools
 
 TODO
 
