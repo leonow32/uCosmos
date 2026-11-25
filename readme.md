@@ -748,11 +748,22 @@ printf("%04u-%02u-%02u %02u:%02u:%02u\n",
 
 # Diagnostic tools
 
-TODO
+The uCosmos system is equipped with many diagnostic tools that allow you to monitor the execution time of tasks and other activities as well as the processor load. Please note that these diagnostic tools consume both flash and RAM; therefore, it is advisable to disable them in the firmware for the final product.
+
+The configuration file `_config/uCosmos_config.h` contains several variables used to configure these diagnostic tools:
+
+- `USE_CMD_TASK_MONITOR` – when set to `true`, this enables a command `` ` `` that displays diagnostic information on the console.
+- `DIAG_USE` – when set to `true`, this enables the analysis of task execution times.
+- `DIAG_COUNT` – specifies the number of tasks to be included in the execution time analysis. Each task requires 32 bytes of data, so setting this value too high will result in significant RAM consumption.
+- `DIAG_SORT_BEFORE_PRINT` – if set to `false`, the timing analysis is displayed in the order in which tasks were added to the scheduler (from oldest to newest). If set to `true`, the tasks are sorted by execution time, displayed from the most time-consuming to the least.
 
 ## Task monitor
 
-TODO
+The `` ` `` command displays various information on the console about tasks currently and in the past running. Let's see an example. The screenshot below shows a scenario with four active tasks: `console_task`, `clock_task`, `display_task`, and `sensor_task`. We can see a pointer to the address in flash memory where these tasks reside (which can be useful if a product contains multiple program memory units). The table also shows the intervals at which these tasks are executed (assuming that none of them will take excessively long to execute and will not disturb the schedule).
+
+
+
+![Task monitor example](readme/task_monitor.png)
 
 ## Czas pracy tasków
 

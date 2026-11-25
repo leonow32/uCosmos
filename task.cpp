@@ -97,11 +97,11 @@ void diag_clear_cmd(int argc, char * argv[]) {
 
 #if USE_CMD_TASK_MONITOR
 void task_monitor_cmd(int argc, char * argv[]) {
-	printf(TEXT_WHITE_BRIGHT " No  Pointer   Per [ms] Name\n" FORMAT_RESET);
+	printf(TEXT_WHITE_BRIGHT " No  Pointer Period [ms] Name\n" FORMAT_RESET);
 	
 	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr) {
-			printf("%3u %08lX %10lu %s\n", 
+			printf("%3u %08lX %11lu %s\n", 
 				i, 
 				uint32_t(task_table[i].task_ptr), 
 				uint32_t(task_table[i].period) * TICK_PERIOD_MS, 
