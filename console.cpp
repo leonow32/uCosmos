@@ -377,13 +377,15 @@ template<typename T> parse_res parse_float(const char * arg, T * output) {
 			arg++;
 		}
 
-		if(*arg < '0' || *arg > '9') 					return debug(parse_expected_float, arg_copy);
+		if(*arg < '0' || *arg > '9') 							return debug(parse_expected_float, arg_copy);
 
 		while(*arg >= '0' && *arg <= '9') {
 			uint8_t digit = *arg++ - '0';
-			if(exponent > (INT16_MAX - digit) / 10)		return debug(parse_over_range, arg_copy);
+			if(exponent > (INT16_MAX - digit) / 10)				return debug(parse_over_range, arg_copy);
 			exponent = exponent * 10 + digit;
 		}
+
+		if(exponent > std::numeric_limits<T>::max_exponent10)	return debug(parse_over_range, arg_copy);
 
 		while(exponent--) {
 			scale *= 10;

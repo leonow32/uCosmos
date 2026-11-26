@@ -35,7 +35,7 @@ volatile bool exit_request = false;
 volatile task_control_t task_table[TASK_MAXCOUNT];
 
 // ========================================
-// Task disgnostics
+// Task diagnostics
 // ========================================
 
 #if DIAG_USE
@@ -436,6 +436,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 
 // Checking whether a task has been added to the array of tasks (rather than whether it is currently being executed)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
+	if(task_ptr == nullptr)										return false;
 	IRQ_DISABLE();
 	bool result = task_check_running(task_ptr);
 	IRQ_ENABLE();

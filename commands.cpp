@@ -17,7 +17,7 @@ void exit_cmd(int argc, char * argv[]) {
 
 #if USE_CMD_TASK_COMMANDS
 	
-	// Add new task with requested period and phase shift
+	// Add new task with requested period
 	void task_add_cmd(int argc, char * argv[]) {
 		CMD_HELP("ptr:hex32 period:dec16");
 		

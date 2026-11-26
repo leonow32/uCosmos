@@ -12,7 +12,7 @@
 	#include "pico/stdlib.h"
 #endif
 
-// Task exection mode
+// Task execution mode
 enum run_mode_t {
 	os_run = 0,
 	os_constructor,

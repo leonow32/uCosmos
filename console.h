@@ -6,6 +6,7 @@
 #include <time.h>
 #include <limits>
 #include "task.h"
+#include "log.h"
 
 // Struct used to build table of commands and pointers to specified functions
 struct command_struct {
