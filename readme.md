@@ -228,7 +228,7 @@ Below is an example of a `main.cpp` file. At the very beginning, there are `#inc
 
 The `main()` function can begin with the initialization of hardware peripherals (excluding those already handled by the system itself). If this is not required, you may skip this step. Next, initialize the system by calling `uCosmos_init()`. From this point on, you can add tasks to be executed by the task scheduler.
 
-Components typically require initialization during the application's startup. To achieve this, you must call the `component_init()` function for each component; as with the `#include` directives, each initialization call must be enclosed within an `#if COMPONENT_XXX` conditional block.
+Components typically require initialization during the application's startup, after `uCosmos_init()` and before `uCosmos_scheduler()`. To achieve this, you must call the `component_init()` function for each component; as with the `#include` directives, each initialization call must be enclosed within an `#if COMPONENT_XXX` conditional block.
 
 The task manager is launched by calling the `uCosmos_scheduler()` function. This function contains an infinite `while(true)` loop, meaning the program never exits it-unless a system shutdown request is issued. Such a scenario might occur, for example, prior to powering down the device.
 
@@ -438,8 +438,8 @@ This function can return one of the following values:
 - `os_ok` – success.
 - `os_nullptr` – the `task_ptr` argument is `nullptr`.
 - `os_not_found` - the specified task is not present in the scheduler's task array.
-- `os_task_period_under_range` – the task was not added because its execution period is shorter than the system tick period, defined by the `TICK_PERIOD_MS` parameter in the configuration file.
-- `os_period_rounded` – the task was added, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
+- `os_task_period_under_range` – operation not possible because its execution period is shorter than the system tick period, defined by the `TICK_PERIOD_MS` parameter in the configuration file.
+- `os_period_rounded` – the period has been changed, but since the requested period is not a multiple of `TICK_PERIOD_MS`, the period has been rounded.
 
 ## Checking whether a task is added
 
@@ -489,7 +489,7 @@ You can experiment with the `args` command, which displays all the arguments tha
 
 ## Command list
 
-In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components - which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
+In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/_commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components - which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
 
 In essence, the command list is an array of `command_struct` elements. Each structure consists of a command name (defined as `const char * name`) and a function pointer (defined as `void (*ptr)(int argc, char * argv[])`) that points to the function to be executed when that command name is entered. I recommend placing the command name and the function pointer on the same line, as shown in the example below. This improves code readability, which is particularly helpful given that the command list can become quite long.
 
@@ -836,7 +836,7 @@ The code below presents basic examples of all four types of log messages:
 LOGE("Error (red)");
 LOGW("Warning (yellow)");
 LOGI("Information (green)");
-LOGD("Debug (White)");
+LOGD("Debug (white)");
 ```
 
 Here is the result:
@@ -884,7 +884,7 @@ You can try the command `colors` on the console. It is available if `USE_CMD_COL
 
 The project has been under continuous development since 2011.
 
-## 5.4.0 - 2026.xx.xx
+## 5.4.0 - 2026.11.26
 * Added very long `readme.md`.
 * Added `colors` command.
 * Added `USE_CMD_COLORS` to config file (version 261120).
