@@ -143,9 +143,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 					i, 
 					count,
 					over,
-					total / 1000,    uint16_t(total % 1000),
-					max / 1000,      uint16_t(max % 1000),
-					avg / 1000,      uint16_t(avg % 1000),
+					total / 1000, uint16_t(total % 1000),
+					max / 1000,   uint16_t(max % 1000),
+					avg / 1000,   uint16_t(avg % 1000),
 					percent,
 					task_get_name(diag_table[i].task_ptr)
 				);
@@ -308,7 +308,9 @@ void task_init(void) {
 		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &timer_handle));
 		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
-		add_repeating_timer_ms(-TICK_PERIOD_MS, task_system_tick, nullptr, &timer);
+		if(add_repeating_timer_ms(-TICK_PERIOD_MS, task_system_tick, nullptr, &timer) == false) {
+			LOGE("Timer init failed");
+		}
 	#else
 		#error "Platform not supported"
 	#endif

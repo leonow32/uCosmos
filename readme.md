@@ -609,6 +609,7 @@ Here is a list of all possible values ​​returned by the parsers.
 - `parse_expected_dec` - the input should be decimal value.
 - `parse_expected_hex` - the input should be hexadecimal value.
 - `parse_expected_float` - the input should be floating point value.
+- `parse_expected_char` - the input should be a single ASCII character.
 - `parse_wrong_base` - base of the input number must be in the range from 2 to 16.
 - `parse_wrong_time` - time value is not given in YYMMDDhhmmss format or the date/time is incorrect.
 - `parse_nullptr` - output pointer is `nullptr`.
@@ -665,7 +666,7 @@ printf("%d", value);
 
 ### Floating point
 
-Converts an argument that is a floating-point number of type `float` or `double`. The decimal separator can be either `.` or `,`, and the exponent character can be `e` or `E`. Examples of data that the parser can accept include: `123`, `+123`, `-123`, `123,456`, `123.456`, `123.456e78`, and `123,456E-78`.
+Converts an argument that is a floating-point number of type `float` or `double`. The decimal separator can be either `.` or `,`, and the exponent character can be `e` or `E`. Examples of data that the parser can accept include: `123`, `+123`, `-123`, `123,456`, `123.456`, `123.456e78`, and `123,456E-78`. The parser supports `nan` for "not a number" special value, `inf` and `-inf` for positive and negative infinity.
 
 ```c++
 template<typename T> parse_res parse_float(const char * arg, T * output);
@@ -889,6 +890,7 @@ The project has been under continuous development since 2011.
 * Added `colors` command.
 * Added `USE_CMD_COLORS` to config file (version 261120).
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
+* Added `parse_expected_char` error code to signal that a string with a length greater than 1 has been passed to the `parse_ascii_char` parser.
 * Changed `CMD_HELP()` to show help for a command when the only argument passed to the command is the `?` character.
 
 ## 5.3.0 - 2026.11.17

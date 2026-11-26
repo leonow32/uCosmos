@@ -31,6 +31,7 @@ enum parse_res {
 	parse_expected_dec,
 	parse_expected_hex,
 	parse_expected_float,
+	parse_expected_char,
 	parse_wrong_base,
 	parse_wrong_time,
 	parse_nullptr,

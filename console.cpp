@@ -176,6 +176,7 @@ static parse_res debug(const parse_res res, const char * arg) {
 			case parse_expected_dec:		printf("expected dec");		break;
 			case parse_expected_hex:		printf("expected hex");		break;
 			case parse_expected_float:		printf("expected float");	break;
+			case parse_expected_char:		printf("expected char");	break;
 			case parse_nullptr:				printf("nullptr");			break;
 			case parse_wrong_base:			printf("wrong base");		break;
 			case parse_wrong_time:			printf("wrong time");		break;
@@ -403,6 +404,7 @@ template parse_res parse_float<double>(const char *, double *);
 parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
 	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
+	if(arg[1] != NUL)				return debug(parse_expected_char, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	*output = arg[0];
 	return parse_ok;
