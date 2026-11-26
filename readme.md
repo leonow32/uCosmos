@@ -737,7 +737,7 @@ print_hexstr(buffer, length, true, ' ');
 
 ### Time
 
-Converts an argument representing a date and time in the format YYMMDDhhmmss. The parser strictly validates the ranges of all date and time components, as well as leap years.
+Converts an argument representing a date and time in the format YYMMDDhhmmss. The parser strictly validates the ranges of all date and time components, as well as leap years. This parser interprets the input as local standard time. UTC and explicit time-zone offsets are not supported. Daylight saving time is not applied.
 
 ```c++
 parse_res parse_time(const char * arg, time_t * output);
@@ -797,7 +797,7 @@ Below the table, two values ​​are displayed:
 
 To find out how much time has elapsed since the system started, use the function uint64_t get_time_us().
 
-A more advanced way is to use the `ExecutionTimer` class, which is designed to measure the time between two events. A class starts counting time when its constructor or `.begin()` method is executed. To stop the measurement, call the `.end()` method, and retrieve the result using the `.get()` method. Alternatively, you can use the `.print(const char * text = nullptr)` method, which stops the measurement and displays the result on the console, optionally accompanied by a text message if provided. Furthermore, `.print()` displays the time in milliseconds, with microseconds shown after a decimal point, using three significant digits - a format that is both readable and convenient.
+A more advanced way is to use the `ExecutionTimer` class, which is designed to measure the time between two events. A class starts counting time when its constructor or `.begin()` method is executed. To stop the measurement, call the `.end()` method, and retrieve the result using the `.get()` method. Alternatively, you can use the `.print(const char * text = nullptr)` method, which displays the result on the console, optionally accompanied by a text message if provided. Furthermore, `.print()` displays the time in milliseconds, with microseconds shown after a decimal point, using three significant digits - a format that is both readable and convenient.
 
 Examples:
 
