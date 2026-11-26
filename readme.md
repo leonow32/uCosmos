@@ -5,7 +5,7 @@ What is uCosmos?
 * **OS** - Operating System
 * **MOS** - Metal Oxide Semiconductor (yeah, that's dumb...)
 
-This is a simple, single-threaded, single-core operating system and command-line interpreter designed for microcontrollers. It currently supports microcontrollers such as the Espressif ESP32, as well as the Raspberry Pi RP2040, RP2350, and RP2354; however, adding support for other devices is very straightforward. All that is required is a single timer that triggers an interrupt at regular intervals and an input stream for keyboard data, such as a UART or USB interface.
+This is a simple, single-threaded, single-core lightweight cooperative scheduler and command-line interpreter designed for microcontrollers. It currently supports microcontrollers such as the Espressif ESP32, as well as the Raspberry Pi RP2040, RP2350, and RP2354; however, adding support for other devices is very straightforward. All that is required is a single timer that triggers an interrupt at regular intervals and an input stream for keyboard data, such as a UART or USB interface.
 
 ## Features
 
@@ -20,13 +20,28 @@ This is a simple, single-threaded, single-core operating system and command-line
 
 ## Why use uCosmos?
 
-- Architecture based on periodic tasks.
-- Deterministic execution.
-- Ideal for small MCU applications.
-- No context switching.
-- Very low RAM usage.
-- Easier debugging.
+uCosmos is designed for small and medium embedded projects where
+predictability, simplicity and low resource usage are more important
+than true multitasking.
+
+Advantages:
+
+- No context switching overhead.
+- No per-task stacks, resulting in very low RAM consumption.
+- Deterministic execution model based on periodic tasks.
+- Easier debugging because all code executes within a single thread.
+- Integrated command-line interface for diagnostics and testing.
+- Built-in task monitoring and CPU usage analysis.
 - Powerful command line interpreter to facilitate testing and development.
+- Simple component-based architecture allowing code reuse across many products.
+- Easy portability to new MCUs through a very small hardware abstraction layer.
+
+uCosmos may be a better choice than a traditional RTOS when:
+
+- Tasks are short and periodic,
+- RAM resources are limited,
+- Debugging simplicity is important,
+- The application does not require preemption or blocking APIs.
 
 ## Table of contents
 
@@ -41,7 +56,7 @@ This is a simple, single-threaded, single-core operating system and command-line
 - [Task management](#task-management)
   - [Task template](#task-template)
   - [Adding a task](#adding-a-task)
-  - [Removing a task](#removing-a-tasks)
+  - [Removing a task](#removing-a-task)
   - [Changing a task period](#changing-a-task-period)
   - [Checking whether a task is added](#checking-whether-a-task-is-added)
   - [Getting the task name](#getting-the-task-name)
@@ -60,7 +75,7 @@ This is a simple, single-threaded, single-core operating system and command-line
     - [Time](#time)
 - [Diagnostic tools](#diagnostic-tools)
     - [Task monitor](#task-monitor)
-	- TODO
+	- [Time measurement](#time-measurement)
 - [Logs](#logs)
   - [Formatting and colors](#formatting-and-colors)
 - [Change log](#change-log)
@@ -110,13 +125,13 @@ int main() {
 }
 ```
 
-Result:
+The constructor is executed immediately after task_add(), then the task runs five times at one-second intervals and finally removes itself, invoking its destructor. Here is the screenshot of the result:
 
 ![Hello world demo output](readme/hello.png)
 
 # Architecture overview
 
-The uCosmos system was created to facilitate the management of multiple tasks — not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
+The uCosmos system was created to facilitate the management of multiple tasks - not just within a single project, but across many. It was designed with the goal of allowing code written once to be reused in various products and other projects. In the example below, we will look at a simple project where the code repository is set up for two products: a *premium* version that includes a display, a clock, and EEPROM memory, and a *basic* version that features only a clock and EEPROM memory, but lacks a display.
 
 ## Folder tree
 
@@ -178,7 +193,7 @@ your_project
 
 ## Cloning the repository
 
-uCosmos is designed to work as a submodule within an existing GIT repository. Navigate to the folder containing your repository—or create a new one—and then clone uCosmos as a submodule using the following command:
+uCosmos is designed to work as a submodule within an existing GIT repository. Navigate to the folder containing your repository-or create a new one-and then clone uCosmos as a submodule using the following command:
 
 ```bash
 git submodule add git@github.com:leonow32/uCosmos.git uCosmos
@@ -209,13 +224,13 @@ Let’s examine the contents of the `_config/_config.h` file. It contains the ge
 
 ## Startup
 
-Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file—located at `_config/_config.h` are included.
+Below is an example of a `main.cpp` file. At the very beginning, there are `#include` directives for various components; however, these are wrapped in `#if COMPONENT_XXX` preprocessor directives to ensure that only the components specified in the main configuration file-located at `_config/_config.h` are included.
 
 The `main()` function can begin with the initialization of hardware peripherals (excluding those already handled by the system itself). If this is not required, you may skip this step. Next, initialize the system by calling `uCosmos_init()`. From this point on, you can add tasks to be executed by the task scheduler.
 
 Components typically require initialization during the application's startup. To achieve this, you must call the `component_init()` function for each component; as with the `#include` directives, each initialization call must be enclosed within an `#if COMPONENT_XXX` conditional block.
 
-The task manager is launched by calling the `uCosmos_scheduler()` function. This function contains an infinite `while(true)` loop, meaning the program never exits it—unless a system shutdown request is issued. Such a scenario might occur, for example, prior to powering down the device.
+The task manager is launched by calling the `uCosmos_scheduler()` function. This function contains an infinite `while(true)` loop, meaning the program never exits it-unless a system shutdown request is issued. Such a scenario might occur, for example, prior to powering down the device.
 
 ```c++
 // File main.cpp
@@ -266,7 +281,7 @@ int main() {
 
 Let’s look at how component configuration files work, using the `clock` component as an example. Once you have downloaded the component submodule, you must copy its configuration template from `component/template/component_config.h` to `_config/component_config.h`.
 
-Next, copy the default configuration as many times as you have products; for instance, the example below shows two configurations — one for `PRODUCT_BASIC` and one for `PRODUCT_PREMIUM`. If several products share an identical configuration, you can group them using the `||` operator, like this: `PRODUCT_BASIC || PRODUCT_PREMIUM`. In our example, the configuration for these two products differs slightly.
+Next, copy the default configuration as many times as you have products; for instance, the example below shows two configurations - one for `PRODUCT_BASIC` and one for `PRODUCT_PREMIUM`. If several products share an identical configuration, you can group them using the `||` operator, like this: `PRODUCT_BASIC || PRODUCT_PREMIUM`. In our example, the configuration for these two products differs slightly.
 
 Note two important details. At the end of the configuration for each product, we define `#define CLOCK_CONFIG_DONE`. This helps identify errors that might occur if you add a new product to the main configuration but forget to include a specific component. In such a case, the compilation process will trigger an `#error "Missing config"` rather than a flood of messages reporting that certain variables could not be found. Secondly, there is `#define CLOCK_CONFIG_VERSION 261116`, which records the date the configuration template was last updated, in `YYMMDD` format. Keep in mind that the component code resides in the submodule, while the configuration file belongs to your own repository. If you update the submodule, the new version may include configuration changes that you will need to transfer from the template to your file in the `_config` folder. If it turns out that a component submodule requires an update to its configuration file, you will receive the following message: `#error "The version of the configuration file stored in the repository is not supported.. Please copy clock/template/clock_config.h to your _config folder"`.
 
@@ -304,7 +319,7 @@ Note two important details. At the end of the configuration for each product, we
 
 # Task management
 
-A task is, in essence, a C++ function written in a specific way. This function is invoked by the system scheduler at a configured period (or, more precisely, no more frequently than at a configured period) and continues to run until it completes its execution and returns via `return` instruction. There are no mechanisms for task preemption, nor are there separate stacks for each task—unlike in FreeRTOS. This solution is simple and effective, but it is important to note that **if a single task hangs, the entire system will hang**.
+A task is, in essence, a C++ function written in a specific way. This function is invoked by the system scheduler at a configured period (or, more precisely, no more frequently than at a configured period) and continues to run until it completes its execution and returns via `return` instruction. There are no mechanisms for task preemption, nor are there separate stacks for each task-unlike in FreeRTOS. This solution is simple and effective, but it is important to note that **if a single task hangs, the entire system will hang**.
 
 A task function always returns `void` and accepts a single argument, `run_mode`, which defines the mode in which the task is called. Possible values ​​include:
 - `os_run` – a standard, periodic execution.
@@ -464,7 +479,7 @@ It is important to understand that the console in the uCosmos is a task, just li
 
 ## Command line basics
 
-During normal operation, the command prompt is hidden to ensure that the potentially large volume of logs remains readable. To bring up the prompt, simply start typing; the `/>` symbol will appear, followed by the characters you enter. If any logs appear while you are typing, do not worry—just keep typing. Everything you have typed so far remains in the buffer. You can delete the last character entered by pressing the BACKSPACE key. To clear the entire buffer and display the prompt, press the ESCAPE key. The ENTER key executes the command. The CTRL-Z key combination recalls the last entered command, which you can then edit or execute by pressing ENTER.
+During normal operation, the command prompt is hidden to ensure that the potentially large volume of logs remains readable. To bring up the prompt, simply start typing; the `/>` symbol will appear, followed by the characters you enter. If any logs appear while you are typing, do not worry-just keep typing. Everything you have typed so far remains in the buffer. You can delete the last character entered by pressing the BACKSPACE key. To clear the entire buffer and display the prompt, press the ESCAPE key. The ENTER key executes the command. The CTRL-Z key combination recalls the last entered command, which you can then edit or execute by pressing ENTER.
 
 Your commands can accept arguments. There must be at least one SPACE between arguments. If an argument is a string of characters that contains spaces, it should be enclosed in double quotation marks. Two consecutive double quotation marks result in an argument of zero length.
 
@@ -474,7 +489,7 @@ You can experiment with the `args` command, which displays all the arguments tha
 
 ## Command list
 
-In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components — which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
+In this chapter, you will learn how the command list is organized. It is defined in the file `_config/_commands.h`, which you can create by copying the template file from `uCosmos/template/commands.h`. While the command list belongs to your repository, some commands may be imported from the internal command lists of individual components - which could themselves be submodules. At the very beginning of the file, there are `#include` directives for `console.h` which contains the entire command-line interpreter and `commands.h`, which holds a set of demonstration commands. These commands can be enabled or disabled in the configuration file `_config/uCosmos_config.h`.
 
 In essence, the command list is an array of `command_struct` elements. Each structure consists of a command name (defined as `const char * name`) and a function pointer (defined as `void (*ptr)(int argc, char * argv[])`) that points to the function to be executed when that command name is entered. I recommend placing the command name and the function pointer on the same line, as shown in the example below. This improves code readability, which is particularly helpful given that the command list can become quite long.
 
@@ -588,7 +603,7 @@ Here is a list of all possible values ​​returned by the parsers.
 - `parse_ok` - success.
 - `parse_missing_argument` - argument pointer is `nullptr` or first character of the string is NUL.
 - `parse_over_range` - value of the variable exceeds the maximum size, either as determined by the variable's type or by a user-specified constraint.
-- `parse_under_range` - the value of the variable is under than the minimum size determined by the variable's type.
+- `parse_under_range` - the value is below the minimum allowed value determined by the variable's type.
 - `parse_error` - other error.
 - `parse_expected_bin` - the input should be binary value.
 - `parse_expected_dec` - the input should be decimal value.
@@ -600,7 +615,7 @@ Here is a list of all possible values ​​returned by the parsers.
 
 ### Unsigned integer
 
-Converts an argument that is an unsigned integer of 8, 16, 32, or 64 bits. For long numbers, the `'` character can be used as a separator. A universal parser, `parse_uint`, is available and can be used to parse numbers with various bases ranging from 2 to 16. For convenience, there are wrappers—`parse_bin`, `parse_dec`, and `parse_hex`—that specify whether the input number should be treated as binary, decimal, or hexadecimal, respectively. In every parser, you can additionally enable a maximum value check by setting the `max` argument. By default, it is set to the maximum value for a variable of the specified type.
+Converts an argument that is an unsigned integer of 8, 16, 32, or 64 bits. For long numbers, the `'` character can be used as a separator. A universal parser, `parse_uint`, is available and can be used to parse numbers with various bases ranging from 2 to 16. For convenience, there are wrappers-`parse_bin`, `parse_dec`, and `parse_hex`-that specify whether the input number should be treated as binary, decimal, or hexadecimal, respectively. In every parser, you can additionally enable a maximum value check by setting the `max` argument. By default, it is set to the maximum value for a variable of the specified type.
 
 ```c++
 template<typename T> parse_res parse_uint(const char * arg, T * output, uint8_t base, T max);
@@ -759,19 +774,50 @@ The configuration file `_config/uCosmos_config.h` contains several variables use
 
 ## Task monitor
 
-The `` ` `` command displays various information on the console about tasks currently and in the past running. Let's see an example. The screenshot below shows a scenario with four active tasks: `console_task`, `clock_task`, `display_task`, and `sensor_task`. We can see a pointer to the address in flash memory where these tasks reside (which can be useful if a product contains multiple program memory units). The table also shows the intervals at which these tasks are executed (assuming that none of them will take excessively long to execute and will not disturb the schedule).
+The `` ` `` command displays various information on the console about tasks currently running and previously executed. Let's see an example. The screenshot below shows a scenario with four active tasks: `console_task`, `clock_task`, `display_task`, and `sensor_task`. We can see a pointer to the address in flash memory where these tasks reside (which can be useful if a product contains multiple program memory units). The table also shows the intervals at which these tasks are executed (assuming that none of them will take excessively long to execute and will not disturb the schedule).
 
+The second table presents a time analysis of all tasks, starting from the beginning of the analysis - that is, from the moment the uCosmos system was started or the command ``` `` ``` was entered to reset the results. Time analysis shows all tasks, even if they were later removed from the scheduler. The table shows the following columns:
 
+- `Run count` - how many times the task was executed.
+- `Overruns` – the number of times a task has run longer than it should have. An overrun occurs when a task's execution time exceeds its defined period. For example, if a task is scheduled to run every 100 ms but takes 101 ms to complete, this counts as an overrun.
+- `Total [ms]` - total time of all task calls expressed in milliseconds.
+- `Max [ms]` - how long the longest task call took, expressed in milliseconds.
+- `Avg [ms]` - average task execution time, expressed in milliseconds.
+- `Usage [%]` – the percentage of total time consumed by a given task.
+- `Name` – the name of the task.
+
+Below the table, two values ​​are displayed:
+- `Measurement time` – the duration over which data has been collected, expressed in days, hours, minutes, and seconds.
+- `Total CPU usage` – the total amount of time the processor has spent executing tasks.
 
 ![Task monitor example](readme/task_monitor.png)
 
-## Czas pracy tasków
+## Time measurement
 
-TODO
+To find out how much time has elapsed since the system started, use the function uint64_t get_time_us().
 
-## Pomiar czasu
+A more advanced way is to use the `ExecutionTimer` class, which is designed to measure the time between two events. A class starts counting time when its constructor or `.begin()` method is executed. To stop the measurement, call the `.end()` method, and retrieve the result using the `.get()` method. Alternatively, you can use the `.print(const char * text = nullptr)` method, which stops the measurement and displays the result on the console, optionally accompanied by a text message if provided. Furthermore, `.print()` displays the time in milliseconds, with microseconds shown after a decimal point, using three significant digits - a format that is both readable and convenient.
 
-TODO
+Examples:
+
+```c++
+ExecutionTimer timer1 = ExecutionTimer();
+// do something
+timer1.end();
+uint64_t result = timer1.get();
+printf("Execution timer: %llu ms\n", result / 1000);
+
+ExecutionTimer timer2 = ExecutionTimer();
+// do something
+timer2.print("Execution timer");
+```
+
+Result:
+
+```
+Execution timer: 10 ms
+Execution timer: 10.004 ms
+```
 
 # Logs
 
@@ -841,7 +887,7 @@ The project has been under continuous development since 2011.
 ## 5.4.0 - 2026.xx.xx
 * Added very long `readme.md`.
 * Added `colors` command.
-* Added `USE_CMD_COLORS` to condig file (version 261120).
+* Added `USE_CMD_COLORS` to config file (version 261120).
 * Added `os_period_rounded` warning that appears if the period of the task being created is not a multiple of TICK_PERIOD_MS.
 * Changed `CMD_HELP()` to show help for a command when the only argument passed to the command is the `?` character.
 
