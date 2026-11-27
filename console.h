@@ -6,6 +6,7 @@
 #include <time.h>
 #include <limits>
 #include "task.h"
+#include "log.h"
 
 // Struct used to build table of commands and pointers to specified functions
 struct command_struct {
@@ -31,6 +32,7 @@ enum parse_res {
 	parse_expected_dec,
 	parse_expected_hex,
 	parse_expected_float,
+	parse_expected_char,
 	parse_wrong_base,
 	parse_wrong_time,
 	parse_nullptr,
@@ -65,11 +67,15 @@ void print_ok(void);
 void print_hexstr(const uint8_t array[], size_t len, bool new_line = false, char separator = 0);
 
 #if CONSOLE_USE_HELP
-	#define CMD_HELP(text)          \
-		if(argc == 1) {             \
-			printf(text "\n");      \
-			return;                 \
-		}
+	#define CMD_HELP(text)                                            \
+		do {                                                          \
+			if(argc == 2) {                                           \
+				if(argv[1] && argv[1][0] == '?' && argv[1][1] == 0) { \
+					printf(text "\n");                                \
+					return;                                           \
+				}                                                     \
+			}                                                         \
+		} while(0)
 #else
 	#define CMD_HELP(text) ((void)0)
 #endif

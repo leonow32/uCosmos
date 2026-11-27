@@ -1,6 +1,5 @@
 #include "../_config/_config.h"
 #include <cmath>
-#include <iostream>
 #include <string.h>
 #include <type_traits>
 #include "log.h"
@@ -12,6 +11,17 @@ static char 	buffer[CONSOLE_COMMAND_LENGTH];												// Buffer for currently 
 #if CONSOLE_USE_CTRL_Z
 	static char buffer2[CONSOLE_COMMAND_LENGTH];											// Buffer for last processed command, recalled with CTRL-Z
 #endif
+
+// Keycodes of some keys used by a terminal
+#define NUL				uint8_t(0)
+#define BEL				uint8_t(7)
+#define LF				uint8_t(10)
+#define CR				uint8_t(13)
+#define DEL				uint8_t(127)
+#define ESC				uint8_t(27)
+#define BACKSPACE1		uint8_t(8)
+#define BACKSPACE2		uint8_t(127)
+#define CTRL_Z			uint8_t(26)
 
 void console_init(void) {
 	LOGI("init");
@@ -40,7 +50,7 @@ void console_task(run_mode_t run_mode) {
 				#error "Platform not supported"
 			#endif
 
-			if(chr == ESCAPE) {																// If the received char is ESCAPE - clear the buffer and display the prompt
+			if(chr == ESC) {																// If the received char is ESCAPE - clear the buffer and display the prompt
 				received_cnt = 0;
 				memset(buffer, 0, sizeof(buffer));
 				prompt_show();
@@ -176,6 +186,7 @@ static parse_res debug(const parse_res res, const char * arg) {
 			case parse_expected_dec:		printf("expected dec");		break;
 			case parse_expected_hex:		printf("expected hex");		break;
 			case parse_expected_float:		printf("expected float");	break;
+			case parse_expected_char:		printf("expected char");	break;
 			case parse_nullptr:				printf("nullptr");			break;
 			case parse_wrong_base:			printf("wrong base");		break;
 			case parse_wrong_time:			printf("wrong time");		break;
@@ -194,7 +205,7 @@ static parse_res parse_numeric_char(const char chr, uint8_t * output, uint8_t ba
 	if(chr >= '0' && chr <= '9')		value = chr - '0';
 	else if(chr >= 'A' && chr <= 'F')	value = chr - 'A' + 10;
 	else if(chr >= 'a' && chr <= 'f')	value = chr - 'a' + 10;
-	else								return parse_error;
+	else								value = UINT8_MAX;
 
 	if(value >= base) {
 		switch(base) {
@@ -376,13 +387,15 @@ template<typename T> parse_res parse_float(const char * arg, T * output) {
 			arg++;
 		}
 
-		if(*arg < '0' || *arg > '9') 					return debug(parse_expected_float, arg_copy);
+		if(*arg < '0' || *arg > '9') 							return debug(parse_expected_float, arg_copy);
 
 		while(*arg >= '0' && *arg <= '9') {
 			uint8_t digit = *arg++ - '0';
-			if(exponent > (INT16_MAX - digit) / 10)		return debug(parse_over_range, arg_copy);
+			if(exponent > (INT16_MAX - digit) / 10)				return debug(parse_over_range, arg_copy);
 			exponent = exponent * 10 + digit;
 		}
+
+		if(exponent > std::numeric_limits<T>::max_exponent10)	return debug(parse_over_range, arg_copy);
 
 		while(exponent--) {
 			scale *= 10;
@@ -403,6 +416,7 @@ template parse_res parse_float<double>(const char *, double *);
 parse_res parse_ascii_char(const char * arg, char * output) {
 	if(arg == nullptr)				return debug(parse_missing_argument, arg);
 	if(arg[0] == NUL)				return debug(parse_missing_argument, arg);
+	if(arg[1] != NUL)				return debug(parse_expected_char, arg);
 	if(output == nullptr)			return debug(parse_nullptr, arg);
 	*output = arg[0];
 	return parse_ok;
@@ -467,15 +481,15 @@ parse_res parse_hex_string(const char * arg, uint8_t * output, size_t * out_len,
 		(*out_len)++;
 	}
 
-	if(*out_len < min_len) return debug(parse_under_range, arg_copy);
+	if(*out_len < min_len) 			return debug(parse_under_range, arg_copy);
 	return parse_ok;
 }
 
 // Parse time YYMMDDhhmmss
 parse_res parse_time(const char * arg, time_t * output) {
-	if(arg == nullptr)		return debug(parse_missing_argument, arg);
-	if(output == nullptr)	return debug(parse_nullptr, arg);
-	if(strlen(arg) != 12)	return debug(parse_error, arg);
+	if(arg == nullptr)				return debug(parse_missing_argument, arg);
+	if(output == nullptr)			return debug(parse_nullptr, arg);
+	if(strlen(arg) != 12)			return debug(parse_error, arg);
 
 	tm new_time = {};
 	uint8_t digits[12] = {};
@@ -493,23 +507,23 @@ parse_res parse_time(const char * arg, time_t * output) {
 	new_time.tm_min  = 10*digits[8]  + digits[9];
 	new_time.tm_sec  = 10*digits[10] + digits[11];
 
-	if(new_time.tm_mon < 0)   return debug(parse_wrong_time, arg);
-	if(new_time.tm_mon > 11)  return debug(parse_wrong_time, arg);
+	if(new_time.tm_mon < 0)   		return debug(parse_wrong_time, arg);
+	if(new_time.tm_mon > 11) 		return debug(parse_wrong_time, arg);
 	
 	bool leap_year = ((new_time.tm_year % 4 == 0) && (new_time.tm_year % 100 != 0)) || ((new_time.tm_year-100) % 400 == 0);
 	uint8_t days_in_month[] = {31, uint8_t(leap_year ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	uint8_t dm = days_in_month[new_time.tm_mon];
 
-	if(new_time.tm_mday > dm) return debug(parse_wrong_time, arg);
-	if(new_time.tm_mday == 0) return debug(parse_wrong_time, arg);
-	if(new_time.tm_hour > 23) return debug(parse_wrong_time, arg);
-	if(new_time.tm_min > 59)  return debug(parse_wrong_time, arg);
-	if(new_time.tm_sec > 59)  return debug(parse_wrong_time, arg);
+	if(new_time.tm_mday > dm) 		return debug(parse_wrong_time, arg);
+	if(new_time.tm_mday == 0) 		return debug(parse_wrong_time, arg);
+	if(new_time.tm_hour > 23) 		return debug(parse_wrong_time, arg);
+	if(new_time.tm_min > 59)  		return debug(parse_wrong_time, arg);
+	if(new_time.tm_sec > 59)  		return debug(parse_wrong_time, arg);
 
 	time_t time_seconds;
 	time_seconds = mktime(&new_time);
 
-	if(time_seconds == time_t(-1)) return debug(parse_error, arg);
+	if(time_seconds == time_t(-1))	return debug(parse_error, arg);
 
 	*output = time_seconds;
 	return parse_ok;

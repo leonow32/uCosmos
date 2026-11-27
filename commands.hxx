@@ -63,6 +63,11 @@
 	{"ascstr",					ascstr_cmd},
 	{"hexstr",					hexstr_cmd},
 	{"timestr",					timestr_cmd},
+
+	{"wrong1",					wrong1_cmd},
+	{"wrong2",					wrong2_cmd},
+	{"wrong3",					wrong3_cmd},
+	{"wrong4",					wrong4_cmd},
 #endif
 
 #if USE_CMD_COLORS

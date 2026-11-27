@@ -10,51 +10,7 @@
 	#include "pico/stdlib.h"
 #endif
 
-// ASCII codes
-#define NUL					uint8_t(0)
-#define SOH					uint8_t(1)
-#define STX					uint8_t(2)
-#define ETX					uint8_t(3)
-#define EOT					uint8_t(4)
-#define ENQ					uint8_t(5)
-#define ACK					uint8_t(6)
-#define BEL					uint8_t(7)
-#define BS					uint8_t(8)
-#define HT					uint8_t(9)
-#define LF					uint8_t(10)
-#define VT					uint8_t(11)
-#define FF					uint8_t(12)
-#define CR					uint8_t(13)
-#define SO					uint8_t(14)
-#define SI					uint8_t(15)
-#define DLE					uint8_t(16)
-#define DC1					uint8_t(17)
-#define DC2					uint8_t(18)
-#define DC3					uint8_t(19)
-#define DC4					uint8_t(20)
-#define NAK					uint8_t(21)
-#define SYN					uint8_t(22)
-#define ETB					uint8_t(23)
-#define CAN					uint8_t(24)
-#define EM					uint8_t(25)
-#define SUB					uint8_t(26)
-#define ESC					uint8_t(27)
-#define FS					uint8_t(28)
-#define GS					uint8_t(29)
-#define RS					uint8_t(30)
-#define US					uint8_t(31)
-#define DEL					uint8_t(127)
-
-// Keycodes of some keys used by a terminal
-#define LINEFEED			uint8_t(10)
-#define ENTER				uint8_t(13)
-#define ESCAPE				uint8_t(27)
-#define TAB					uint8_t(9)
-#define BACKSPACE1			uint8_t(8)
-#define BACKSPACE2			uint8_t(127)
-#define CTRL_Z				uint8_t(26)
-
-// ANSI color codes
+// ANSI text format and color codes
 #define FORMAT_RESET		"\x1B[0m"
 #define FORMAT_BOLD   		"\x1B[1m"
 #define FORMAT_FAINT   		"\x1B[2m"
@@ -63,6 +19,7 @@
 #define FORMAT_BLINK_SLOW   "\x1B[5m"
 #define FORMAT_BLINK_FAST   "\x1B[6m"
 
+// Foreground colors
 #define TEXT_BLACK			"\x1B[30m"
 #define TEXT_RED			"\x1B[31m"
 #define TEXT_GREEN			"\x1B[32m"
@@ -80,6 +37,7 @@
 #define TEXT_CYAN_BRIGHT	"\x1B[96m"
 #define TEXT_WHITE_BRIGHT	"\x1B[97m"
 
+// Background colors
 #define BACK_BLACK			"\x1B[40m"
 #define BACK_RED			"\x1B[41m"
 #define BACK_GREEN			"\x1B[42m"
@@ -108,8 +66,8 @@
 	#include "pico/stdlib.h"
 	#define LOGE(text, ...) printf(TEXT_RED    "E (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
 	#define LOGW(text, ...) printf(TEXT_YELLOW "W (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
-	#define LOGI(text, ...) printf(TEXT_GREEN  "D (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
-	#define LOGD(text, ...) printf(TEXT_WHITE  "I (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
+	#define LOGI(text, ...) printf(TEXT_GREEN  "I (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
+	#define LOGD(text, ...) printf(TEXT_WHITE  "D (%llu) %s: " text FORMAT_RESET "\n", time_us_64() / 1000, __FILE_NAME__, ##__VA_ARGS__)
 #endif
 
 #endif

@@ -22,7 +22,7 @@
 	#define USE_CMD_ALL						true			// Command "?" to display all the available commands
 	#define USE_CMD_EXIT					true			// Command "exit" to close the system
 	#define USE_CMD_TIME					true			// Command "time" to print the time
-	#define USE_CMD_COLORS					true			// Command "colors" to demonstrate how to use text color and formatting features 
+	#define USE_CMD_COLORS					true			// Command "colors" to demonstrate how to use text color and formatting features
 	#define USE_CMD_TASK_MONITOR			true			// Command "`" to print all running tasks
 	#define USE_CMD_TASK_COMMANDS			true			// Commands for manual task management
 	#define USE_CMD_PARSE_DEMO				true			// Demo of argument parsers

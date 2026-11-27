@@ -35,7 +35,7 @@ volatile bool exit_request = false;
 volatile task_control_t task_table[TASK_MAXCOUNT];
 
 // ========================================
-// Task disgnostics
+// Task diagnostics
 // ========================================
 
 #if DIAG_USE
@@ -97,11 +97,11 @@ void diag_clear_cmd(int argc, char * argv[]) {
 
 #if USE_CMD_TASK_MONITOR
 void task_monitor_cmd(int argc, char * argv[]) {
-	printf(TEXT_WHITE_BRIGHT " No  Pointer   Per [ms] Name\n" FORMAT_RESET);
+	printf(TEXT_WHITE_BRIGHT " No  Pointer Period [ms] Name\n" FORMAT_RESET);
 	
 	for(int i=0; i<TASK_MAXCOUNT; i++) {
 		if(task_table[i].task_ptr) {
-			printf("%3u %08lX %10lu %s\n", 
+			printf("%3u %08lX %11lu %s\n", 
 				i, 
 				uint32_t(task_table[i].task_ptr), 
 				uint32_t(task_table[i].period) * TICK_PERIOD_MS, 
@@ -143,9 +143,9 @@ void task_monitor_cmd(int argc, char * argv[]) {
 					i, 
 					count,
 					over,
-					total / 1000,    uint16_t(total % 1000),
-					max / 1000,      uint16_t(max % 1000),
-					avg / 1000,      uint16_t(avg % 1000),
+					total / 1000, uint16_t(total % 1000),
+					max / 1000,   uint16_t(max % 1000),
+					avg / 1000,   uint16_t(avg % 1000),
 					percent,
 					task_get_name(diag_table[i].task_ptr)
 				);
@@ -308,7 +308,9 @@ void task_init(void) {
 		ESP_ERROR_CHECK(esp_timer_create(&timer_config, &timer_handle));
 		ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, TICK_PERIOD_MS * 1000));  // here time is in micro seconds
 	#elif PICO_RP2040 || PICO_RP2350
-		add_repeating_timer_ms(-TICK_PERIOD_MS, task_system_tick, nullptr, &timer);
+		if(add_repeating_timer_ms(-TICK_PERIOD_MS, task_system_tick, nullptr, &timer) == false) {
+			LOGE("Timer init failed");
+		}
 	#else
 		#error "Platform not supported"
 	#endif
@@ -434,6 +436,7 @@ os_t task_period_change(void (*task_ptr)(run_mode_t), uint16_t period_ms) {
 
 // Checking whether a task has been added to the array of tasks (rather than whether it is currently being executed)
 bool task_is_running(void (*task_ptr)(run_mode_t)) {
+	if(task_ptr == nullptr)										return false;
 	IRQ_DISABLE();
 	bool result = task_check_running(task_ptr);
 	IRQ_ENABLE();
