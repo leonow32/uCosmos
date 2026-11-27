@@ -257,7 +257,7 @@ GENERATE_FLOAT_CMD(float_cmd,  float);
 GENERATE_FLOAT_CMD(double_cmd, double);
 
 void ascchr_cmd(int argc, char * argv[]) {
-	CMD_HELP("char:hexstr");
+	CMD_HELP("char:ascii");
 	char chr;
 	if(parse_ascii_char(argv[1], &chr)) return;
 	printf("%c\n", chr);
